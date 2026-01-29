@@ -63,7 +63,7 @@
     <link rel="prev" title="Isaac Lab Ecosystem" href="../ecosystem.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.3.0" />
+  <meta name="docsearch:version" content="2.3.2" />
     <meta name="docbuild:last-update" content="Jan 29, 2026"/>
   </head>
   
@@ -750,7 +750,7 @@ Other notable limitations with respect to Isaac Lab include…</p>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://isaac-sim.github.io/IsaacLab/main/source/overview/imitation-learning/skillgen.html">SkillGen</a> is not supported out of the box. This
 is because cuRobo builds native CUDA/C++ extensions that requires specific tooling and library versions which are not validated for use with DGX spark.</p></li>
-<li><p>Extended reality teleoperation tools such as <a class="reference external" href="https://isaac-sim.github.io/IsaacLab/release/2.3.0/source/api/lab/isaaclab.devices.html#openxr">OpenXR</a> is not supported. This is due
+<li><p>Extended reality teleoperation tools such as <a class="reference external" href="https://isaac-sim.github.io/IsaacLab/v2.3.2/source/api/lab/isaaclab.devices.html#openxr">OpenXR</a> is not supported. This is due
 to encoding performance limitations that have not yet been fully investigated.</p></li>
 <li><p>SKRL training with <a class="reference external" href="https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html">JAX</a> has not been explicitly validated or tested in Isaac Lab on the DGX Spark.
 JAX provides pre-built CUDA wheels only for Linux on x86_64, so on aarch64 systems (e.g., DGX Spark) it runs on CPU only by default.
