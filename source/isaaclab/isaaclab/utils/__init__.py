@@ -14,6 +14,7 @@ from .logger import *
 from .mesh import *
 from .modifiers import *
 from .string import *
+from .benchmark_report import BenchmarkReporter
 from .timer import Timer
 from .types import *
 from .version import *
