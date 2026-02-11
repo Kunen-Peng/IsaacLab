@@ -757,6 +757,7 @@
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-rendered-usd-camera">Tile-Rendered USD Camera</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera"><code class="docutils literal notranslate"><span class="pre">TiledCamera</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.SIMPLE_SHADING_AOV"><code class="docutils literal notranslate"><span class="pre">TiledCamera.SIMPLE_SHADING_AOV</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.cfg"><code class="docutils literal notranslate"><span class="pre">TiledCamera.cfg</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.__init__"><code class="docutils literal notranslate"><span class="pre">TiledCamera.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.reset"><code class="docutils literal notranslate"><span class="pre">TiledCamera.reset()</span></code></a></li>
@@ -1212,7 +1213,7 @@ interpretation of the prim paths for different sensor types:</p>
 <td><p>Configuration for a camera sensor.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera" title="isaaclab.sensors.TiledCamera"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TiledCamera</span></code></a></p></td>
-<td><p>The tiled rendering based camera sensor for acquiring the same data as the Camera class.</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCameraCfg" title="isaaclab.sensors.TiledCameraCfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TiledCameraCfg</span></code></a></p></td>
 <td><p>Configuration for a tiled rendering-based camera sensor.</p></td>
@@ -1477,6 +1478,9 @@ Note that this path will achieve the best performance when used alone or with de
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;distance_to_camera&quot;</span></code>: An image containing the distance to camera optical center.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;distance_to_image_plane&quot;</span></code>: An image containing distances of 3D points from camera plane along camera’s z-axis.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;depth&quot;</span></code>: The same as <code class="docutils literal notranslate"><span class="pre">&quot;distance_to_image_plane&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;simple_shading_constant_diffuse&quot;</span></code>: Simple shading (constant diffuse) RGB approximation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;simple_shading_diffuse_mdl&quot;</span></code>: Simple shading (diffuse MDL) RGB approximation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;simple_shading_full_mdl&quot;</span></code>: Simple shading (full MDL) RGB approximation.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;normals&quot;</span></code>: An image containing the local surface normal vectors at each pixel.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;motion_vectors&quot;</span></code>: An image containing the motion vector data at each pixel.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;semantic_segmentation&quot;</span></code>: The semantic segmentation data.</p></li>
@@ -2081,75 +2085,40 @@ and returned as a <code class="docutils literal notranslate"><span class="pre">u
 <dt class="sig sig-object py" id="isaaclab.sensors.TiledCamera">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.sensors.</span></span><span class="sig-name descname"><span class="pre">TiledCamera</span></span><a class="reference internal" href="../../../_modules/isaaclab/sensors/camera/tiled_camera.html#TiledCamera"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sensors.TiledCamera" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.sensors.Camera" title="isaaclab.sensors.camera.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a></p>
-<p>The tiled rendering based camera sensor for acquiring the same data as the Camera class.</p>
-<p>This class inherits from the <a class="reference internal" href="#isaaclab.sensors.Camera" title="isaaclab.sensors.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class but uses the tiled-rendering API to acquire
-the visual data. Tiled-rendering concatenates the rendered images from multiple cameras into a single image.
-This allows for rendering multiple cameras in parallel and is useful for rendering large scenes with multiple
-cameras efficiently.</p>
-<p>The following sensor types are supported:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;rgb&quot;</span></code>: A 3-channel rendered color image.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;rgba&quot;</span></code>: A 4-channel rendered color image with alpha channel.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;albedo&quot;</span></code>: A 4-channel fast diffuse-albedo only path for color image.
-Note that this path will achieve the best performance when used alone or with depth only.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;distance_to_camera&quot;</span></code>: An image containing the distance to camera optical center.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;distance_to_image_plane&quot;</span></code>: An image containing distances of 3D points from camera plane along camera’s z-axis.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;depth&quot;</span></code>: Alias for <code class="docutils literal notranslate"><span class="pre">&quot;distance_to_image_plane&quot;</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;normals&quot;</span></code>: An image containing the local surface normal vectors at each pixel.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;motion_vectors&quot;</span></code>: An image containing the motion vector data at each pixel.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;semantic_segmentation&quot;</span></code>: The semantic segmentation data.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_segmentation_fast&quot;</span></code>: The instance segmentation data.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_id_segmentation_fast&quot;</span></code>: The instance id segmentation data.</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Currently the following sensor types are not supported in a “view” format:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_segmentation&quot;</span></code>: The instance segmentation data. Please use the fast counterparts instead.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_id_segmentation&quot;</span></code>: The instance id segmentation data. Please use the fast counterparts instead.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_tight&quot;</span></code>: The tight 2D bounding box data (only contains non-occluded regions).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_tight_fast&quot;</span></code>: The tight 2D bounding box data (only contains non-occluded regions).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_loose&quot;</span></code>: The loose 2D bounding box data (contains occluded regions).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_loose_fast&quot;</span></code>: The loose 2D bounding box data (contains occluded regions).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_3d&quot;</span></code>: The 3D view space bounding box data.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_3d_fast&quot;</span></code>: The 3D view space bounding box data.</p></li>
-</ul>
-</div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version v1.0.0: </span>This feature is available starting from Isaac Sim 4.2. Before this version, the tiled rendering APIs
-were not available.</p>
-</div>
 <p><strong>Attributes:</strong></p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.cfg" title="isaaclab.sensors.TiledCamera.cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cfg</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.SIMPLE_SHADING_AOV" title="isaaclab.sensors.TiledCamera.SIMPLE_SHADING_AOV"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SIMPLE_SHADING_AOV</span></code></a></p></td>
+<td><p>The tiled rendering based camera sensor for acquiring the same data as the Camera class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.cfg" title="isaaclab.sensors.TiledCamera.cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cfg</span></code></a></p></td>
 <td><p>The configuration parameters.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.UNSUPPORTED_TYPES" title="isaaclab.sensors.TiledCamera.UNSUPPORTED_TYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UNSUPPORTED_TYPES</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.UNSUPPORTED_TYPES" title="isaaclab.sensors.TiledCamera.UNSUPPORTED_TYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UNSUPPORTED_TYPES</span></code></a></p></td>
 <td><p>The set of sensor types that are not supported by the camera class.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.data" title="isaaclab.sensors.TiledCamera.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.data" title="isaaclab.sensors.TiledCamera.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></a></p></td>
 <td><p>Data from the sensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.device" title="isaaclab.sensors.TiledCamera.device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">device</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.device" title="isaaclab.sensors.TiledCamera.device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">device</span></code></a></p></td>
 <td><p>Memory device for computation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.frame" title="isaaclab.sensors.TiledCamera.frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frame</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.frame" title="isaaclab.sensors.TiledCamera.frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frame</span></code></a></p></td>
 <td><p>Frame number when the measurement took place.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.has_debug_vis_implementation" title="isaaclab.sensors.TiledCamera.has_debug_vis_implementation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_debug_vis_implementation</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.has_debug_vis_implementation" title="isaaclab.sensors.TiledCamera.has_debug_vis_implementation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_debug_vis_implementation</span></code></a></p></td>
 <td><p>Whether the sensor has a debug visualization implemented.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.image_shape" title="isaaclab.sensors.TiledCamera.image_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">image_shape</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.image_shape" title="isaaclab.sensors.TiledCamera.image_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">image_shape</span></code></a></p></td>
 <td><p>A tuple containing (height, width) of the camera sensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.is_initialized" title="isaaclab.sensors.TiledCamera.is_initialized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_initialized</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.is_initialized" title="isaaclab.sensors.TiledCamera.is_initialized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_initialized</span></code></a></p></td>
 <td><p>Whether the sensor is initialized.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.num_instances" title="isaaclab.sensors.TiledCamera.num_instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_instances</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.num_instances" title="isaaclab.sensors.TiledCamera.num_instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_instances</span></code></a></p></td>
 <td><p>Number of instances of the sensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.render_product_paths" title="isaaclab.sensors.TiledCamera.render_product_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_product_paths</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sensors.TiledCamera.render_product_paths" title="isaaclab.sensors.TiledCamera.render_product_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_product_paths</span></code></a></p></td>
 <td><p>The path of the render products for the cameras.</p></td>
 </tr>
 </tbody>
@@ -2179,6 +2148,52 @@ were not available.</p>
 </tbody>
 </table>
 </div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="isaaclab.sensors.TiledCamera.SIMPLE_SHADING_AOV">
+<span class="sig-name descname"><span class="pre">SIMPLE_SHADING_AOV</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SimpleShadingSD'</span></em><a class="headerlink" href="#isaaclab.sensors.TiledCamera.SIMPLE_SHADING_AOV" title="Permalink to this definition">#</a></dt>
+<dd><p>The tiled rendering based camera sensor for acquiring the same data as the Camera class.</p>
+<p>This class inherits from the <a class="reference internal" href="#isaaclab.sensors.Camera" title="isaaclab.sensors.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class but uses the tiled-rendering API to acquire
+the visual data. Tiled-rendering concatenates the rendered images from multiple cameras into a single image.
+This allows for rendering multiple cameras in parallel and is useful for rendering large scenes with multiple
+cameras efficiently.</p>
+<p>The following sensor types are supported:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;rgb&quot;</span></code>: A 3-channel rendered color image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;rgba&quot;</span></code>: A 4-channel rendered color image with alpha channel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;albedo&quot;</span></code>: A 4-channel fast diffuse-albedo only path for color image.
+Note that this path will achieve the best performance when used alone or with depth only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;distance_to_camera&quot;</span></code>: An image containing the distance to camera optical center.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;distance_to_image_plane&quot;</span></code>: An image containing distances of 3D points from camera plane along camera’s z-axis.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;depth&quot;</span></code>: Alias for <code class="docutils literal notranslate"><span class="pre">&quot;distance_to_image_plane&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;simple_shading_constant_diffuse&quot;</span></code>: Simple shading (constant diffuse) RGB approximation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;simple_shading_diffuse_mdl&quot;</span></code>: Simple shading (diffuse MDL) RGB approximation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;simple_shading_full_mdl&quot;</span></code>: Simple shading (full MDL) RGB approximation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;normals&quot;</span></code>: An image containing the local surface normal vectors at each pixel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;motion_vectors&quot;</span></code>: An image containing the motion vector data at each pixel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;semantic_segmentation&quot;</span></code>: The semantic segmentation data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_segmentation_fast&quot;</span></code>: The instance segmentation data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_id_segmentation_fast&quot;</span></code>: The instance id segmentation data.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently the following sensor types are not supported in a “view” format:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_segmentation&quot;</span></code>: The instance segmentation data. Please use the fast counterparts instead.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;instance_id_segmentation&quot;</span></code>: The instance id segmentation data. Please use the fast counterparts instead.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_tight&quot;</span></code>: The tight 2D bounding box data (only contains non-occluded regions).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_tight_fast&quot;</span></code>: The tight 2D bounding box data (only contains non-occluded regions).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_loose&quot;</span></code>: The loose 2D bounding box data (contains occluded regions).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_2d_loose_fast&quot;</span></code>: The loose 2D bounding box data (contains occluded regions).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_3d&quot;</span></code>: The 3D view space bounding box data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bounding_box_3d_fast&quot;</span></code>: The 3D view space bounding box data.</p></li>
+</ul>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version v1.0.0: </span>This feature is available starting from Isaac Sim 4.2. Before this version, the tiled rendering APIs
+were not available.</p>
+</div>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="isaaclab.sensors.TiledCamera.cfg">
 <span class="sig-name descname"><span class="pre">cfg</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#isaaclab.sensors.TiledCameraCfg" title="isaaclab.sensors.TiledCameraCfg"><span class="pre">TiledCameraCfg</span></a></em><a class="headerlink" href="#isaaclab.sensors.TiledCamera.cfg" title="Permalink to this definition">#</a></dt>
@@ -6014,6 +6029,7 @@ which results in a positive acceleration reading in the world Z.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-rendered-usd-camera">Tile-Rendered USD Camera</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera"><code class="docutils literal notranslate"><span class="pre">TiledCamera</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.SIMPLE_SHADING_AOV"><code class="docutils literal notranslate"><span class="pre">TiledCamera.SIMPLE_SHADING_AOV</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.cfg"><code class="docutils literal notranslate"><span class="pre">TiledCamera.cfg</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.__init__"><code class="docutils literal notranslate"><span class="pre">TiledCamera.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sensors.TiledCamera.reset"><code class="docutils literal notranslate"><span class="pre">TiledCamera.reset()</span></code></a></li>

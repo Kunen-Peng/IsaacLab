@@ -675,6 +675,9 @@
 <span class="sd">    - ``&quot;distance_to_camera&quot;``: An image containing the distance to camera optical center.</span>
 <span class="sd">    - ``&quot;distance_to_image_plane&quot;``: An image containing distances of 3D points from camera plane along camera&#39;s z-axis.</span>
 <span class="sd">    - ``&quot;depth&quot;``: The same as ``&quot;distance_to_image_plane&quot;``.</span>
+<span class="sd">    - ``&quot;simple_shading_constant_diffuse&quot;``: Simple shading (constant diffuse) RGB approximation.</span>
+<span class="sd">    - ``&quot;simple_shading_diffuse_mdl&quot;``: Simple shading (diffuse MDL) RGB approximation.</span>
+<span class="sd">    - ``&quot;simple_shading_full_mdl&quot;``: Simple shading (full MDL) RGB approximation.</span>
 <span class="sd">    - ``&quot;normals&quot;``: An image containing the local surface normal vectors at each pixel.</span>
 <span class="sd">    - ``&quot;motion_vectors&quot;``: An image containing the motion vector data at each pixel.</span>
 <span class="sd">    - ``&quot;semantic_segmentation&quot;``: The semantic segmentation data.</span>
@@ -713,6 +716,14 @@
     <span class="p">}</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The set of sensor types that are not supported by the camera class.&quot;&quot;&quot;</span>
 
+    <span class="n">SIMPLE_SHADING_MODES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;simple_shading_constant_diffuse&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;simple_shading_diffuse_mdl&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;simple_shading_full_mdl&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">SIMPLE_SHADING_AOV</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;SimpleShadingSD&quot;</span>
+    <span class="n">SIMPLE_SHADING_MODE_SETTING</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/rtx/sdg/simpleShading/mode&quot;</span>
+
 <div class="viewcode-block" id="Camera.__init__"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sensors.html#isaaclab.sensors.Camera.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">CameraCfg</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the camera sensor.</span>
 
@@ -746,9 +757,9 @@
         <span class="c1"># This is only introduced in isaac sim 6.0</span>
         <span class="n">isaac_sim_version</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">SimulationContext</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">isaac_sim_version</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
-            <span class="c1"># Set RTX flag to enable fast path if only depth or albedo is requested</span>
-            <span class="n">supported_fast_types</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;distance_to_camera&quot;</span><span class="p">,</span> <span class="s2">&quot;distance_to_image_plane&quot;</span><span class="p">,</span> <span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="s2">&quot;albedo&quot;</span><span class="p">}</span>
-            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">data_type</span> <span class="ow">in</span> <span class="n">supported_fast_types</span> <span class="k">for</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span><span class="p">):</span>
+            <span class="c1"># Set RTX flag to enable fast path when no regular RGB/RGBA annotators are requested</span>
+            <span class="n">needs_color_render</span> <span class="o">=</span> <span class="s2">&quot;rgb&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span> <span class="ow">or</span> <span class="s2">&quot;rgba&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">needs_color_render</span><span class="p">:</span>
                 <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/rtx/sdg/force/disableColorRender&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># If we have GUI / viewport enabled, we turn off fast path so that the viewport is not black</span>
@@ -759,6 +770,16 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;Albedo annotator is only supported in Isaac Sim 6.0+. The albedo data type will be ignored.&quot;</span>
                 <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODES</span> <span class="k">for</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Simple shading annotators are only supported in Isaac Sim 6.0+. The simple shading data types&quot;</span>
+                    <span class="s2">&quot; will be ignored.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Set simple shading mode (if requested) before rendering</span>
+        <span class="n">simple_shading_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_simple_shading_mode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">simple_shading_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODE_SETTING</span><span class="p">,</span> <span class="n">simple_shading_mode</span><span class="p">)</span>
 
         <span class="c1"># spawn the asset</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1124,9 +1145,19 @@
                     <span class="n">rep</span><span class="o">.</span><span class="n">AnnotatorRegistry</span><span class="o">.</span><span class="n">register_annotator_from_aov</span><span class="p">(</span>
                         <span class="n">aov</span><span class="o">=</span><span class="s2">&quot;DiffuseAlbedoSD&quot;</span><span class="p">,</span> <span class="n">output_data_type</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span> <span class="n">output_channels</span><span class="o">=</span><span class="mi">4</span>
                     <span class="p">)</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODES</span><span class="p">:</span>
+                    <span class="n">rep</span><span class="o">.</span><span class="n">AnnotatorRegistry</span><span class="o">.</span><span class="n">register_annotator_from_aov</span><span class="p">(</span>
+                        <span class="n">aov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_AOV</span><span class="p">,</span> <span class="n">output_data_type</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span> <span class="n">output_channels</span><span class="o">=</span><span class="mi">4</span>
+                    <span class="p">)</span>
 
                 <span class="c1"># Map special cases to their corresponding annotator names</span>
-                <span class="n">special_cases</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rgba&quot;</span><span class="p">:</span> <span class="s2">&quot;rgb&quot;</span><span class="p">,</span> <span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="s2">&quot;distance_to_image_plane&quot;</span><span class="p">,</span> <span class="s2">&quot;albedo&quot;</span><span class="p">:</span> <span class="s2">&quot;DiffuseAlbedoSD&quot;</span><span class="p">}</span>
+                <span class="n">simple_shading_cases</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_AOV</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODES</span><span class="p">}</span>
+                <span class="n">special_cases</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;rgba&quot;</span><span class="p">:</span> <span class="s2">&quot;rgb&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="s2">&quot;distance_to_image_plane&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;albedo&quot;</span><span class="p">:</span> <span class="s2">&quot;DiffuseAlbedoSD&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">simple_shading_cases</span><span class="p">,</span>
+                <span class="p">}</span>
                 <span class="c1"># Get the annotator name, falling back to the original name if not a special case</span>
                 <span class="n">annotator_name</span> <span class="o">=</span> <span class="n">special_cases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
                 <span class="c1"># Create the annotator node</span>
@@ -1354,9 +1385,24 @@
         <span class="c1"># motion vectors return (x, y) in first 2 channels, 3rd and 4th channels are unused</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;motion_vectors&quot;</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODES</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
 
         <span class="c1"># return the data and info</span>
         <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">info</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_simple_shading_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the requested simple shading mode from data types.&quot;&quot;&quot;</span>
+        <span class="n">requested</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_type</span> <span class="k">for</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span> <span class="k">if</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODES</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">requested</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">requested</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Multiple simple shading modes requested (</span><span class="si">%s</span><span class="s2">). Using &#39;</span><span class="si">%s</span><span class="s2">&#39; only.&quot;</span><span class="p">,</span>
+                <span class="n">requested</span><span class="p">,</span>
+                <span class="n">requested</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODES</span><span class="p">[</span><span class="n">requested</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Internal simulation callbacks.</span>
