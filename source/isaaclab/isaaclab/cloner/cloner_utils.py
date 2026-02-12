@@ -300,7 +300,14 @@ def newton_replicate(
     for src_path in sources:
         p = ModelBuilder(up_axis=up_axis)
         solvers.SolverMuJoCo.register_custom_attributes(p)
-        p.add_usd(stage, root_path=src_path, load_visual_shapes=True, skip_mesh_approximation=True)
+        inverse_env_xform = get_inverse_env_xform(stage, src_path)
+        p.add_usd(
+            stage,
+            root_path=src_path,
+            load_visual_shapes=True,
+            skip_mesh_approximation=True,
+            xform=inverse_env_xform,
+        )
         if simplify_meshes:
             p.approximate_meshes("convex_hull")
         protos[src_path] = p
@@ -488,3 +495,22 @@ def grid_transforms(N: int, spacing: float = 1.0, up_axis: str = "z", device="cp
     ori = torch.zeros((N, 4), device=device)
     ori[:, 0] = 1.0
     return pos, ori
+
+
+def get_inverse_env_xform(stage, src_path: str):
+    """Get the inverse transform of src_path to convert world→local."""
+    xform_cache = UsdGeom.XformCache()
+    world_xform = xform_cache.GetLocalToWorldTransform(stage.GetPrimAtPath(src_path))
+
+    # Get the inverse of the world transform
+    inv_xform = world_xform.GetInverse()
+
+    # Extract translation and rotation from inverse
+    inv_translation = inv_xform.ExtractTranslation()
+    inv_rotation = inv_xform.ExtractRotationQuat()
+
+    inv_pos = (inv_translation[0], inv_translation[1], inv_translation[2])
+    inv_quat = (inv_rotation.GetImaginary()[0], inv_rotation.GetImaginary()[1], 
+                inv_rotation.GetImaginary()[2], inv_rotation.GetReal())
+
+    return wp.transform(inv_pos, inv_quat)
