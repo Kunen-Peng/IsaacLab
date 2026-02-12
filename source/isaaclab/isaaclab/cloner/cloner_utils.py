@@ -63,13 +63,11 @@ def clone_from_template(stage: Usd.Stage, num_clones: int, template_clone_cfg: T
         proto_mask.scatter_(1, proto_idx.view(-1, 1).to(torch.long), clone_masking.any(dim=1, keepdim=True))
         usd_replicate(stage, src_paths, dest_paths, world_indices, proto_mask)
         stage.GetPrimAtPath(cfg.template_root).SetActive(False)
-
+        replicate_args = [clone_path_fmt.format(0)], [clone_path_fmt], world_indices, clone_masking[0].unsqueeze(0)
+        get_pos = lambda path: stage.GetPrimAtPath(path).GetAttribute("xformOp:translate").Get()  # noqa: E731
+        positions = torch.tensor([get_pos(clone_path_fmt.format(i)) for i in world_indices])
         # If all prototypes map to env_0, clone whole env_0 to all envs; else clone per-object
         if torch.all(proto_idx == 0):
-            # args: src_paths, dest_paths, env_ids, mask
-            replicate_args = [clone_path_fmt.format(0)], [clone_path_fmt], world_indices, clone_masking
-            get_pos = lambda path: stage.GetPrimAtPath(path).GetAttribute("xformOp:translate").Get()  # noqa: E731
-            positions = torch.tensor([get_pos(clone_path_fmt.format(i)) for i in world_indices])
             if cfg.clone_physics:
                 template_clone_cfg.physics_clone_fn(stage, *replicate_args, positions=positions)
             if cfg.clone_usd:
@@ -80,7 +78,7 @@ def clone_from_template(stage: Usd.Stage, num_clones: int, template_clone_cfg: T
             selected_src = [tpl.format(int(idx)) for tpl, idx in zip(dest_paths, proto_idx.tolist())]
             replicate_args = selected_src, dest_paths, world_indices, clone_masking
             if cfg.clone_physics:
-                template_clone_cfg.physics_clone_fn(stage, *replicate_args)
+                template_clone_cfg.physics_clone_fn(stage, *replicate_args, positions=positions)
             if cfg.clone_usd:
                 usd_replicate(stage, *replicate_args)
 
@@ -302,25 +300,35 @@ def newton_replicate(
     for src_path in sources:
         p = ModelBuilder(up_axis=up_axis)
         solvers.SolverMuJoCo.register_custom_attributes(p)
-        p.add_usd(stage, root_path=src_path, load_visual_shapes=True)
+        p.add_usd(stage, root_path=src_path, load_visual_shapes=True, skip_mesh_approximation=True)
         if simplify_meshes:
             p.approximate_meshes("convex_hull")
         protos[src_path] = p
 
-    # add by world, then by active sources in that world (column-wise)
+    # create a separate world for each environment (heterogeneous spawning)
+    # Newton assigns sequential world IDs (0, 1, 2, ...), so we need to track the mapping
+    newton_world_to_env_id = {}
     for col, env_id in enumerate(env_ids.tolist()):
+        # begin a new world context (Newton assigns world ID = col)
+        builder.begin_world()
+        newton_world_to_env_id[col] = env_id
+
+        # add all active sources for this world
         for row in torch.nonzero(mapping[:, col], as_tuple=True)[0].tolist():
-            builder.add_world(
+            builder.add_builder(
                 protos[sources[row]],
                 xform=wp.transform(positions[col].tolist(), quaternions[col].tolist()),
-                # world=int(env_id),
             )
+
+        # end the world context
+        builder.end_world()
 
     # per-source, per-world renaming (strict prefix swap), compact style preserved
     for i, src_path in enumerate(sources):
         src_prefix_len = len(src_path.rstrip("/"))
         swap = lambda name, new_root: new_root + name[src_prefix_len:]  # noqa: E731
         world_cols = torch.nonzero(mapping[i], as_tuple=True)[0].tolist()
+        # Map Newton world IDs (sequential) to destination paths using env_ids
         world_roots = {int(env_ids[c]): destinations[i].format(int(env_ids[c])) for c in world_cols}
 
         for t in ("body", "joint", "shape", "articulation"):
