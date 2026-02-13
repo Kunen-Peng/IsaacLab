@@ -10,7 +10,12 @@
 import argparse
 import sys
 
+import pinocchio
+
 from isaaclab.app import AppLauncher
+
+from isaaclab.utils.external_functions import call_externally_defined_function
+from isaaclab.utils.string import list_intersection
 
 # local imports
 import cli_args  # isort: skip
@@ -34,22 +39,29 @@ parser.add_argument(
     help="Use the pre-trained checkpoint from Nucleus.",
 )
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
+parser.add_argument("--external_callback", default=None, help="Fully qualified path to an externally defined callback.")
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
-args_cli, hydra_args = parser.parse_known_args()
+args_cli, remaining_args = parser.parse_known_args()
 # always enable cameras to record video
 if args_cli.video:
     args_cli.enable_cameras = True
 
-# clear out sys.argv for Hydra
-sys.argv = [sys.argv[0]] + hydra_args
-
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
+
+# Call and external callback if requested. This gives opportunity to external code to register the environments
+remaining_args_env_registration = None
+if args_cli.external_callback:
+    remaining_args_env_registration = call_externally_defined_function(args_cli.external_callback)
+
+# clear out sys.argv for Hydra
+remaining_args = list_intersection(remaining_args, remaining_args_env_registration)
+sys.argv = [sys.argv[0]] + remaining_args
 
 """Rest everything follows."""
 

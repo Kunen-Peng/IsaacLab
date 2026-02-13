@@ -9,12 +9,12 @@
 
 import argparse
 import sys
-from importlib import import_module
 
 import pinocchio
 
 from isaaclab.app import AppLauncher
 from isaaclab.utils.external_functions import call_externally_defined_function
+from isaaclab.utils.string import list_intersection
 
 # local imports
 import cli_args  # isort: skip
@@ -57,7 +57,7 @@ if args_cli.external_callback:
     remaining_args_env_registration = call_externally_defined_function(args_cli.external_callback)
 
 # clear out sys.argv for Hydra
-remaining_args = list(set(remaining_args) & set(remaining_args_env_registration)) if remaining_args_env_registration else remaining_args
+remaining_args = list_intersection(remaining_args, remaining_args_env_registration)
 sys.argv = [sys.argv[0]] + remaining_args
 
 """Check for minimum supported RSL-RL version."""
