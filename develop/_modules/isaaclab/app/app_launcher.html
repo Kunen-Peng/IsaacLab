@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 14, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 16, 2026"/>
   </head>
   
   
@@ -758,6 +758,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_rendering_mode_settings</span><span class="p">(</span><span class="n">launcher_args</span><span class="p">)</span>
         <span class="c1"># Set animation recording settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_animation_recording_settings</span><span class="p">(</span><span class="n">launcher_args</span><span class="p">)</span>
+        <span class="c1"># Set visualizer settings (if requested)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_visualizer_settings</span><span class="p">(</span><span class="n">launcher_args</span><span class="p">)</span>
 
         <span class="c1"># Hide play button callback if the timeline is stopped</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">omni.timeline</span>
@@ -924,6 +926,13 @@
             <span class="n">action</span><span class="o">=</span><span class="n">ExplicitAction</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="n">AppLauncher</span><span class="o">.</span><span class="n">_APPLAUNCHER_CFG_INFO</span><span class="p">[</span><span class="s2">&quot;device&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The device to run the simulation on. Can be &quot;cpu&quot;, &quot;cuda&quot;, &quot;cuda:N&quot;, where N is the device ID&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">arg_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--visualizer&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Visualizer backends to enable (e.g., kit, newton, rerun).&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Add the deprecated cpu flag to raise an error if it is used</span>
         <span class="n">arg_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--cpu&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
@@ -1221,6 +1230,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Headless needs to be a bool to be ingested by SimulationApp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_headless</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">headless_env</span><span class="p">)</span>
+
+        <span class="c1"># If visualizers are explicitly requested and Kit viewport is not among them,</span>
+        <span class="c1"># force headless mode so Isaac Sim GUI does not launch unnecessarily.</span>
+        <span class="n">visualizers_arg</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;visualizer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">visualizers_arg</span><span class="p">:</span>
+            <span class="n">requested_visualizers</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">visualizers_arg</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()}</span>
+            <span class="k">if</span> <span class="n">requested_visualizers</span> <span class="ow">and</span> <span class="s2">&quot;kit&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">requested_visualizers</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_livestream</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_headless</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s2">&quot;[INFO][AppLauncher]: Forcing headless mode because &#39;--visualizer&#39; excludes &quot;</span>
+                        <span class="s2">&quot;&#39;kit&#39; and livestream is disabled.&quot;</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_headless</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># Headless needs to be passed to the SimulationApp so we keep it here</span>
         <span class="n">launcher_args</span><span class="p">[</span><span class="s2">&quot;headless&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_headless</span>
 
@@ -1553,6 +1575,17 @@
         <span class="n">carb_settings</span><span class="o">.</span><span class="n">set_float</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/start_time&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
         <span class="n">carb_settings</span><span class="o">.</span><span class="n">set_float</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/stop_time&quot;</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_visualizer_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store visualizer selection in carb settings.&quot;&quot;&quot;</span>
+        <span class="n">visualizers</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;visualizer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visualizers</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
+
+            <span class="n">visualizer_str</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">visualizers</span><span class="p">)</span>
+            <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span><span class="o">.</span><span class="n">set_string</span><span class="p">(</span><span class="s2">&quot;/isaaclab/visualizer&quot;</span><span class="p">,</span> <span class="n">visualizer_str</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_interrupt_signal_handle_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle the interrupt signal from the keyboard.&quot;&quot;&quot;</span>
         <span class="c1"># close the app</span>
@@ -1746,7 +1779,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 14, 2026.
+  Last updated on Feb 16, 2026.
   <br/>
 </p>
   </div>

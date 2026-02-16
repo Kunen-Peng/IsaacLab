@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 14, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 16, 2026"/>
   </head>
   
   
@@ -640,12 +640,16 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stage_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicsManager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_new_stage_in_memory</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">KitVisualizerCfg</span><span class="p">,</span> <span class="n">NewtonVisualizerCfg</span><span class="p">,</span> <span class="n">RerunVisualizerCfg</span><span class="p">,</span> <span class="n">Visualizer</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.scene_data_providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneDataProvider</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.simulation_cfg</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationCfg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.spawners</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomeLightCfg</span><span class="p">,</span> <span class="n">GroundPlaneCfg</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Visualizer type names (CLI and config). App launcher stores --visualizer a b c as space-separated.</span>
+<span class="n">_VISUALIZER_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;newton&quot;</span><span class="p">,</span> <span class="s2">&quot;rerun&quot;</span><span class="p">,</span> <span class="s2">&quot;kit&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">SettingsHelper</span><span class="p">:</span>
@@ -746,8 +750,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">PhysicsManager</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physics</span><span class="o">.</span><span class="n">class_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="c1"># Initialize visualizers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_visualizers</span><span class="p">()</span>
+        <span class="c1"># Initialize visualizer state (provider/visualizers are created lazily during initialize_visualizers()).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span><span class="p">:</span> <span class="n">SceneDataProvider</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Visualizer</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visualizer_step_counter</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Cache commonly-used settings (these don&#39;t change during runtime)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_gui</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/has_gui&quot;</span><span class="p">))</span>
@@ -818,48 +824,115 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_rendering</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns whether rendering is active (GUI or RTX sensors).&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_gui</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/rtx_sensors&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns whether rendering is active (GUI, RTX sensors, or visualizers requested).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_has_gui</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/rtx_sensors&quot;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/visualizer&quot;</span><span class="p">))</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="SimulationContext.get_physics_dt"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.get_physics_dt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_physics_dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the physics time step.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">get_physics_dt</span><span class="p">()</span></div>
 
-    <span class="c1"># VISUALIZER MANAGEMENT</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_init_visualizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize visualizers based on config and settings.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Visualizer</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_viz_dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">render_interval</span>
-
-        <span class="c1"># Determine which visualizers to create</span>
-        <span class="n">viz_str</span> <span class="o">=</span> <span class="s2">&quot;omniverse&quot;</span>  <span class="c1"># Default</span>
-        <span class="n">requested</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">viz_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">requested</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># Get or create visualizer configs</span>
-            <span class="n">cfg_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_cfgs</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">OVVisualizerCfg</span>
-
-            <span class="n">type_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;omniverse&quot;</span><span class="p">:</span> <span class="n">OVVisualizerCfg</span><span class="p">}</span>
-            <span class="n">viz_cfgs</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="n">cfg_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">viz_type</span> <span class="ow">in</span> <span class="n">requested</span><span class="p">:</span>
-                    <span class="n">viz_cfgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">type_map</span><span class="p">[</span><span class="n">viz_type</span><span class="p">]())</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">viz_cfgs</span> <span class="o">=</span> <span class="n">cfg_list</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">cfg_list</span><span class="p">]</span>
-
-            <span class="c1"># Create and initialize each visualizer</span>
-            <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">viz_cfgs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">create_visualizer</span><span class="p">())</span>
-                <span class="c1"># build scene data for visualizer initialization</span>
-                <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;newton&quot;</span><span class="p">,</span> <span class="s2">&quot;rerun&quot;</span><span class="p">):</span>
-                    <span class="n">scene_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;scene_data_provider&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-                <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_type</span> <span class="o">==</span> <span class="s2">&quot;omniverse&quot;</span><span class="p">:</span>
-                    <span class="n">scene_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;usd_stage&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="s2">&quot;simulation_context&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="p">}</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_default_visualizer_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requested_visualizers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create default visualizer configs for requested types.&quot;&quot;&quot;</span>
+        <span class="n">default_configs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">viz_type</span> <span class="ow">in</span> <span class="n">requested_visualizers</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">viz_type</span> <span class="o">==</span> <span class="s2">&quot;newton&quot;</span><span class="p">:</span>
+                    <span class="n">default_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NewtonVisualizerCfg</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="n">viz_type</span> <span class="o">==</span> <span class="s2">&quot;rerun&quot;</span><span class="p">:</span>
+                    <span class="n">default_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RerunVisualizerCfg</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="n">viz_type</span> <span class="o">==</span> <span class="s2">&quot;kit&quot;</span><span class="p">:</span>
+                    <span class="n">default_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">KitVisualizerCfg</span><span class="p">())</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">scene_data</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">scene_data</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initialized visualizer: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;[SimulationContext] Unknown visualizer type &#39;</span><span class="si">{</span><span class="n">viz_type</span><span class="si">}</span><span class="s2">&#39; requested. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Valid types: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">_VISUALIZER_TYPES</span><span class="p">)</span><span class="si">}</span><span class="s2">. Skipping.&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[SimulationContext] Failed to create default config for visualizer &#39;</span><span class="si">{</span><span class="n">viz_type</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">default_configs</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cli_visualizer_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of visualizer types requested via CLI (carb setting).&quot;&quot;&quot;</span>
+        <span class="n">requested</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/visualizer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">requested</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">requested</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SimulationContext.resolve_visualizer_types"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.resolve_visualizer_types">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_visualizer_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve visualizer types from config or CLI settings.&quot;&quot;&quot;</span>
+        <span class="n">visualizer_cfgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_cfgs</span>
+        <span class="k">if</span> <span class="n">visualizer_cfgs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cli_visualizer_types</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">visualizer_cfgs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">visualizer_cfgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">visualizer_cfgs</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_type</span> <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">visualizer_cfgs</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;visualizer_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_visualizer_cfgs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve final visualizer configs from cfg and optional CLI override.&quot;&quot;&quot;</span>
+        <span class="n">visualizer_cfgs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_cfgs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">visualizer_cfgs</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_cfgs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_cfgs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_cfgs</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">cli_requested</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cli_visualizer_types</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visualizer_cfgs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_default_visualizer_configs</span><span class="p">(</span><span class="n">cli_requested</span><span class="p">)</span> <span class="k">if</span> <span class="n">cli_requested</span> <span class="k">else</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cli_requested</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">visualizer_cfgs</span>
+
+        <span class="c1"># CLI selection is explicit: keep only requested cfg types, then add defaults for missing requested types.</span>
+        <span class="n">cli_requested_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cli_requested</span><span class="p">)</span>
+        <span class="n">selected_cfgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">cfg</span> <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">visualizer_cfgs</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;visualizer_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cli_requested_set</span><span class="p">]</span>
+        <span class="n">existing_types</span> <span class="o">=</span> <span class="p">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;visualizer_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">selected_cfgs</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">viz_type</span> <span class="ow">in</span> <span class="n">cli_requested</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">viz_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_types</span> <span class="ow">and</span> <span class="n">viz_type</span> <span class="ow">in</span> <span class="n">_VISUALIZER_TYPES</span><span class="p">:</span>
+                <span class="n">selected_cfgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_default_visualizer_configs</span><span class="p">([</span><span class="n">viz_type</span><span class="p">]))</span>
+                <span class="n">existing_types</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">viz_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">selected_cfgs</span>
+
+<div class="viewcode-block" id="SimulationContext.initialize_visualizers"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.initialize_visualizers">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_visualizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize visualizers from SimulationCfg.visualizer_cfgs.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">physics_dt</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">physics</span><span class="p">,</span> <span class="s2">&quot;dt&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_viz_dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">physics_dt</span> <span class="k">if</span> <span class="n">physics_dt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">render_interval</span>
+
+        <span class="n">visualizer_cfgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_visualizer_cfgs</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visualizer_cfgs</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.scene_data_providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysxSceneDataProvider</span>
+
+        <span class="c1"># TODO: When Newton/Warp backend scene data provider is implemented and validated,</span>
+        <span class="c1"># switch provider selection to route by physics backend:</span>
+        <span class="c1"># - Omni/PhysX -&gt; PhysxSceneDataProvider</span>
+        <span class="c1"># - Newton/Warp -&gt; NewtonSceneDataProvider</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span> <span class="o">=</span> <span class="n">PhysxSceneDataProvider</span><span class="p">(</span><span class="n">visualizer_cfgs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">visualizer_cfgs</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">visualizer</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">create_visualizer</span><span class="p">()</span>
+                <span class="n">visualizer</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">visualizer</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initialized visualizer: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">visualizer</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (type: </span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_type</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to initialize visualizer &#39;</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">visualizer_type</span><span class="si">}</span><span class="s2">&#39; (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">close_provider</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">close_provider</span><span class="p">):</span>
+                <span class="n">close_provider</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span> <span class="o">=</span> <span class="kc">None</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">visualizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Visualizer</span><span class="p">]:</span>
@@ -867,7 +940,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span>
 
 <div class="viewcode-block" id="SimulationContext.get_rendering_dt"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.get_rendering_dt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_rendering_dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the rendering time step.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return rendering dt, allowing visualizer-specific override.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
+            <span class="n">viz_dt</span> <span class="o">=</span> <span class="n">viz</span><span class="o">.</span><span class="n">get_rendering_dt</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">viz_dt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">viz_dt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">viz_dt</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viz_dt</span></div>
 
 <div class="viewcode-block" id="SimulationContext.set_camera_view"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.set_camera_view">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_camera_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eye</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -890,6 +967,9 @@
             <span class="n">viz</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">soft</span><span class="p">)</span>
         <span class="c1"># Start the timeline so the play button is pressed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
+            <span class="c1"># Initialize visualizers after PhysX sim view is ready.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_visualizers</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_playing</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_stopped</span> <span class="o">=</span> <span class="kc">False</span></div>
 
@@ -905,14 +985,60 @@
 
 <div class="viewcode-block" id="SimulationContext.render"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.render">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the scene via all active visualizers.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">viz</span><span class="o">.</span><span class="n">is_rendering_paused</span><span class="p">()</span> <span class="ow">and</span> <span class="n">viz</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
-                <span class="n">viz</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_rendering_dt</span><span class="p">(),</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_visualizers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_rendering_dt</span><span class="p">())</span>
         <span class="c1"># Call render callbacks</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_render_callbacks&quot;</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_callbacks</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">callback</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># Pass None as event data</span></div>
+
+<div class="viewcode-block" id="SimulationContext.update_visualizers"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.update_visualizers">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_visualizers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update visualizers without triggering renderer/GUI.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_should_forward_before_visualizer_update</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visualizer_step_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span><span class="p">:</span>
+            <span class="n">env_ids_union</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="s2">&quot;get_visualized_env_ids&quot;</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)()</span>
+                <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">env_ids_union</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+            <span class="n">env_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">env_ids_union</span><span class="p">))</span> <span class="k">if</span> <span class="n">env_ids_union</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scene_data_provider</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
+
+        <span class="n">visualizers_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">viz</span><span class="o">.</span><span class="n">is_rendering_paused</span><span class="p">():</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="s2">&quot;is_closed&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Visualizer closed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+                    <span class="n">visualizers_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">viz</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Visualizer not running: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+                    <span class="n">visualizers_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">while</span> <span class="n">viz</span><span class="o">.</span><span class="n">is_training_paused</span><span class="p">()</span> <span class="ow">and</span> <span class="n">viz</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+                    <span class="n">viz</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">viz</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error stepping visualizer &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+                <span class="n">visualizers_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="n">visualizers_to_remove</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">viz</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Removed visualizer: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">viz</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error closing visualizer: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_should_forward_before_visualizer_update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True if any visualizer requires pre-step forward kinematics.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">viz</span><span class="o">.</span><span class="n">requires_forward_before_step</span><span class="p">()</span> <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SimulationContext.play"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.play">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start or resume the simulation.&quot;&quot;&quot;</span>
@@ -968,6 +1094,11 @@
             <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">_visualizers</span><span class="p">:</span>
                 <span class="n">viz</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">_visualizers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">_scene_data_provider</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">close_provider</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">_scene_data_provider</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">close_provider</span><span class="p">):</span>
+                    <span class="n">close_provider</span><span class="p">()</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">_scene_data_provider</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="c1"># Remove stage from cache</span>
             <span class="n">stage_cache</span> <span class="o">=</span> <span class="n">UsdUtils</span><span class="o">.</span><span class="n">StageCache</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span>
@@ -1032,6 +1163,7 @@
 <span class="sd">    Yields:</span>
 <span class="sd">        The simulation context to use for the simulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sim</span><span class="p">:</span> <span class="n">SimulationContext</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">create_new_stage</span><span class="p">:</span>
             <span class="n">stage_utils</span><span class="o">.</span><span class="n">create_new_stage</span><span class="p">()</span>
@@ -1058,9 +1190,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
         <span class="k">raise</span>
     <span class="k">finally</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/has_gui&quot;</span><span class="p">):</span>
-            <span class="n">sim</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-        <span class="n">sim</span><span class="o">.</span><span class="n">clear_instance</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/has_gui&quot;</span><span class="p">):</span>
+                <span class="n">sim</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="n">sim</span><span class="o">.</span><span class="n">clear_instance</span><span class="p">()</span>
 </pre></div>
 
                 </article>
@@ -1108,7 +1241,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 14, 2026.
+  Last updated on Feb 16, 2026.
   <br/>
 </p>
   </div>
