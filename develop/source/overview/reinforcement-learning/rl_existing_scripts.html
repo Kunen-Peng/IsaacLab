@@ -447,6 +447,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.actuators.html">isaaclab_contrib.actuators</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.assets.html">isaaclab_contrib.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.mdp.html">isaaclab_contrib.mdp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
@@ -684,6 +685,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rsl-rl">RSL-RL</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#skrl">SKRL</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stable-baselines3">Stable-Baselines3</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rlinf">RLinf</a></li>
 </ul>
             </nav>
         </div>
@@ -967,6 +969,63 @@ isaaclab.bat -p scripts\reinforcement_learning\sb3\play.py --task Isaac-Velocity
 </div>
 </li>
 </ul>
+</section>
+<section id="rlinf">
+<h2>RLinf<a class="headerlink" href="#rlinf" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://github.com/RLinf/RLinf">RLinf</a> is a distributed RL infrastructure for fine-tuning
+Vision-Language-Action (VLA) models such as <a class="reference external" href="https://github.com/NVIDIA/Isaac-GR00T">GR00T</a>.
+It uses Ray for distributed computing and FSDP for model parallelism, enabling RL training of
+large VLA models that don’t fit on a single GPU.</p>
+<ul>
+<li><p>Installation and setup:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Step 1: Install RLinf and its dependencies (from isaaclab_contrib)</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;source/isaaclab_contrib[rlinf]&quot;</span>
+
+<span class="c1"># Step 2: Clone and install Isaac-GR00T (for VLA model support)</span>
+<span class="nb">cd</span><span class="w"> </span>scripts/reinforcement_learning/rlinf
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/NVIDIA/Isaac-GR00T.git
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>Isaac-GR00T/.<span class="o">[</span>base<span class="o">]</span><span class="w"> </span>--no-deps
+
+<span class="c1"># Step 3: Install flash-attn (must be built against the correct PyTorch)</span>
+pip<span class="w"> </span>install<span class="w"> </span>--no-build-isolation<span class="w"> </span>flash-attn<span class="o">==</span><span class="m">2</span>.7.1.post4
+</pre></div>
+</div>
+</li>
+<li><p>Training a VLA agent with RLinf:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train with default config (assemble trocar task with GR00T)</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/train.py
+
+<span class="c1"># Train with a specific config</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--config_name<span class="w"> </span>isaaclab_ppo_gr00t_assemble_trocar
+
+<span class="c1"># Train with task override and custom settings</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--config_name<span class="w"> </span>isaaclab_ppo_gr00t_assemble_trocar<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--task<span class="w"> </span>Isaac-Assemble-Trocar-G129-Dex3-RLinf-v0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_envs<span class="w"> </span><span class="m">64</span><span class="w"> </span>--max_epochs<span class="w"> </span><span class="m">1000</span>
+
+<span class="c1"># List available tasks</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/train.py<span class="w"> </span>--list_tasks
+</pre></div>
+</div>
+</li>
+<li><p>Evaluating a trained VLA agent:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate a trained checkpoint</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/play.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_path<span class="w"> </span>/path/to/checkpoint
+
+<span class="c1"># Evaluate with video recording</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/play.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_path<span class="w"> </span>/path/to/checkpoint<span class="w"> </span>--video
+
+<span class="c1"># Evaluate with specific number of environments and episodes</span>
+./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/reinforcement_learning/rlinf/play.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_path<span class="w"> </span>/path/to/checkpoint<span class="w"> </span>--num_envs<span class="w"> </span><span class="m">8</span><span class="w"> </span>--num_episodes<span class="w"> </span><span class="m">10</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p>All the scripts above log the training progress to <a class="reference external" href="https://www.tensorflow.org/tensorboard">Tensorboard</a> in the <code class="docutils literal notranslate"><span class="pre">logs</span></code> directory in the root of
 the repository. The logs directory follows the pattern <code class="docutils literal notranslate"><span class="pre">logs/&lt;library&gt;/&lt;task&gt;/&lt;date-time&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;library&gt;</span></code>
 is the name of the learning framework, <code class="docutils literal notranslate"><span class="pre">&lt;task&gt;</span></code> is the task name, and <code class="docutils literal notranslate"><span class="pre">&lt;date-time&gt;</span></code> is the timestamp at
@@ -1043,6 +1102,7 @@ isaaclab.bat -p -m tensorboard.main --logdir=logs
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rsl-rl">RSL-RL</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#skrl">SKRL</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stable-baselines3">Stable-Baselines3</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rlinf">RLinf</a></li>
 </ul>
   </nav></div>
 

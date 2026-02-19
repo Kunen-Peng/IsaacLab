@@ -447,6 +447,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.actuators.html">isaaclab_contrib.actuators</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.assets.html">isaaclab_contrib.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.mdp.html">isaaclab_contrib.mdp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
@@ -703,15 +704,17 @@ along with performance benchmarks across the libraries.</p>
 <li><p><a class="reference external" href="https://github.com/leggedrobotics/rsl_rl">RSL-RL</a></p></li>
 <li><p><a class="reference external" href="https://github.com/Denys88/rl_games">RL-Games</a></p></li>
 <li><p><a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/index.html">Stable-Baselines3</a></p></li>
+<li><p><a class="reference external" href="https://github.com/RLinf/RLinf">RLinf</a> (for VLA model fine-tuning)</p></li>
 </ul>
 <section id="feature-comparison">
 <h2>Feature Comparison<a class="headerlink" href="#feature-comparison" title="Permalink to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 20.0%" />
-<col style="width: 20.0%" />
-<col style="width: 20.0%" />
-<col style="width: 20.0%" />
+<col style="width: 16.0%" />
+<col style="width: 16.0%" />
+<col style="width: 16.0%" />
+<col style="width: 16.0%" />
+<col style="width: 16.0%" />
 <col style="width: 20.0%" />
 </colgroup>
 <thead>
@@ -720,6 +723,7 @@ along with performance benchmarks across the libraries.</p>
 <th class="head"><p>RSL RL</p></th>
 <th class="head"><p>SKRL</p></th>
 <th class="head"><p>Stable Baselines3</p></th>
+<th class="head"><p>RLinf</p></th>
 </tr>
 </thead>
 <tbody>
@@ -728,47 +732,62 @@ along with performance benchmarks across the libraries.</p>
 <td><p>PPO, Distillation</p></td>
 <td><p><a class="reference external" href="https://skrl.readthedocs.io/en/latest/#agents">Extensive List</a></p></td>
 <td><p><a class="reference external" href="https://github.com/DLR-RM/stable-baselines3?tab=readme-ov-file#implemented-algorithms">Extensive List</a></p></td>
+<td><p>PPO, Actor-Critic, SAC</p></td>
 </tr>
 <tr class="row-odd"><td><p>Vectorized Training</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>Yes</p></td>
 </tr>
 <tr class="row-even"><td><p>Distributed Training</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>Yes (Ray + FSDP)</p></td>
 </tr>
 <tr class="row-odd"><td><p>ML Frameworks Supported</p></td>
 <td><p>PyTorch</p></td>
 <td><p>PyTorch</p></td>
 <td><p>PyTorch, JAX</p></td>
 <td><p>PyTorch</p></td>
+<td><p>PyTorch</p></td>
 </tr>
-<tr class="row-even"><td><p>Multi-Agent Support</p></td>
+<tr class="row-even"><td><p>VLA Model Support</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>GR00T, OpenVLA</p></td>
+</tr>
+<tr class="row-odd"><td><p>Multi-Agent Support</p></td>
 <td><p>PPO</p></td>
 <td><p>PPO</p></td>
 <td><p>PPO + Multi-Agent algorithms</p></td>
 <td><p>External projects support</p></td>
+<td><p>No</p></td>
 </tr>
-<tr class="row-odd"><td><p>Documentation</p></td>
+<tr class="row-even"><td><p>Documentation</p></td>
 <td><p>Low</p></td>
 <td><p>Low</p></td>
 <td><p>Comprehensive</p></td>
 <td><p>Extensive</p></td>
+<td><p>Low</p></td>
 </tr>
-<tr class="row-even"><td><p>Community Support</p></td>
+<tr class="row-odd"><td><p>Community Support</p></td>
 <td><p>Small Community</p></td>
 <td><p>Small Community</p></td>
 <td><p>Small Community</p></td>
 <td><p>Large Community</p></td>
+<td><p>Small Community</p></td>
 </tr>
-<tr class="row-odd"><td><p>Available Examples in Isaac Lab</p></td>
+<tr class="row-even"><td><p>Available Examples in Isaac Lab</p></td>
 <td><p>Large</p></td>
 <td><p>Large</p></td>
 <td><p>Large</p></td>
+<td><p>Small</p></td>
 <td><p>Small</p></td>
 </tr>
 </tbody>
