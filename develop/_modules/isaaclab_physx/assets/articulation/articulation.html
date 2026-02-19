@@ -4150,30 +4150,6 @@
             <span class="p">)</span>
             <span class="c1"># store actuator group</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">actuators</span><span class="p">[</span><span class="n">actuator_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">actuator</span>
-            <span class="c1"># set the passed gains and limits into the simulation</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">actuator</span><span class="p">,</span> <span class="n">ImplicitActuator</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_has_implicit_actuators</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="c1"># the gains and limits are set into the simulation since actuator model is implicit</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_stiffness_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">stiffness</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_damping_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">damping</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># the gains and limits are processed by the actuator model</span>
-                <span class="c1"># we set gains to zero, and torque limit to a high value in simulation to avoid any interference</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_stiffness_to_sim_index</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_damping_to_sim_index</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-
-            <span class="c1"># Set common properties into the simulation</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_effort_limit_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">effort_limit_sim</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_velocity_limit_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">velocity_limit_sim</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_armature_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">armature</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_friction_coefficient_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">friction</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_dynamic_friction_coefficient_to_sim_index</span><span class="p">(</span>
-                <span class="n">actuator</span><span class="o">.</span><span class="n">dynamic_friction</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_viscous_friction_coefficient_to_sim_index</span><span class="p">(</span>
-                <span class="n">actuator</span><span class="o">.</span><span class="n">viscous_friction</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span>
-            <span class="p">)</span>
-
             <span class="c1"># Store the configured values from the actuator model</span>
             <span class="c1"># note: this is the value configured in the actuator model (for implicit and explicit actuators)</span>
             <span class="n">joint_ids</span> <span class="o">=</span> <span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span>
@@ -4262,6 +4238,29 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_joint_viscous_friction_coeff</span><span class="p">,</span>
                 <span class="p">],</span>
                 <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># set the passed gains and limits into the simulation</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">actuator</span><span class="p">,</span> <span class="n">ImplicitActuator</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_has_implicit_actuators</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># the gains and limits are set into the simulation since actuator model is implicit</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_stiffness_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">stiffness</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_damping_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">damping</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># the gains and limits are processed by the actuator model</span>
+                <span class="c1"># we set gains to zero, and torque limit to a high value in simulation to avoid any interference</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_stiffness_to_sim_index</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_damping_to_sim_index</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+
+            <span class="c1"># Set common properties into the simulation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_effort_limit_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">effort_limit_sim</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_velocity_limit_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">velocity_limit_sim</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_armature_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">armature</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_friction_coefficient_to_sim_index</span><span class="p">(</span><span class="n">actuator</span><span class="o">.</span><span class="n">friction</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_dynamic_friction_coefficient_to_sim_index</span><span class="p">(</span>
+                <span class="n">actuator</span><span class="o">.</span><span class="n">dynamic_friction</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_joint_viscous_friction_coefficient_to_sim_index</span><span class="p">(</span>
+                <span class="n">actuator</span><span class="o">.</span><span class="n">viscous_friction</span><span class="p">,</span> <span class="n">joint_ids</span><span class="o">=</span><span class="n">actuator</span><span class="o">.</span><span class="n">joint_indices</span>
             <span class="p">)</span>
 
         <span class="c1"># perform some sanity checks to ensure actuators are prepared correctly</span>
