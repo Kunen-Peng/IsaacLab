@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>isaaclab.devices.openxr.openxr_device &#8212; Isaac Lab Documentation</title>
+    <title>isaaclab_teleop.deprecated.openxr.openxr_device &#8212; Isaac Lab Documentation</title>
   
   
   
@@ -54,14 +54,14 @@
     <script src="../../../../_static/copybutton.js"></script>
     <script src="../../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
     <script src="../../../../_static/design-tabs.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/isaaclab/devices/openxr/openxr_device';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/isaaclab_teleop/deprecated/openxr/openxr_device';</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 19, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 20, 2026"/>
   </head>
   
   
@@ -449,6 +449,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/api/lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/api/lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/api/lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/api/lab_teleop/isaaclab_teleop.html">isaaclab_teleop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 </ul>
@@ -547,7 +548,7 @@
       
       
       
-      <li><a href="https://github.com/isaac-sim/IsaacLab/issues/new?title=Issue%20on%20page%20%2F_modules/isaaclab/devices/openxr/openxr_device.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/isaac-sim/IsaacLab/issues/new?title=Issue%20on%20page%20%2F_modules/isaaclab_teleop/deprecated/openxr/openxr_device.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -617,13 +618,19 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for isaaclab.devices.openxr.openxr_device</h1><div class="highlight"><pre>
+  <h1>Source code for isaaclab_teleop.deprecated.openxr.openxr_device</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
 
-<span class="sd">&quot;&quot;&quot;OpenXR-powered device for teleoperation and interaction.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;OpenXR-powered device for teleoperation and interaction.</span>
+
+<span class="sd">.. deprecated::</span>
+<span class="sd">    :class:`OpenXRDevice` and :class:`OpenXRDeviceCfg` are deprecated.</span>
+<span class="sd">    Please use :class:`isaaclab_teleop.IsaacTeleopDevice` and</span>
+<span class="sd">    :class:`isaaclab_teleop.IsaacTeleopCfg` instead.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -640,10 +647,10 @@
 <span class="c1"># import logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.devices.openxr.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">HAND_JOINT_NAMES</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.devices.device_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceBase</span><span class="p">,</span> <span class="n">DeviceCfg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.devices.retargeter_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetargeterBase</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">..device_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceBase</span><span class="p">,</span> <span class="n">DeviceCfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">HAND_JOINT_NAMES</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.xr_anchor_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">XrAnchorSynchronizer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.xr_cfg</span><span class="w"> </span><span class="kn">import</span> <span class="n">XrCfg</span>
 
@@ -671,7 +678,7 @@
 <span class="sd">    * A dictionary with keys matching TrackingTarget enum values (HAND_LEFT, HAND_RIGHT, HEAD)</span>
 <span class="sd">    * Each hand tracking entry contains a dictionary of joint poses</span>
 <span class="sd">    * Each joint pose is a 7D vector (x, y, z, qw, qx, qy, qz) in meters and quaternion units</span>
-<span class="sd">    * Joint names are defined in HAND_JOINT_NAMES from isaaclab.devices.openxr.common</span>
+<span class="sd">    * Joint names are defined in HAND_JOINT_NAMES from isaaclab_teleop.deprecated.openxr.common</span>
 <span class="sd">    * Supported joints include palm, wrist, and joints for thumb, index, middle, ring and little fingers</span>
 
 <span class="sd">    Teleop commands:</span>
@@ -699,6 +706,13 @@
 <span class="sd">            cfg: Configuration object for OpenXR settings.</span>
 <span class="sd">            retargeters: List of retargeter instances to use for transforming raw tracking data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;OpenXRDevice is deprecated. Please use isaaclab_teleop.IsaacTeleopDevice instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">retargeters</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xr_cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">xr_cfg</span> <span class="ow">or</span> <span class="n">XrCfg</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_additional_callbacks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1180,7 +1194,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 19, 2026.
+  Last updated on Feb 20, 2026.
   <br/>
 </p>
   </div>

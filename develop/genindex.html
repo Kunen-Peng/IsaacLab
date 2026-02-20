@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 19, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 20, 2026"/>
   </head>
   
   
@@ -449,6 +449,7 @@
 <li class="toctree-l2"><a class="reference internal" href="source/api/lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/api/lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/api/lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/api/lab_teleop/isaaclab_teleop.html">isaaclab_teleop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 </ul>
@@ -916,6 +917,14 @@
 </li>
         <li><a href="source/api/lab_rl/isaaclab_rl.html#isaaclab_rl.sb3.Sb3VecEnvWrapper.__init__">(isaaclab_rl.sb3.Sb3VecEnvWrapper method)</a>
 </li>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.__init__">(isaaclab_teleop.IsaacTeleopCfg method)</a>
+</li>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopDevice.__init__">(isaaclab_teleop.IsaacTeleopDevice method)</a>
+</li>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorSynchronizer.__init__">(isaaclab_teleop.XrAnchorSynchronizer method)</a>
+</li>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.__init__">(isaaclab_teleop.XrCfg method)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1178,7 +1187,11 @@
       <li><a href="source/api/lab/isaaclab.app.html#isaaclab.app.AppLauncher.add_app_launcher_args">add_app_launcher_args() (isaaclab.app.AppLauncher static method)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.devices.html#isaaclab.devices.DeviceBase.add_callback">add_callback() (isaaclab.devices.DeviceBase method)</a>
+
+      <ul>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopDevice.add_callback">(isaaclab_teleop.IsaacTeleopDevice method)</a>
 </li>
+      </ul></li>
       <li><a href="source/api/lab_mimic/isaaclab_mimic.datagen.html#isaaclab_mimic.datagen.DataGenInfoPool.add_episode">add_episode() (isaaclab_mimic.datagen.DataGenInfoPool method)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.semantics.add_labels">add_labels() (in module isaaclab.sim.utils.semantics)</a>
@@ -1198,7 +1211,11 @@
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.noise.AdditiveUniformNoiseCfg">AdditiveUniformNoiseCfg (in module isaaclab.utils.noise)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.devices.html#isaaclab.devices.DeviceBase.advance">advance() (isaaclab.devices.DeviceBase method)</a>
+
+      <ul>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopDevice.advance">(isaaclab_teleop.IsaacTeleopDevice method)</a>
 </li>
+      </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.materials.MdlFileCfg.albedo_brightness">albedo_brightness (isaaclab.sim.spawners.materials.MdlFileCfg attribute)</a>
 </li>
       <li><a href="source/api/lab_rl/isaaclab_rl.html#isaaclab_rl.rsl_rl.RslRlDistillationRunnerCfg.algorithm">algorithm (isaaclab_rl.rsl_rl.RslRlDistillationRunnerCfg attribute)</a>
@@ -1215,11 +1232,23 @@
         <li><a href="source/api/lab_contrib/isaaclab_contrib.assets.html#isaaclab_contrib.assets.MultirotorCfg.allocation_matrix">(isaaclab_contrib.assets.MultirotorCfg attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.envs.mdp.html#isaaclab.envs.mdp.actions.actions_cfg.EMAJointPositionToLimitsActionCfg.alpha">alpha (isaaclab.envs.mdp.actions.actions_cfg.EMAJointPositionToLimitsActionCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.height_field.hf_terrains_cfg.HfWaveTerrainCfg.amplitude_range">amplitude_range (isaaclab.terrains.height_field.hf_terrains_cfg.HfWaveTerrainCfg attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_pos">anchor_pos (isaaclab_teleop.XrCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_prim_path">anchor_prim_path (isaaclab_teleop.XrCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_rot">anchor_rot (isaaclab_teleop.XrCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_rotation_custom_func">anchor_rotation_custom_func (isaaclab_teleop.XrCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_rotation_mode">anchor_rotation_mode (isaaclab_teleop.XrCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_rotation_smoothing_time">anchor_rotation_smoothing_time (isaaclab_teleop.XrCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.assets.html#isaaclab.assets.ArticulationCfg.InitialStateCfg.ang_vel">ang_vel (isaaclab.assets.ArticulationCfg.InitialStateCfg attribute)</a>
 
@@ -1240,6 +1269,8 @@
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.RenderCfg.antialiasing_mode">antialiasing_mode (isaaclab.sim.RenderCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.app.html#isaaclab.app.AppLauncher.app">app (isaaclab.app.AppLauncher property)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.app_name">app_name (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.buffers.CircularBuffer.append">append() (isaaclab.utils.buffers.CircularBuffer method)</a>
 </li>
@@ -2349,14 +2380,14 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.logger.ColoredFormatter">ColoredFormatter (class in isaaclab.utils.logger)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.CameraCfg.colorize_instance_id_segmentation">colorize_instance_id_segmentation (isaaclab.sensors.CameraCfg attribute)</a>
 
       <ul>
         <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.TiledCameraCfg.colorize_instance_id_segmentation">(isaaclab.sensors.TiledCameraCfg attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.CameraCfg.colorize_instance_segmentation">colorize_instance_segmentation (isaaclab.sensors.CameraCfg attribute)</a>
 
       <ul>
@@ -2669,6 +2700,8 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.semantics.count_total_labels">count_total_labels() (in module isaaclab.sim.utils.semantics)</a>
 </li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.create_isaac_teleop_device">create_isaac_teleop_device() (in module isaaclab_teleop)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.create_new_stage">create_new_stage() (in module isaaclab.sim.utils.stage)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.create_new_stage_in_memory">create_new_stage_in_memory() (in module isaaclab.sim.utils.stage)</a>
@@ -2740,6 +2773,8 @@
       <li><a href="source/api/lab/isaaclab.managers.html#isaaclab.managers.CurriculumManager">CurriculumManager (class in isaaclab.managers)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.managers.html#isaaclab.managers.CurriculumTermCfg">CurriculumTermCfg (class in isaaclab.managers)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorRotationMode.CUSTOM">CUSTOM (isaaclab_teleop.XrAnchorRotationMode attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.CylinderCfg">CylinderCfg (class in isaaclab.sim.spawners.shapes)</a>
 </li>
@@ -3937,6 +3972,10 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.schemas.html#isaaclab.sim.schemas.ArticulationRootPropertiesCfg.fix_root_link">fix_root_link (isaaclab.sim.schemas.ArticulationRootPropertiesCfg attribute)</a>
 </li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorRotationMode.FIXED">FIXED (isaaclab_teleop.XrAnchorRotationMode attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.fixed_anchor_height">fixed_anchor_height (isaaclab_teleop.XrCfg attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.controllers.html#isaaclab.controllers.pink_ik.PinkIKControllerCfg.fixed_input_tasks">fixed_input_tasks (isaaclab.controllers.pink_ik.PinkIKControllerCfg attribute)</a>
 </li>
       <li><a href="source/api/lab_contrib/isaaclab_contrib.assets.html#isaaclab_contrib.assets.MultirotorData.fixed_tendon_damping">fixed_tendon_damping (isaaclab_contrib.assets.MultirotorData property)</a>
@@ -4091,6 +4130,10 @@
         <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.sensors.PinholeCameraCfg.focus_distance">(isaaclab.sim.spawners.sensors.PinholeCameraCfg attribute)</a>
 </li>
       </ul></li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorRotationMode.FOLLOW_PRIM">FOLLOW_PRIM (isaaclab_teleop.XrAnchorRotationMode attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorRotationMode.FOLLOW_PRIM_SMOOTHED">FOLLOW_PRIM_SMOOTHED (isaaclab_teleop.XrAnchorRotationMode attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.ContactSensorData.force_matrix_w">force_matrix_w (isaaclab.sensors.ContactSensorData property)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.ContactSensorData.force_matrix_w_history">force_matrix_w_history (isaaclab.sensors.ContactSensorData property)</a>
@@ -4494,6 +4537,8 @@
       <li><a href="source/api/lab/isaaclab.sim.views.html#isaaclab.sim.views.XformPrimView.get_visibility">get_visibility() (isaaclab.sim.views.XformPrimView method)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.views.html#isaaclab.sim.views.XformPrimView.get_world_poses">get_world_poses() (isaaclab.sim.views.XformPrimView method)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorSynchronizer.get_world_transform">get_world_transform() (isaaclab_teleop.XrAnchorSynchronizer method)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.envs.html#isaaclab.envs.DirectMARLEnv.get_wrapper_attr">get_wrapper_attr() (isaaclab.envs.DirectMARLEnv method)</a>
 
@@ -5147,6 +5192,28 @@
 </li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.assets.ISAAC_NUCLEUS_DIR">ISAAC_NUCLEUS_DIR (in module isaaclab.utils.assets)</a>
 </li>
+      <li><a href="source/api/lab/isaaclab.envs.html#isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop">isaac_teleop (isaaclab.envs.ManagerBasedEnvCfg attribute)</a>
+
+      <ul>
+        <li><a href="source/api/lab/isaaclab.envs.html#isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop">(isaaclab.envs.ManagerBasedRLEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.agibot_place_toy2box_mimic_env_cfg.RmpFlowAgibotPlaceToy2BoxMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.agibot_place_toy2box_mimic_env_cfg.RmpFlowAgibotPlaceToy2BoxMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.agibot_place_upright_mug_mimic_env_cfg.RmpFlowAgibotPlaceUprightMugMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.agibot_place_upright_mug_mimic_env_cfg.RmpFlowAgibotPlaceUprightMugMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.franka_stack_ik_abs_mimic_env_cfg.FrankaCubeStackIKAbsMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.franka_stack_ik_abs_mimic_env_cfg.FrankaCubeStackIKAbsMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.franka_stack_ik_rel_mimic_env_cfg.FrankaCubeStackIKRelMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.franka_stack_ik_rel_mimic_env_cfg.FrankaCubeStackIKRelMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.galbot_stack_rmp_abs_mimic_env_cfg.RmpFlowGalbotLeftArmGripperCubeStackAbsMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.galbot_stack_rmp_abs_mimic_env_cfg.RmpFlowGalbotLeftArmGripperCubeStackAbsMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.galbot_stack_rmp_abs_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackAbsMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.galbot_stack_rmp_abs_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackAbsMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotLeftArmGripperCubeStackRelMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotLeftArmGripperCubeStackRelMimicEnvCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackRelMimicEnvCfg.isaac_teleop">(isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackRelMimicEnvCfg attribute)</a>
+</li>
+      </ul></li>
       <li>
     isaaclab.actuators
 
@@ -5161,6 +5228,8 @@
         <li><a href="source/api/lab/isaaclab.app.html#module-isaaclab.app">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     isaaclab.assets
 
@@ -5175,8 +5244,6 @@
         <li><a href="source/api/lab/isaaclab.controllers.html#module-isaaclab.controllers">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     isaaclab.controllers.pink_ik
 
@@ -5718,6 +5785,17 @@
         <li><a href="source/api/lab_tasks/isaaclab_tasks.utils.html#module-isaaclab_tasks.utils">module</a>
 </li>
       </ul></li>
+      <li>
+    isaaclab_teleop
+
+      <ul>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#module-isaaclab_teleop">module</a>
+</li>
+      </ul></li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg">IsaacTeleopCfg (class in isaaclab_teleop)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopDevice">IsaacTeleopDevice (class in isaaclab_teleop)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -6514,10 +6592,10 @@
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshRepeatedObjectsTerrainCfg">MeshRepeatedObjectsTerrainCfg (class in isaaclab.terrains.trimesh.mesh_terrains_cfg)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshRepeatedObjectsTerrainCfg.ObjectCfg">MeshRepeatedObjectsTerrainCfg.ObjectCfg (class in isaaclab.terrains.trimesh.mesh_terrains_cfg)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshRepeatedPyramidsTerrainCfg">MeshRepeatedPyramidsTerrainCfg (class in isaaclab.terrains.trimesh.mesh_terrains_cfg)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshRepeatedPyramidsTerrainCfg.ObjectCfg">MeshRepeatedPyramidsTerrainCfg.ObjectCfg (class in isaaclab.terrains.trimesh.mesh_terrains_cfg)</a>
@@ -6774,6 +6852,8 @@
 </li>
         <li><a href="source/api/lab_tasks/isaaclab_tasks.utils.html#module-isaaclab_tasks.utils">isaaclab_tasks.utils</a>
 </li>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#module-isaaclab_teleop">isaaclab_teleop</a>
+</li>
       </ul></li>
       <li><a href="source/api/lab/isaaclab.controllers.html#isaaclab.controllers.OperationalSpaceControllerCfg.motion_control_axes_task">motion_control_axes_task (isaaclab.controllers.OperationalSpaceControllerCfg attribute)</a>
 </li>
@@ -6828,6 +6908,8 @@
 </li>
       </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.UrdfConverterCfg.JointDriveCfg.NaturalFrequencyGainsCfg.natural_frequency">natural_frequency (isaaclab.sim.converters.UrdfConverterCfg.JointDriveCfg.NaturalFrequencyGainsCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.near_plane">near_plane (isaaclab_teleop.XrCfg attribute)</a>
 </li>
       <li><a href="source/api/lab_mimic/isaaclab_mimic.datagen.html#isaaclab_mimic.datagen.NearestNeighborObjectStrategy">NearestNeighborObjectStrategy (class in isaaclab_mimic.datagen)</a>
 </li>
@@ -7679,6 +7761,8 @@
 </li>
       <li><a href="source/api/lab/isaaclab.controllers.html#isaaclab.controllers.pink_ik.PinkIKControllerCfg">PinkIKControllerCfg (class in isaaclab.controllers.pink_ik)</a>
 </li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.pipeline_builder">pipeline_builder (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshPitTerrainCfg.pit_depth_range">pit_depth_range (isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshPitTerrainCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains.pit_terrain">pit_terrain() (in module isaaclab.terrains.trimesh.mesh_terrains)</a>
@@ -7737,6 +7821,8 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.play">play() (isaaclab.sim.SimulationContext method)</a>
 </li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.plugins">plugins (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.materials.DeformableBodyMaterialCfg.poissons_ratio">poissons_ratio (isaaclab.sim.spawners.materials.DeformableBodyMaterialCfg attribute)</a>
 </li>
       <li><a href="source/api/lab_rl/isaaclab_rl.html#isaaclab_rl.rsl_rl.RslRlDistillationRunnerCfg.policy">policy (isaaclab_rl.rsl_rl.RslRlDistillationRunnerCfg attribute)</a>
@@ -7747,6 +7833,8 @@
       </ul></li>
       <li><a href="source/api/lab_mimic/isaaclab_mimic.datagen.html#isaaclab_mimic.datagen.WaypointTrajectory.pop_first">pop_first() (isaaclab_mimic.datagen.WaypointTrajectory method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.assets.html#isaaclab.assets.ArticulationCfg.InitialStateCfg.pos">pos (isaaclab.assets.ArticulationCfg.InitialStateCfg attribute)</a>
 
       <ul>
@@ -7767,8 +7855,6 @@
         <li><a href="source/api/lab_contrib/isaaclab_contrib.assets.html#isaaclab_contrib.assets.MultirotorCfg.InitialStateCfg.pos">(isaaclab_contrib.assets.MultirotorCfg.InitialStateCfg attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.actuators.html#isaaclab.actuators.ActuatorNetMLPCfg.pos_scale">pos_scale (isaaclab.actuators.ActuatorNetMLPCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.CameraData.pos_w">pos_w (isaaclab.sensors.CameraData attribute)</a>
@@ -8297,6 +8383,8 @@
 </li>
       <li><a href="source/api/lab/isaaclab.actuators.html#isaaclab.actuators.RemotizedPDActuatorCfg">RemotizedPDActuatorCfg (class in isaaclab.actuators)</a>
 </li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.remove_camera_configs">remove_camera_configs() (in module isaaclab_teleop)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.semantics.remove_labels">remove_labels() (in module isaaclab.sim.utils.semantics)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationCfg.render">render (isaaclab.sim.SimulationCfg attribute)</a>
@@ -8538,6 +8626,8 @@
 </li>
         <li><a href="source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.SurfaceGripper.reset">(isaaclab_physx.assets.SurfaceGripper method)</a>
 </li>
+        <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopDevice.reset">(isaaclab_teleop.IsaacTeleopDevice method)</a>
+</li>
       </ul></li>
       <li><a href="source/api/lab_contrib/isaaclab_contrib.actuators.html#isaaclab_contrib.actuators.Thruster.reset_idx">reset_idx() (isaaclab_contrib.actuators.Thruster method)</a>
 </li>
@@ -8636,6 +8726,8 @@
       <li><a href="source/api/lab/isaaclab.devices.html#isaaclab.devices.RetargeterBase">RetargeterBase (class in isaaclab.devices)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.devices.html#isaaclab.devices.RetargeterBase.Requirement">RetargeterBase.Requirement (class in isaaclab.devices)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.retargeters_to_tune">retargeters_to_tune (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.assets.retrieve_file_path">retrieve_file_path() (in module isaaclab.utils.assets)</a>
 </li>
@@ -10149,6 +10241,8 @@
         <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackRelMimicEnvCfg.sim">(isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackRelMimicEnvCfg attribute)</a>
 </li>
       </ul></li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.sim_device">sim_device (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
+</li>
       <li><a href="source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.DeformableObjectData.sim_element_deform_gradient_w">sim_element_deform_gradient_w (isaaclab_physx.assets.DeformableObjectData property)</a>
 </li>
       <li><a href="source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.DeformableObjectData.sim_element_quat_w">sim_element_quat_w (isaaclab_physx.assets.DeformableObjectData property)</a>
@@ -10635,6 +10729,8 @@
 </li>
       <li><a href="source/api/lab_rl/isaaclab_rl.html#isaaclab_rl.rsl_rl.RslRlPpoAlgorithmCfg.symmetry_cfg">symmetry_cfg (isaaclab_rl.rsl_rl.RslRlPpoAlgorithmCfg attribute)</a>
 </li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorSynchronizer.sync_headset_to_anchor">sync_headset_to_anchor() (isaaclab_teleop.XrAnchorSynchronizer method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -10739,6 +10835,8 @@
         <li><a href="source/api/lab_mimic/isaaclab_mimic.envs.html#isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackRelMimicEnvCfg.teleop_devices">(isaaclab_mimic.envs.galbot_stack_rmp_rel_mimic_env_cfg.RmpFlowGalbotRightArmSuctionCubeStackRelMimicEnvCfg attribute)</a>
 </li>
       </ul></li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.teleoperation_active_default">teleoperation_active_default (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.sim.schemas.html#isaaclab.sim.schemas.FixedTendonPropertiesCfg.tendon_enabled">tendon_enabled (isaaclab.sim.schemas.FixedTendonPropertiesCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.array.TENSOR_TYPE_CONVERSIONS">TENSOR_TYPE_CONVERSIONS (in module isaaclab.utils.array)</a>
@@ -10779,10 +10877,10 @@
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainGenerator.terrain_mesh">terrain_mesh (isaaclab.terrains.TerrainGenerator attribute)</a>
 </li>
-      <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainGenerator.terrain_meshes">terrain_meshes (isaaclab.terrains.TerrainGenerator attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainGenerator.terrain_meshes">terrain_meshes (isaaclab.terrains.TerrainGenerator attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainImporter.terrain_names">terrain_names (isaaclab.terrains.TerrainImporter property)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainGenerator.terrain_origins">terrain_origins (isaaclab.terrains.TerrainGenerator attribute)</a>
@@ -12499,7 +12597,15 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.IsaacTeleopCfg.xr_cfg">xr_cfg (isaaclab_teleop.IsaacTeleopCfg attribute)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.controllers.html#isaaclab.controllers.pink_ik.PinkIKControllerCfg.xr_enabled">xr_enabled (isaaclab.controllers.pink_ik.PinkIKControllerCfg attribute)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorRotationMode">XrAnchorRotationMode (class in isaaclab_teleop)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrAnchorSynchronizer">XrAnchorSynchronizer (class in isaaclab_teleop)</a>
+</li>
+      <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg">XrCfg (class in isaaclab_teleop)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -12577,7 +12683,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 19, 2026.
+  Last updated on Feb 20, 2026.
   <br/>
 </p>
   </div>

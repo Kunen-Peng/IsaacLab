@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 19, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 20, 2026"/>
   </head>
   
   
@@ -450,6 +450,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lab_teleop/isaaclab_teleop.html">isaaclab_teleop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 </ul>
@@ -715,6 +716,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.wait_for_textures"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.wait_for_textures</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.xr"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.xr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.teleop_devices"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.teleop_devices</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.isaac_teleop</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.export_io_descriptors"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.export_io_descriptors</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.log_dir"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.log_dir</span></code></a></li>
 </ul>
@@ -770,6 +772,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.wait_for_textures"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.wait_for_textures</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.xr"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.xr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.teleop_devices"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.teleop_devices</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.isaac_teleop</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.export_io_descriptors"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.export_io_descriptors</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.log_dir"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.log_dir</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.terminations"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.terminations</span></code></a></li>
@@ -1391,10 +1394,13 @@ Based on these parameters, the environment time-step is computed as the product 
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedEnvCfg.teleop_devices" title="isaaclab.envs.ManagerBasedEnvCfg.teleop_devices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">teleop_devices</span></code></a></p></td>
 <td><p>Configuration for teleoperation devices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedEnvCfg.export_io_descriptors" title="isaaclab.envs.ManagerBasedEnvCfg.export_io_descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">export_io_descriptors</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop" title="isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isaac_teleop</span></code></a></p></td>
+<td><p>Configuration for IsaacTeleop-based teleoperation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedEnvCfg.export_io_descriptors" title="isaaclab.envs.ManagerBasedEnvCfg.export_io_descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">export_io_descriptors</span></code></a></p></td>
 <td><p>Whether to export the IO descriptors for the environment.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedEnvCfg.log_dir" title="isaaclab.envs.ManagerBasedEnvCfg.log_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_dir</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedEnvCfg.log_dir" title="isaaclab.envs.ManagerBasedEnvCfg.log_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_dir</span></code></a></p></td>
 <td><p>Directory for logging experiment artifacts.</p></td>
 </tr>
 </tbody>
@@ -1523,7 +1529,7 @@ render steps will be performed after each time an environment is reset.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="isaaclab.envs.ManagerBasedEnvCfg.xr">
-<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">XrCfg</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedEnvCfg.xr" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg" title="isaaclab_teleop.xr_cfg.XrCfg"><span class="pre">XrCfg</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedEnvCfg.xr" title="Permalink to this definition">#</a></dt>
 <dd><p>Configuration for viewing and interacting with the environment through an XR device.</p>
 </dd></dl>
 
@@ -1531,6 +1537,17 @@ render steps will be performed after each time an environment is reset.</p></li>
 <dt class="sig sig-object py" id="isaaclab.envs.ManagerBasedEnvCfg.teleop_devices">
 <span class="sig-name descname"><span class="pre">teleop_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DevicesCfg</span></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedEnvCfg.teleop_devices" title="Permalink to this definition">#</a></dt>
 <dd><p>Configuration for teleoperation devices.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop">
+<span class="sig-name descname"><span class="pre">isaac_teleop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop" title="Permalink to this definition">#</a></dt>
+<dd><p>Configuration for IsaacTeleop-based teleoperation.</p>
+<p>When set, the environment uses the IsaacTeleop stack for XR teleoperation instead
+of the native Isaac Lab teleop devices. This should be a IsaacTeleopCfg instance
+from the isaaclab_teleop package.</p>
+<p>The teleop scripts will automatically detect this configuration and use the
+IsaacTeleop stack when present.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2035,19 +2052,22 @@ Defaults to False.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.teleop_devices" title="isaaclab.envs.ManagerBasedRLEnvCfg.teleop_devices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">teleop_devices</span></code></a></p></td>
 <td><p>Configuration for teleoperation devices.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.export_io_descriptors" title="isaaclab.envs.ManagerBasedRLEnvCfg.export_io_descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">export_io_descriptors</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop" title="isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isaac_teleop</span></code></a></p></td>
+<td><p>Configuration for IsaacTeleop-based teleoperation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.export_io_descriptors" title="isaaclab.envs.ManagerBasedRLEnvCfg.export_io_descriptors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">export_io_descriptors</span></code></a></p></td>
 <td><p>Whether to export the IO descriptors for the environment.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.log_dir" title="isaaclab.envs.ManagerBasedRLEnvCfg.log_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_dir</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.log_dir" title="isaaclab.envs.ManagerBasedRLEnvCfg.log_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_dir</span></code></a></p></td>
 <td><p>Directory for logging experiment artifacts.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.terminations" title="isaaclab.envs.ManagerBasedRLEnvCfg.terminations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">terminations</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.terminations" title="isaaclab.envs.ManagerBasedRLEnvCfg.terminations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">terminations</span></code></a></p></td>
 <td><p>Termination settings.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.curriculum" title="isaaclab.envs.ManagerBasedRLEnvCfg.curriculum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curriculum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.curriculum" title="isaaclab.envs.ManagerBasedRLEnvCfg.curriculum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curriculum</span></code></a></p></td>
 <td><p>Curriculum settings.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.commands" title="isaaclab.envs.ManagerBasedRLEnvCfg.commands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">commands</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.envs.ManagerBasedRLEnvCfg.commands" title="isaaclab.envs.ManagerBasedRLEnvCfg.commands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">commands</span></code></a></p></td>
 <td><p>Command settings.</p></td>
 </tr>
 </tbody>
@@ -2210,7 +2230,7 @@ render steps will be performed after each time an environment is reset.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="isaaclab.envs.ManagerBasedRLEnvCfg.xr">
-<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">XrCfg</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedRLEnvCfg.xr" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg" title="isaaclab_teleop.XrCfg"><span class="pre">XrCfg</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedRLEnvCfg.xr" title="Permalink to this definition">#</a></dt>
 <dd><p>Configuration for viewing and interacting with the environment through an XR device.</p>
 </dd></dl>
 
@@ -2218,6 +2238,17 @@ render steps will be performed after each time an environment is reset.</p></li>
 <dt class="sig sig-object py" id="isaaclab.envs.ManagerBasedRLEnvCfg.teleop_devices">
 <span class="sig-name descname"><span class="pre">teleop_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DevicesCfg</span></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedRLEnvCfg.teleop_devices" title="Permalink to this definition">#</a></dt>
 <dd><p>Configuration for teleoperation devices.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop">
+<span class="sig-name descname"><span class="pre">isaac_teleop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop" title="Permalink to this definition">#</a></dt>
+<dd><p>Configuration for IsaacTeleop-based teleoperation.</p>
+<p>When set, the environment uses the IsaacTeleop stack for XR teleoperation instead
+of the native Isaac Lab teleop devices. This should be a IsaacTeleopCfg instance
+from the isaaclab_teleop package.</p>
+<p>The teleop scripts will automatically detect this configuration and use the
+IsaacTeleop stack when present.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2963,7 +2994,7 @@ render steps will be performed after each time an environment is reset.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="isaaclab.envs.DirectRLEnvCfg.xr">
-<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">XrCfg</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.DirectRLEnvCfg.xr" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg" title="isaaclab_teleop.xr_cfg.XrCfg"><span class="pre">XrCfg</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.DirectRLEnvCfg.xr" title="Permalink to this definition">#</a></dt>
 <dd><p>Configuration for viewing and interacting with the environment through an XR device.</p>
 </dd></dl>
 
@@ -3693,7 +3724,7 @@ which means no noise is added.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="isaaclab.envs.DirectMARLEnvCfg.xr">
-<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">XrCfg</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.DirectMARLEnvCfg.xr" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">xr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg" title="isaaclab_teleop.xr_cfg.XrCfg"><span class="pre">XrCfg</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#isaaclab.envs.DirectMARLEnvCfg.xr" title="Permalink to this definition">#</a></dt>
 <dd><p>Configuration for viewing and interacting with the environment through an XR device.</p>
 </dd></dl>
 
@@ -4758,6 +4789,7 @@ Default is (1280, 720).</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.wait_for_textures"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.wait_for_textures</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.xr"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.xr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.teleop_devices"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.teleop_devices</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.isaac_teleop"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.isaac_teleop</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.export_io_descriptors"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.export_io_descriptors</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedEnvCfg.log_dir"><code class="docutils literal notranslate"><span class="pre">ManagerBasedEnvCfg.log_dir</span></code></a></li>
 </ul>
@@ -4813,6 +4845,7 @@ Default is (1280, 720).</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.wait_for_textures"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.wait_for_textures</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.xr"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.xr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.teleop_devices"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.teleop_devices</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.isaac_teleop"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.isaac_teleop</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.export_io_descriptors"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.export_io_descriptors</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.log_dir"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.log_dir</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.envs.ManagerBasedRLEnvCfg.terminations"><code class="docutils literal notranslate"><span class="pre">ManagerBasedRLEnvCfg.terminations</span></code></a></li>
@@ -5044,7 +5077,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 19, 2026.
+  Last updated on Feb 20, 2026.
   <br/>
 </p>
   </div>

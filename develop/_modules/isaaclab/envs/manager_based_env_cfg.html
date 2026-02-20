@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 19, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 20, 2026"/>
   </head>
   
   
@@ -449,6 +449,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../source/api/lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/api/lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/api/lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/api/lab_teleop/isaaclab_teleop.html">isaaclab_teleop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/api/lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 </ul>
@@ -765,6 +766,17 @@
     <span class="n">teleop_devices</span><span class="p">:</span> <span class="n">DevicesCfg</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">DevicesCfg</span><span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for teleoperation devices.&quot;&quot;&quot;</span>
 
+    <span class="n">isaac_teleop</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for IsaacTeleop-based teleoperation.</span>
+
+<span class="sd">    When set, the environment uses the IsaacTeleop stack for XR teleoperation instead</span>
+<span class="sd">    of the native Isaac Lab teleop devices. This should be a IsaacTeleopCfg instance</span>
+<span class="sd">    from the isaaclab_teleop package.</span>
+
+<span class="sd">    The teleop scripts will automatically detect this configuration and use the</span>
+<span class="sd">    IsaacTeleop stack when present.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">export_io_descriptors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to export the IO descriptors for the environment. Defaults to False.&quot;&quot;&quot;</span>
 
@@ -817,7 +829,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 19, 2026.
+  Last updated on Feb 20, 2026.
   <br/>
 </p>
   </div>

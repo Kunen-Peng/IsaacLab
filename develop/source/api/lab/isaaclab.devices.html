@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 19, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 20, 2026"/>
   </head>
   
   
@@ -452,6 +452,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../lab_contrib/isaaclab_contrib.rl.html">isaaclab_contrib.rl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_contrib/isaaclab_contrib.sensors.html">isaaclab_contrib.sensors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_tasks/isaaclab_tasks.utils.html">isaaclab_tasks.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lab_teleop/isaaclab_teleop.html">isaaclab_teleop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lab_physx/isaaclab_physx.assets.html">isaaclab_physx.assets</a></li>
 </ul>
@@ -795,7 +796,10 @@ the peripheral device.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">isaaclab.devices.openxr.retargeters</span></code></p></td>
-<td><p>Retargeters for mapping input device data to robot commands.</p></td>
+<td><p><div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version Moved: </span>to <code class="xref py py-mod docutils literal notranslate"><span class="pre">isaaclab_teleop.deprecated.openxr.retargeters</span></code>.</p>
+</div>
+</p></td>
 </tr>
 </tbody>
 </table>
@@ -926,6 +930,9 @@ outputs from all retargeters.</p>
 <dt class="sig sig-object py" id="isaaclab.devices.RetargeterBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.</span></span><span class="sig-name descname"><span class="pre">RetargeterBase</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/retargeter_base.html#RetargeterBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.devices.RetargeterBase" title="Permalink to this definition">#</a></dt>
 <dd><p>Base interface for input data retargeting.</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version Use: </span>the IsaacTeleop retargeting engine via <a class="reference internal" href="../lab_teleop/isaaclab_teleop.html#module-isaaclab_teleop" title="isaaclab_teleop"><code class="xref py py-mod docutils literal notranslate"><span class="pre">isaaclab_teleop</span></code></a> instead.</p>
+</div>
 <p>This abstract class defines the interface for components that transform
 raw device data into robot control commands. Implementations can handle
 various types of transformations including:
@@ -2056,7 +2063,7 @@ Forces are clipped to [-limit_force, limit_force] range for safety.</p>
 <h2>OpenXR<a class="headerlink" href="#openxr" title="Permalink to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.</span></span><span class="sig-name descname"><span class="pre">OpenXRDevice</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/openxr_device.html#OpenXRDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.</span></span><span class="sig-name descname"><span class="pre">OpenXRDevice</span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/openxr_device.html#OpenXRDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.devices.DeviceBase" title="isaaclab.devices.device_base.DeviceBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceBase</span></code></a></p>
 <p>An OpenXR-powered device for teleoperation and interaction.</p>
 <p>This device tracks hand joints using OpenXR and makes them available as:</p>
@@ -2069,7 +2076,7 @@ Forces are clipped to [-limit_force, limit_force] range for safety.</p>
 <li><p>A dictionary with keys matching TrackingTarget enum values (HAND_LEFT, HAND_RIGHT, HEAD)</p></li>
 <li><p>Each hand tracking entry contains a dictionary of joint poses</p></li>
 <li><p>Each joint pose is a 7D vector (x, y, z, qw, qx, qy, qz) in meters and quaternion units</p></li>
-<li><p>Joint names are defined in HAND_JOINT_NAMES from isaaclab.devices.openxr.common</p></li>
+<li><p>Joint names are defined in HAND_JOINT_NAMES from isaaclab_teleop.deprecated.openxr.common</p></li>
 <li><p>Supported joints include palm, wrist, and joints for thumb, index, middle, ring and little fingers</p></li>
 </ul>
 <p>Teleop commands:
@@ -2117,7 +2124,7 @@ data is transformed into robot control commands suitable for teleoperation.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OpenXRDeviceCfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retargeters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/openxr_device.html#OpenXRDevice.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OpenXRDeviceCfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retargeters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/openxr_device.html#OpenXRDevice.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialize the OpenXR device.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2131,13 +2138,13 @@ data is transformed into robot control commands suitable for teleoperation.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/openxr_device.html#OpenXRDevice.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/openxr_device.html#OpenXRDevice.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Reset the internals.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://trimesh.org/trimesh.typed.html#trimesh.typed.Callable" title="(in trimesh)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/openxr_device.html#OpenXRDevice.add_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://trimesh.org/trimesh.typed.html#trimesh.typed.Callable" title="(in trimesh)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/openxr_device.html#OpenXRDevice.add_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Add additional functions to bind to client messages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2196,7 +2203,7 @@ outputs from all retargeters.</p>
 <h2>Manus + Vive<a class="headerlink" href="#manus-vive" title="Permalink to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.</span></span><span class="sig-name descname"><span class="pre">ManusVive</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/manus_vive.html#ManusVive"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.</span></span><span class="sig-name descname"><span class="pre">ManusVive</span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/manus_vive.html#ManusVive"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.devices.DeviceBase" title="isaaclab.devices.device_base.DeviceBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceBase</span></code></a></p>
 <p>Manus gloves and Vive trackers for teleoperation and interaction.</p>
 <p>This device tracks hand joints using Manus gloves and Vive trackers and makes them available as:</p>
@@ -2205,14 +2212,14 @@ outputs from all retargeters.</p>
 <li><p>Retargeted commands for robot control (when retargeters are provided)</p></li>
 </ol>
 <p>The user needs to install the Manus SDK and add <cite>{path_to_manus_sdk}/manus_sdk/lib</cite> to <cite>LD_LIBRARY_PATH</cite>.
-Data are acquired by <cite>ManusViveIntegration</cite> from <cite>isaaclab.devices.openxr.manus_vive_utils</cite>, including</p>
+Data are acquired by <cite>ManusViveIntegration</cite> from <cite>isaaclab_teleop.deprecated.openxr.manus_vive_utils</cite>, including</p>
 <ul class="simple">
 <li><p>Vive tracker poses in scene frame, calibrated from AVP wrist poses.</p></li>
 <li><p>Hand joints calculated from Vive wrist joints and Manus hand joints (relative to wrist).</p></li>
 <li><p>Vive trackers are automatically mapped to the left and right wrist joints.</p></li>
 </ul>
 <p>Raw data format (_get_raw_data output): consistent with <code class="xref py py-class docutils literal notranslate"><span class="pre">OpenXRDevice</span></code>.
-Joint names are defined in <cite>HAND_JOINT_MAP</cite> from <cite>isaaclab.devices.openxr.manus_vive_utils</cite>.</p>
+Joint names are defined in <cite>HAND_JOINT_MAP</cite> from <cite>isaaclab_teleop.deprecated.openxr.manus_vive_utils</cite>.</p>
 <p>Teleop commands: consistent with <code class="xref py py-class docutils literal notranslate"><span class="pre">OpenXRDevice</span></code>.</p>
 <p>The device tracks the left hand, right hand, head position, or any combination of these
 based on the TrackingTarget enum values. When retargeters are provided, the raw tracking
@@ -2252,7 +2259,7 @@ data is transformed into robot control commands suitable for teleoperation.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ManusViveCfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retargeters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/manus_vive.html#ManusVive.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ManusViveCfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retargeters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/manus_vive.html#ManusVive.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialize the Manus+Vive device.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2266,13 +2273,13 @@ data is transformed into robot control commands suitable for teleoperation.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/manus_vive.html#ManusVive.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/manus_vive.html#ManusVive.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Reset cached joint and head poses.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://trimesh.org/trimesh.typed.html#trimesh.typed.Callable" title="(in trimesh)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/manus_vive.html#ManusVive.add_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://trimesh.org/trimesh.typed.html#trimesh.typed.Callable" title="(in trimesh)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/manus_vive.html#ManusVive.add_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Register a callback for a given key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2330,7 +2337,7 @@ outputs from all retargeters.</p>
 <h2>Retargeters<a class="headerlink" href="#retargeters" title="Permalink to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">GripperRetargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">GripperRetargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetargeterBase</span></code></a></p>
 <p>Retargeter specifically for gripper control based on hand tracking data.</p>
 <p>This retargeter analyzes the distance between thumb and index finger tips to determine
@@ -2366,7 +2373,7 @@ toggling between states when the finger distance is near the threshold.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GripperRetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GripperRetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialize the retargeter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2377,7 +2384,7 @@ toggling between states when the finger distance is near the threshold.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert hand joint poses to gripper command.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2395,7 +2402,7 @@ The joint names are defined in isaaclab.devices.openxr.common.HAND_JOINT_NAMES</
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/gripper_retargeter.html#GripperRetargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Return the list of required data features for this retargeter.</p>
 <p>Defaults to requesting all available features for backward compatibility.
 Implementations should override to narrow to only what they need.</p>
@@ -2412,7 +2419,7 @@ Implementations should override to narrow to only what they need.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">Se3AbsRetargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">Se3AbsRetargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetargeterBase</span></code></a></p>
 <p>Retargets OpenXR hand tracking data to end-effector commands using absolute positioning.</p>
 <p>This retargeter maps hand joint poses directly to robot end-effector positions and orientations,
@@ -2448,7 +2455,7 @@ rather than using relative movements. It can either:
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Se3AbsRetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Se3AbsRetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialize the retargeter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2466,7 +2473,7 @@ rather than using relative movements. It can either:
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert hand joint poses to robot end-effector command.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2488,7 +2495,7 @@ The joint names are defined in isaaclab.devices.openxr.common.HAND_JOINT_NAMES</
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_abs_retargeter.html#Se3AbsRetargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Return the list of required data features for this retargeter.</p>
 <p>Defaults to requesting all available features for backward compatibility.
 Implementations should override to narrow to only what they need.</p>
@@ -2505,7 +2512,7 @@ Implementations should override to narrow to only what they need.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">Se3RelRetargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">Se3RelRetargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetargeterBase</span></code></a></p>
 <p>Retargets OpenXR hand tracking data to end-effector commands using relative positioning.</p>
 <p>This retargeter calculates delta poses between consecutive hand joint poses to generate incremental robot movements.
@@ -2542,7 +2549,7 @@ It can either:
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Se3RelRetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Se3RelRetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialize the relative motion retargeter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2566,7 +2573,7 @@ lower values smooth more</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert hand joint poses to robot end-effector command.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2588,7 +2595,7 @@ The joint names are defined in isaaclab.devices.openxr.common.HAND_JOINT_NAMES</
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/manipulator/se3_rel_retargeter.html#Se3RelRetargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Return the list of required data features for this retargeter.</p>
 <p>Defaults to requesting all available features for backward compatibility.
 Implementations should override to narrow to only what they need.</p>
@@ -2605,7 +2612,7 @@ Implementations should override to narrow to only what they need.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">GR1T2Retargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.devices.openxr.retargeters.</span></span><span class="sig-name descname"><span class="pre">GR1T2Retargeter</span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#isaaclab.devices.RetargeterBase" title="isaaclab.devices.retargeter_base.RetargeterBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetargeterBase</span></code></a></p>
 <p>Retargets OpenXR hand tracking data to GR1T2 hand end-effector commands.</p>
 <p>This retargeter maps hand tracking data from OpenXR to joint commands for the GR1T2 robot’s hands.
@@ -2637,7 +2644,7 @@ for the GR1T2 robot’s hands.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GR1T2RetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GR1T2RetargeterCfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Initialize the GR1T2 hand retargeter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2653,7 +2660,7 @@ for the GR1T2 robot’s hands.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">retarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.10)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter.retarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert hand joint poses to robot end-effector commands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2672,7 +2679,7 @@ Retargeted hand joint angles</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab/devices/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">get_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#isaaclab.devices.RetargeterBase.Requirement" title="isaaclab.devices.retargeter_base.RetargeterBase.Requirement"><span class="pre">isaaclab.devices.retargeter_base.RetargeterBase.Requirement</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab_teleop/deprecated/openxr/retargeters/humanoid/fourier/gr1t2_retargeter.html#GR1T2Retargeter.get_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Return the list of required data features for this retargeter.</p>
 <p>Defaults to requesting all available features for backward compatibility.
 Implementations should override to narrow to only what they need.</p>
@@ -2799,7 +2806,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 19, 2026.
+  Last updated on Feb 20, 2026.
   <br/>
 </p>
   </div>
