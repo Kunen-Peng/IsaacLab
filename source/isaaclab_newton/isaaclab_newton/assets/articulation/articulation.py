@@ -29,6 +29,7 @@ from isaaclab_newton.kernels import (
     update_wrench_array_with_torque,
     vec13f,
 )
+from isaaclab_newton.physics import NewtonManager
 from newton import JointType, Model
 from newton.selection import ArticulationView as NewtonArticulationView
 from newton.solvers import SolverMuJoCo, SolverNotifyFlags
@@ -37,7 +38,6 @@ from pxr import UsdPhysics
 import isaaclab.sim as sim_utils
 import isaaclab.utils.string as string_utils
 from isaaclab.assets.articulation.base_articulation import BaseArticulation
-from isaaclab.sim._impl.newton_manager import NewtonManager
 from isaaclab.utils.helpers import deprecated
 from isaaclab.utils.warp.update_kernels import (
     update_array1D_with_array1D_masked,
@@ -2143,7 +2143,8 @@ class Articulation(BaseArticulation):
         self._root_view = NewtonArticulationView(
             NewtonManager.get_model(), prim_path, verbose=True, exclude_joint_types=[JointType.FREE, JointType.FIXED]
         )
-        NewtonManager.add_view(self._root_view)
+        # Register view with NewtonManager
+        NewtonManager.get_physics_sim_view().append(self._root_view)
 
         # container for data access
         self._data = ArticulationData(self._root_view, self.device)

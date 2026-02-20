@@ -1,13 +1,13 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+from isaaclab_newton.physics import MJWarpSolverCfg, NewtonCfg
+
 from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
 from isaaclab.sim import SimulationCfg
-from isaaclab.sim._impl.newton_manager_cfg import NewtonCfg
-from isaaclab.sim._impl.solvers_cfg import MJWarpSolverCfg
 from isaaclab.utils import configclass
 
 from isaaclab_tasks.manager_based.manipulation.cabinet import mdp
@@ -26,7 +26,7 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_CFG  # isort: skip
 @configclass
 class FrankaCabinetEnvCfg(CabinetEnvCfg):
     sim: SimulationCfg = SimulationCfg(
-        newton_cfg=NewtonCfg(
+        physics=NewtonCfg(
             solver_cfg=MJWarpSolverCfg(
                 njmax=90,
                 nconmax=100,
@@ -34,7 +34,7 @@ class FrankaCabinetEnvCfg(CabinetEnvCfg):
                 cone="pyramidal",
                 impratio=1,
                 ls_parallel=True,
-                integrator="implicit",
+                integrator="implicitfast",
             ),
             num_substeps=1,
             debug_mode=False,
