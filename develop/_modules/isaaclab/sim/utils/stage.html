@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 23, 2026"/>
   </head>
   
   
@@ -714,9 +714,9 @@
 <span class="sd">    * Most Isaac Sim/Omniverse systems operate on by default</span>
 
 <span class="sd">    This is different from an &quot;in-memory stage&quot; created via</span>
-<span class="sd">    :func:`create_new_stage_in_memory`, which exists only in RAM and is not</span>
-<span class="sd">    attached to the context (invisible to viewport/UI until explicitly attached</span>
-<span class="sd">    via :func:`attach_stage_to_usd_context`).</span>
+<span class="sd">    :func:`create_new_stage_in_memory`, which exists only in RAM. Note that when</span>
+<span class="sd">    using ``SimulationCfg(create_stage_in_memory=True)``, the in-memory stage is</span>
+<span class="sd">    automatically attached to the USD context at ``SimulationContext`` creation.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The stage attached to the USD context, or None if no stage is attached.</span>
@@ -1134,59 +1134,6 @@
         <span class="n">stage_id</span> <span class="o">=</span> <span class="n">stage_cache</span><span class="o">.</span><span class="n">Insert</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span><span class="o">.</span><span class="n">ToLongInt</span><span class="p">()</span>
     <span class="c1"># return stage ID</span>
     <span class="k">return</span> <span class="n">stage_id</span></div>
-
-
-<div class="viewcode-block" id="attach_stage_to_usd_context"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.attach_stage_to_usd_context">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">attach_stage_to_usd_context</span><span class="p">(</span><span class="n">attaching_early</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Attaches the current USD stage in memory to the USD context.</span>
-
-<span class="sd">    This function should be called during or after scene is created and before stage is simulated or rendered.</span>
-<span class="sd">    If the stage is not in memory or rendering is not enabled, this function will return without attaching.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later. For backwards</span>
-<span class="sd">        compatibility, it returns without attaching to the USD context.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        attaching_early: Whether to attach the stage to the usd context before stage is created. Defaults to False.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">omni.physx</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
-
-    <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.simulation_context</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationContext</span>
-
-    <span class="c1"># if Isaac Sim version is less than 5.0, stage in memory is not supported</span>
-    <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-        <span class="k">return</span>
-
-    <span class="c1"># if stage is not in memory, we can return early</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_current_stage_in_memory</span><span class="p">():</span>
-        <span class="k">return</span>
-
-    <span class="c1"># attach stage to physx</span>
-    <span class="n">stage_id</span> <span class="o">=</span> <span class="n">get_current_stage_id</span><span class="p">()</span>
-    <span class="n">physx_sim_interface</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">physx</span><span class="o">.</span><span class="n">get_physx_simulation_interface</span><span class="p">()</span>
-    <span class="n">physx_sim_interface</span><span class="o">.</span><span class="n">attach_stage</span><span class="p">(</span><span class="n">stage_id</span><span class="p">)</span>
-
-    <span class="c1"># this carb flag is equivalent to if rendering is enabled</span>
-    <span class="n">carb_setting</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-    <span class="n">is_rendering_enabled</span> <span class="o">=</span> <span class="n">carb_setting</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/physics/fabricUpdateTransformations&quot;</span><span class="p">)</span>
-
-    <span class="c1"># if rendering is not enabled, we don&#39;t need to attach it</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_rendering_enabled</span><span class="p">:</span>
-        <span class="k">return</span>
-
-    <span class="c1"># early attach warning msg</span>
-    <span class="k">if</span> <span class="n">attaching_early</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Attaching stage in memory to USD context early to support an operation which&quot;</span>
-            <span class="s2">&quot; does not support stage in memory.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="c1"># Enable physics fabric and attach stage to usd context for rendering</span>
-    <span class="n">SimulationContext</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">set_setting</span><span class="p">(</span><span class="s2">&quot;/isaaclab/fabric_enabled&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-    <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">attach_stage_with_callback</span><span class="p">(</span><span class="n">stage_id</span><span class="p">)</span></div>
 </pre></div>
 
                 </article>
@@ -1234,7 +1181,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 22, 2026.
+  Last updated on Feb 23, 2026.
   <br/>
 </p>
   </div>

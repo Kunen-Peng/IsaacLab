@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 23, 2026"/>
   </head>
   
   
@@ -697,7 +697,6 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.is_stage_loading"><code class="docutils literal notranslate"><span class="pre">is_stage_loading()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.get_current_stage"><code class="docutils literal notranslate"><span class="pre">get_current_stage()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.get_current_stage_id"><code class="docutils literal notranslate"><span class="pre">get_current_stage_id()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.attach_stage_to_usd_context"><code class="docutils literal notranslate"><span class="pre">attach_stage_to_usd_context()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-isaaclab.sim.utils.queries">Queries</a><ul class="nav section-nav flex-column">
@@ -846,9 +845,6 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sim.utils.stage.get_current_stage_id" title="isaaclab.sim.utils.stage.get_current_stage_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_stage_id</span></code></a>()</p></td>
 <td><p>Get the current open stage ID.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sim.utils.stage.attach_stage_to_usd_context" title="isaaclab.sim.utils.stage.attach_stage_to_usd_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attach_stage_to_usd_context</span></code></a>([attaching_early])</p></td>
-<td><p>Attaches the current USD stage in memory to the USD context.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -914,9 +910,9 @@ UsdContext. This is the stage that:</p>
 <li><p>Most Isaac Sim/Omniverse systems operate on by default</p></li>
 </ul>
 <p>This is different from an “in-memory stage” created via
-<a class="reference internal" href="#isaaclab.sim.utils.stage.create_new_stage_in_memory" title="isaaclab.sim.utils.stage.create_new_stage_in_memory"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_new_stage_in_memory()</span></code></a>, which exists only in RAM and is not
-attached to the context (invisible to viewport/UI until explicitly attached
-via <a class="reference internal" href="#isaaclab.sim.utils.stage.attach_stage_to_usd_context" title="isaaclab.sim.utils.stage.attach_stage_to_usd_context"><code class="xref py py-func docutils literal notranslate"><span class="pre">attach_stage_to_usd_context()</span></code></a>).</p>
+<a class="reference internal" href="#isaaclab.sim.utils.stage.create_new_stage_in_memory" title="isaaclab.sim.utils.stage.create_new_stage_in_memory"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_new_stage_in_memory()</span></code></a>, which exists only in RAM. Note that when
+using <code class="docutils literal notranslate"><span class="pre">SimulationCfg(create_stage_in_memory=True)</span></code>, the in-memory stage is
+automatically attached to the USD context at <code class="docutils literal notranslate"><span class="pre">SimulationContext</span></code> creation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The stage attached to the USD context, or None if no stage is attached.</p>
@@ -1235,23 +1231,6 @@ a default predicate will be used that deletes all prims.</p>
 <span class="go">1234567890</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="isaaclab.sim.utils.stage.attach_stage_to_usd_context">
-<span class="sig-prename descclassname"><span class="pre">isaaclab.sim.utils.stage.</span></span><span class="sig-name descname"><span class="pre">attach_stage_to_usd_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attaching_early</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/sim/utils/stage.html#attach_stage_to_usd_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.utils.stage.attach_stage_to_usd_context" title="Permalink to this definition">#</a></dt>
-<dd><p>Attaches the current USD stage in memory to the USD context.</p>
-<p>This function should be called during or after scene is created and before stage is simulated or rendered.
-If the stage is not in memory or rendering is not enabled, this function will return without attaching.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 2.3.0: </span>This function is available in Isaac Sim 5.0 and later. For backwards
-compatibility, it returns without attaching to the USD context.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>attaching_early</strong> – Whether to attach the stage to the usd context before stage is created. Defaults to False.</p>
-</dd>
-</dl>
 </dd></dl>
 
 </section>
@@ -2361,7 +2340,7 @@ or None if no orientation was provided</p></li>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sim.utils.semantics.add_labels" title="isaaclab.sim.utils.semantics.add_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_labels</span></code></a>(prim, labels[, instance_name, ...])</p></td>
-<td><p>Apply semantic labels to a prim using the <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>.</p></td>
+<td><p>Apply semantic labels to a prim using <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sim.utils.semantics.get_labels" title="isaaclab.sim.utils.semantics.get_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_labels</span></code></a>(prim)</p></td>
 <td><p>Get all semantic labels (<code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>) applied to a prim.</p></td>
@@ -2381,13 +2360,7 @@ or None if no orientation was provided</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="isaaclab.sim.utils.semantics.add_labels">
 <span class="sig-prename descclassname"><span class="pre">isaaclab.sim.utils.semantics.</span></span><span class="sig-name descname"><span class="pre">add_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pxr.Usd.Prim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'class'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/sim/utils/semantics.html#add_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.utils.semantics.add_labels" title="Permalink to this definition">#</a></dt>
-<dd><p>Apply semantic labels to a prim using the <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>.</p>
-<p>This function is a wrapper around the <code class="xref py py-func docutils literal notranslate"><span class="pre">omni.replicator.core.functional.modify.semantics()</span></code> function.
-It applies the labels to the prim using the <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 2.3.0: </span>This function is available in Isaac Sim 5.0 and later, which introduces the <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>.
-For previous versions, the function falls back to use the deprecated <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.SemanticsAPI</span></code> instead.</p>
-</div>
+<dd><p>Apply semantic labels to a prim using <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>.</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prim</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">create_prim</span><span class="p">(</span><span class="s2">&quot;/World/Test/Sphere&quot;</span><span class="p">,</span> <span class="s2">&quot;Sphere&quot;</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="n">stage</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sim_utils</span><span class="o">.</span><span class="n">add_labels</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sphere&quot;</span><span class="p">],</span> <span class="n">instance_name</span><span class="o">=</span><span class="s2">&quot;class&quot;</span><span class="p">)</span>
@@ -2410,10 +2383,6 @@ the new labels are appended to existing ones (if any). Defaults to True.</p></li
 <dt class="sig sig-object py" id="isaaclab.sim.utils.semantics.get_labels">
 <span class="sig-prename descclassname"><span class="pre">isaaclab.sim.utils.semantics.</span></span><span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pxr.Usd.Prim</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/isaaclab/sim/utils/semantics.html#get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.utils.semantics.get_labels" title="Permalink to this definition">#</a></dt>
 <dd><p>Get all semantic labels (<code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>) applied to a prim.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 2.3.0: </span>This function is available in Isaac Sim 5.0 and later. For previous versions,
-please use <a class="reference external" href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/py/source/extensions/isaacsim.core.utils/docs/index.html#module-isaacsim.core.utils.semantics" title="(in Isaac Sim)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">isaacsim.core.utils.semantics</span></code></a> module instead.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>prim</strong> – The USD prim to return labels for.</p>
@@ -2429,10 +2398,6 @@ If no labels are found, it returns an empty dictionary.</p>
 <dt class="sig sig-object py" id="isaaclab.sim.utils.semantics.remove_labels">
 <span class="sig-prename descclassname"><span class="pre">isaaclab.sim.utils.semantics.</span></span><span class="sig-name descname"><span class="pre">remove_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pxr.Usd.Prim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_descendants</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab/sim/utils/semantics.html#remove_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.utils.semantics.remove_labels" title="Permalink to this definition">#</a></dt>
 <dd><p>Removes semantic labels (<code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>) from a prim and optionally its descendants.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 2.3.0: </span>This function is available in Isaac Sim 5.0 and later. For previous versions,
-please use <a class="reference external" href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/py/source/extensions/isaacsim.core.utils/docs/index.html#module-isaacsim.core.utils.semantics" title="(in Isaac Sim)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">isaacsim.core.utils.semantics</span></code></a> module instead.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2455,10 +2420,6 @@ semantic labels (<code class="xref py py-class docutils literal notranslate"><sp
 <p class="admonition-title">Note</p>
 <p>The function checks only prims that are <code class="xref py py-class docutils literal notranslate"><span class="pre">UsdGeom.Gprim</span></code> type.</p>
 </div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 2.3.0: </span>This function is available in Isaac Sim 5.0 and later. For previous versions,
-please use <a class="reference external" href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/py/source/extensions/isaacsim.core.utils/docs/index.html#module-isaacsim.core.utils.semantics" title="(in Isaac Sim)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">isaacsim.core.utils.semantics</span></code></a> module instead.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2478,10 +2439,6 @@ please use <a class="reference external" href="https://docs.isaacsim.omniverse.n
 <dd><p>Counts the number of semantic labels (<code class="xref py py-class docutils literal notranslate"><span class="pre">UsdSemantics.LabelsAPI</span></code>) applied to the prims at the provided path.</p>
 <p>This function iterates over all the prims from the provided path and counts the number of times
 each label is applied to the prims. It returns a dictionary of labels and their corresponding count.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 2.3.0: </span>This function is available in Isaac Sim 5.0 and later. For previous versions,
-please use <a class="reference external" href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/py/source/extensions/isaacsim.core.utils/docs/index.html#module-isaacsim.core.utils.semantics" title="(in Isaac Sim)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">isaacsim.core.utils.semantics</span></code></a> module instead.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2840,7 +2797,6 @@ function instead.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.is_stage_loading"><code class="docutils literal notranslate"><span class="pre">is_stage_loading()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.get_current_stage"><code class="docutils literal notranslate"><span class="pre">get_current_stage()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.get_current_stage_id"><code class="docutils literal notranslate"><span class="pre">get_current_stage_id()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.sim.utils.stage.attach_stage_to_usd_context"><code class="docutils literal notranslate"><span class="pre">attach_stage_to_usd_context()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-isaaclab.sim.utils.queries">Queries</a><ul class="nav section-nav flex-column">
@@ -2936,7 +2892,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 22, 2026.
+  Last updated on Feb 23, 2026.
   <br/>
 </p>
   </div>

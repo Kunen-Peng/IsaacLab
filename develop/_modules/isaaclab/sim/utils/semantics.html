@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 23, 2026"/>
   </head>
   
   
@@ -628,16 +628,9 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span>
-
-<span class="c1"># USD Semantics is only available in Isaac Sim 5.0 and later.</span>
-<span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">UsdSemantics</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_isaac_sim_version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdSemantics</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span>
 
@@ -646,14 +639,7 @@
 
 
 <div class="viewcode-block" id="add_labels"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.semantics.add_labels">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">add_labels</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">instance_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply semantic labels to a prim using the :class:`UsdSemantics.LabelsAPI`.</span>
-
-<span class="sd">    This function is a wrapper around the :func:`omni.replicator.core.functional.modify.semantics` function.</span>
-<span class="sd">    It applies the labels to the prim using the :class:`UsdSemantics.LabelsAPI`.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later, which introduces the :class:`UsdSemantics.LabelsAPI`.</span>
-<span class="sd">        For previous versions, the function falls back to use the deprecated :class:`UsdSemantics.SemanticsAPI` instead.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply semantic labels to a prim using :class:`UsdSemantics.LabelsAPI`.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; prim = sim_utils.create_prim(&quot;/World/Test/Sphere&quot;, &quot;Sphere&quot;, stage=stage, attributes={&quot;radius&quot;: 10.0})</span>
@@ -666,52 +652,21 @@
 <span class="sd">        overwrite: Whether to overwrite existing labels for this instance. If False,</span>
 <span class="sd">          the new labels are appended to existing ones (if any). Defaults to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Try modern approach (Isaac Sim &gt;= 5.0)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">omni.replicator.core.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rep_functional</span>
-
-        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;replace&quot;</span> <span class="k">if</span> <span class="n">overwrite</span> <span class="k">else</span> <span class="s2">&quot;add&quot;</span>
-        <span class="n">rep_functional</span><span class="o">.</span><span class="n">modify</span><span class="o">.</span><span class="n">semantics</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="p">{</span><span class="n">instance_name</span><span class="p">:</span> <span class="n">labels</span><span class="p">},</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
-
-        <span class="k">return</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="c1"># check if we are using isaac sim 5.0</span>
-        <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Failed to add labels to prim </span><span class="si">{</span><span class="n">prim</span><span class="o">.</span><span class="n">GetPath</span><span class="p">()</span><span class="si">}</span><span class="s2"> using Replicator API: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. &quot;</span>
-                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Please ensure Replicator API is enabled by passing &#39;--enable_cameras&#39; to the AppLauncher.&quot;</span>
-                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Falling back to legacy approach.&quot;</span>
-            <span class="p">)</span>
-
-    <span class="c1"># Try legacy approach (Isaac Sim &lt; 5.0)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">Semantics</span>
-
-        <span class="c1"># check we have only one label</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Only one label can be applied to a prim. Received: </span><span class="si">{</span><span class="n">labels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="c1"># set the semantic API for the instance</span>
-        <span class="n">instance_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">instance_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">sem</span> <span class="o">=</span> <span class="n">Semantics</span><span class="o">.</span><span class="n">SemanticsAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">)</span>
-        <span class="c1"># create semantic type and data attributes</span>
-        <span class="n">sem</span><span class="o">.</span><span class="n">CreateSemanticTypeAttr</span><span class="p">()</span>
-        <span class="n">sem</span><span class="o">.</span><span class="n">CreateSemanticDataAttr</span><span class="p">()</span>
-        <span class="n">sem</span><span class="o">.</span><span class="n">GetSemanticTypeAttr</span><span class="p">()</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">instance_name</span><span class="p">)</span>
-        <span class="n">sem</span><span class="o">.</span><span class="n">GetSemanticDataAttr</span><span class="p">()</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Failed to add labels to prim </span><span class="si">{</span><span class="n">prim</span><span class="o">.</span><span class="n">GetPath</span><span class="p">()</span><span class="si">}</span><span class="s2"> using legacy API: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. &quot;</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Semantics functionality may not be available in this Isaac Sim version.&quot;</span>
-            <span class="s2">&quot; Please open an issue at https://github.com/isaac-sim/IsaacLab/issues if you believe this is a bug.&quot;</span>
-        <span class="p">)</span></div>
+    <span class="n">labels_api</span> <span class="o">=</span> <span class="n">UsdSemantics</span><span class="o">.</span><span class="n">LabelsAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">)</span>
+    <span class="n">labels_attr</span> <span class="o">=</span> <span class="n">labels_api</span><span class="o">.</span><span class="n">CreateLabelsAttr</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="n">labels_attr</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="n">labels_attr</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">existing</span><span class="p">:</span>
+            <span class="n">combined</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">existing</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">lbl</span> <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">if</span> <span class="n">lbl</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">]</span>
+            <span class="n">labels_attr</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels_attr</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_labels"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.semantics.get_labels">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_labels</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all semantic labels (:class:`UsdSemantics.LabelsAPI`) applied to a prim.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later. For previous versions,</span>
-<span class="sd">        please use :mod:`isaacsim.core.utils.semantics` module instead.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        prim: The USD prim to return labels for.</span>
@@ -736,10 +691,6 @@
 
 <div class="viewcode-block" id="remove_labels"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.semantics.remove_labels">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">remove_labels</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">include_descendants</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes semantic labels (:class:`UsdSemantics.LabelsAPI`) from a prim and optionally its descendants.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later. For previous versions,</span>
-<span class="sd">        please use :mod:`isaacsim.core.utils.semantics` module instead.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        prim: The USD prim to remove labels from.</span>
@@ -774,10 +725,6 @@
 
 <span class="sd">    .. note::</span>
 <span class="sd">        The function checks only prims that are :class:`UsdGeom.Gprim` type.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later. For previous versions,</span>
-<span class="sd">        please use :mod:`isaacsim.core.utils.semantics` module instead.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        prim_path: The prim path to search from. If None, the entire stage is inspected.</span>
@@ -817,10 +764,6 @@
 
 <span class="sd">    This function iterates over all the prims from the provided path and counts the number of times</span>
 <span class="sd">    each label is applied to the prims. It returns a dictionary of labels and their corresponding count.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later. For previous versions,</span>
-<span class="sd">        please use :mod:`isaacsim.core.utils.semantics` module instead.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        prim_path: The prim path to search from. If None, the entire stage is inspected.</span>
@@ -898,7 +841,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 22, 2026.
+  Last updated on Feb 23, 2026.
   <br/>
 </p>
   </div>

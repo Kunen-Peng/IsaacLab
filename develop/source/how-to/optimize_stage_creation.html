@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 23, 2026"/>
   </head>
   
   
@@ -736,21 +736,19 @@ These features are particularly effective for large-scale RL setups with thousan
 <span class="n">env</span> <span class="o">=</span> <span class="n">ManagerBasedRLEnv</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note, if stage in memory is enabled without using an existing RL environment class, a few more steps are need.
-The stage creation steps should be wrapped in a <a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#with" title="(in Python v3.14)"><code class="xref std std-keyword docutils literal notranslate"><span class="pre">with</span></code></a> statement to set the stage context.
-If the stage needs to be attached, the <code class="xref py py-meth docutils literal notranslate"><span class="pre">attach_stage_to_usd_context()</span></code> function should
-be called after the stage is created.</p>
+<p>When using stage in memory without an existing RL environment class, wrap the stage creation steps
+in a <a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#with" title="(in Python v3.14)"><code class="xref std std-keyword docutils literal notranslate"><span class="pre">with</span></code></a> statement to set the stage context. The stage is automatically attached
+to the USD context when <code class="docutils literal notranslate"><span class="pre">SimulationContext</span></code> is created with <code class="docutils literal notranslate"><span class="pre">create_stage_in_memory=True</span></code>.</p>
 <p><strong>Using Stage in Memory with a manual scene setup</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># init simulation context with stage in memory</span>
+<span class="c1"># Note: stage is automatically attached to USD context</span>
 <span class="n">sim</span> <span class="o">=</span> <span class="n">SimulationContext</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">SimulationCfg</span><span class="p">(</span><span class="n">create_stage_in_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-<span class="c1"># grab stage in memory and set stage context</span>
+<span class="c1"># grab stage and set stage context</span>
 <span class="k">with</span> <span class="n">stage_utils</span><span class="o">.</span><span class="n">use_stage</span><span class="p">(</span><span class="n">sim</span><span class="o">.</span><span class="n">stage</span><span class="p">):</span>
     <span class="c1"># create cartpole scene</span>
     <span class="n">scene_cfg</span> <span class="o">=</span> <span class="n">CartpoleSceneCfg</span><span class="p">(</span><span class="n">num_envs</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
     <span class="n">scene</span> <span class="o">=</span> <span class="n">InteractiveScene</span><span class="p">(</span><span class="n">scene_cfg</span><span class="p">)</span>
-    <span class="c1"># attach stage to memory after stage is created</span>
-    <span class="n">sim_utils</span><span class="o">.</span><span class="n">attach_stage_to_usd_context</span><span class="p">()</span>
 
 <span class="n">sim</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 </pre></div>
@@ -800,14 +798,10 @@ be called after the stage is created.</p>
 <p><strong>Stage in Memory</strong></p>
 <ul class="simple">
 <li><p>Cannot be currently enabled at the same time as <strong>Fabric Cloning</strong>.</p></li>
-<li><p>Attaching stage in memory to the USD context can be slow, offsetting some or all of the performance benefits.</p>
-<ul>
-<li><p>Note, attaching is only necessary when rendering is enabled. For example, in headless mode, attachment is not required.</p></li>
-</ul>
-</li>
+<li><p>The stage is automatically attached to the USD context at <code class="docutils literal notranslate"><span class="pre">SimulationContext</span></code> creation, ensuring proper
+lifecycle events for viewport and physics systems.</p></li>
 <li><p>Certain low-level Kit APIs do not yet support stage in memory.</p>
 <ul>
-<li><p>In most cases, when these APIs are hit, existing scripts will automatically early attach the stage and print a warning message.</p></li>
 <li><p>In one particular case, for some environments, the API call to color the ground plane is skipped, when stage in memory is enabled.</p></li>
 </ul>
 </li>
@@ -949,7 +943,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 22, 2026.
+  Last updated on Feb 23, 2026.
   <br/>
 </p>
   </div>
