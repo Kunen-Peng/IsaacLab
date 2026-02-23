@@ -626,10 +626,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MISSING</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysxSchema</span><span class="p">,</span> <span class="n">UsdPhysics</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">configclass</span>
 
@@ -1060,23 +1057,15 @@
 <span class="sd">    See :meth:`set_mesh_collision_properties` for more information.</span>
 
 <span class="sd">    .. note::</span>
-<span class="sd">        If the values are MISSING, they are not modified. This is useful when you want to set only a subset of</span>
+<span class="sd">        If the values are None, they are not modified. This is useful when you want to set only a subset of</span>
 <span class="sd">        the properties and leave the rest as-is.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">usd_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">MISSING</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;USD API function for modifying mesh collision properties.</span>
-<span class="sd">    Refer to</span>
-<span class="sd">    `original USD Documentation &lt;https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_usd_physics_mesh_collision_a_p_i.html&gt;`_</span>
-<span class="sd">    for more information.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">usd_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;USD API name for mesh collision (e.g. &#39;MeshCollisionAPI&#39;).&quot;&quot;&quot;</span>
 
-    <span class="n">physx_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">MISSING</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;PhysX API function for modifying mesh collision properties.</span>
-<span class="sd">    Refer to</span>
-<span class="sd">    `original PhysX Documentation &lt;https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/annotated.html&gt;`_</span>
-<span class="sd">    for more information.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">physx_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PhysX schema name for mesh collision (e.g. &#39;PhysxConvexDecompositionCollisionAPI&#39;).&quot;&quot;&quot;</span>
 
     <span class="n">mesh_approximation_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of mesh collision approximation method. Default: &quot;none&quot;.</span>
@@ -1086,7 +1075,7 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">BoundingCubePropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">usd_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">MeshCollisionAPI</span>
+    <span class="n">usd_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original USD Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_usd_physics_mesh_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1099,7 +1088,7 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">BoundingSpherePropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">usd_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">MeshCollisionAPI</span>
+    <span class="n">usd_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original USD Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_usd_physics_mesh_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1112,12 +1101,12 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConvexDecompositionPropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">usd_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">MeshCollisionAPI</span>
+    <span class="n">usd_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original USD Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_usd_physics_mesh_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">physx_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxConvexDecompositionCollisionAPI</span>
+    <span class="n">physx_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PhysxConvexDecompositionCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original PhysX Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_physx_schema_physx_convex_decomposition_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1161,12 +1150,12 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConvexHullPropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">usd_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">MeshCollisionAPI</span>
+    <span class="n">usd_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original USD Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_usd_physics_mesh_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">physx_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxConvexHullCollisionAPI</span>
+    <span class="n">physx_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PhysxConvexHullCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original PhysX Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_physx_schema_physx_convex_hull_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1190,7 +1179,7 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TriangleMeshPropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">physx_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTriangleMeshCollisionAPI</span>
+    <span class="n">physx_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PhysxTriangleMeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Triangle mesh is only supported by PhysX API.</span>
 
 <span class="sd">    Original PhysX Documentation:</span>
@@ -1212,12 +1201,12 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TriangleMeshSimplificationPropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">usd_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">MeshCollisionAPI</span>
+    <span class="n">usd_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original USD Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_usd_physics_mesh_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">physx_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTriangleMeshSimplificationCollisionAPI</span>
+    <span class="n">physx_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PhysxTriangleMeshSimplificationCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original PhysX Documentation:</span>
 <span class="sd">    https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/latest/class_physx_schema_physx_triangle_mesh_simplification_collision_a_p_i.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1242,7 +1231,7 @@
 
 <span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SDFMeshPropertiesCfg</span><span class="p">(</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">):</span>
-    <span class="n">physx_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxSDFMeshCollisionAPI</span>
+    <span class="n">physx_api</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PhysxSDFMeshCollisionAPI&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SDF mesh is only supported by PhysX API.</span>
 
 <span class="sd">    Original PhysX documentation:</span>

@@ -639,6 +639,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.app.settings_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings_manager</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">..device_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceBase</span><span class="p">,</span> <span class="n">DeviceCfg</span>
 
 
@@ -683,8 +685,7 @@
 <span class="sd">            cfg: Configuration object for gamepad settings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># turn off simulator gamepad control</span>
-        <span class="n">carb_settings_iface</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/persistent/app/omniverse/gamepadCameraControl&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">get_settings_manager</span><span class="p">()</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/persistent/app/omniverse/gamepadCameraControl&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="c1"># store inputs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_sensitivity</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">pos_sensitivity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rot_sensitivity</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">rot_sensitivity</span>

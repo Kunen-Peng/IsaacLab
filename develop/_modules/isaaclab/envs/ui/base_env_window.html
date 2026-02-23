@@ -636,7 +636,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.app</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.commands</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysxSchema</span><span class="p">,</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdPhysics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdPhysics</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span><span class="p">,</span> <span class="n">resolve_paths</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.ui.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManagerLiveVisualizer</span>
@@ -973,11 +973,11 @@
                 <span class="c1"># if prim has articulation then disable it</span>
                 <span class="k">if</span> <span class="n">prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">ArticulationRootAPI</span><span class="p">):</span>
                     <span class="n">prim</span><span class="o">.</span><span class="n">RemoveAPI</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">ArticulationRootAPI</span><span class="p">)</span>
-                    <span class="n">prim</span><span class="o">.</span><span class="n">RemoveAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxArticulationAPI</span><span class="p">)</span>
+                    <span class="n">prim</span><span class="o">.</span><span class="n">RemoveAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxArticulationAPI&quot;</span><span class="p">)</span>
                 <span class="c1"># if prim has rigid body then disable it</span>
                 <span class="k">if</span> <span class="n">prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">RigidBodyAPI</span><span class="p">):</span>
                     <span class="n">prim</span><span class="o">.</span><span class="n">RemoveAPI</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">RigidBodyAPI</span><span class="p">)</span>
-                    <span class="n">prim</span><span class="o">.</span><span class="n">RemoveAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxRigidBodyAPI</span><span class="p">)</span>
+                    <span class="n">prim</span><span class="o">.</span><span class="n">RemoveAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxRigidBodyAPI&quot;</span><span class="p">)</span>
                 <span class="c1"># if prim is a joint type then disable it</span>
                 <span class="k">if</span> <span class="n">prim</span><span class="o">.</span><span class="n">IsA</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">Joint</span><span class="p">):</span>
                     <span class="n">prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="s2">&quot;physics:jointEnabled&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>

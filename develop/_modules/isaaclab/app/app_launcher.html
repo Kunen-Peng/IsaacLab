@@ -649,6 +649,8 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaacsim</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationApp</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.app.settings_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings_manager</span><span class="p">,</span> <span class="n">initialize_carb_settings</span>
+
 <span class="c1"># import logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -1488,33 +1490,25 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_extensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load correct extensions based on AppLauncher&#39;s resolved config member variables.&quot;&quot;&quot;</span>
-        <span class="c1"># These have to be loaded after SimulationApp is initialized</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
+        <span class="c1"># These have to be loaded after SimulationApp is initialized.</span>
+        <span class="c1"># Use SettingsManager (backs onto carb when in Omniverse after initialize_carb_settings).</span>
+        <span class="n">initialize_carb_settings</span><span class="p">()</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings_manager</span><span class="p">()</span>
 
-        <span class="c1"># Retrieve carb settings for modification</span>
-        <span class="n">carb_settings_iface</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
+        <span class="c1"># set setting to indicate Isaac Lab&#39;s offscreen_render pipeline should be enabled</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/offscreen&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offscreen_render</span><span class="p">)</span>
 
-        <span class="c1"># set carb setting to indicate Isaac Lab&#39;s offscreen_render pipeline should be enabled</span>
-        <span class="c1"># this flag is used by the SimulationContext class to enable the offscreen_render pipeline</span>
-        <span class="c1"># when the render() method is called.</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/offscreen&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offscreen_render</span><span class="p">)</span>
+        <span class="c1"># set setting to indicate Isaac Lab&#39;s render_viewport pipeline should be enabled</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/active_viewport&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_viewport</span><span class="p">)</span>
 
-        <span class="c1"># set carb setting to indicate Isaac Lab&#39;s render_viewport pipeline should be enabled</span>
-        <span class="c1"># this flag is used by the SimulationContext class to enable the render_viewport pipeline</span>
-        <span class="c1"># when the render() method is called.</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/active_viewport&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_viewport</span><span class="p">)</span>
-
-        <span class="c1"># set carb setting to indicate no RTX sensors are used</span>
-        <span class="c1"># this flag is set to True when an RTX-rendering related sensor is created</span>
-        <span class="c1"># for example: the `Camera` sensor class</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/rtx_sensors&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># set setting to indicate no RTX sensors are used (set to True when RTX sensor is created)</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/rtx_sensors&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># set fabric update flag to disable updating transforms when rendering is disabled</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/physics/fabricUpdateTransformations&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rendering_enabled</span><span class="p">())</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/physics/fabricUpdateTransformations&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rendering_enabled</span><span class="p">())</span>
 
-        <span class="c1"># in theory, this should ensure that dt is consistent across time stepping, but this is not the case</span>
-        <span class="c1"># for now, we use the custom loop runner from Isaac Sim to achieve this</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/app/player/useFixedTimeStepping&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># use fixed time stepping disabled; custom loop runner from Isaac Sim is used instead</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/app/player/useFixedTimeStepping&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_hide_stop_button</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Hide the stop button in the toolbar.</span>
@@ -1536,9 +1530,7 @@
                 <span class="n">play_button_group</span><span class="o">.</span><span class="n">_stop_button</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_rendering_mode_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store RTX rendering mode in carb settings.&quot;&quot;&quot;</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store RTX rendering mode in settings.&quot;&quot;&quot;</span>
         <span class="n">rendering_mode</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rendering_mode&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">rendering_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1547,15 +1539,10 @@
                 <span class="k">return</span>
             <span class="n">rendering_mode</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
-        <span class="c1"># store rendering mode in carb settings</span>
-        <span class="n">carb_settings</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-        <span class="n">carb_settings</span><span class="o">.</span><span class="n">set_string</span><span class="p">(</span><span class="s2">&quot;/isaaclab/rendering/rendering_mode&quot;</span><span class="p">,</span> <span class="n">rendering_mode</span><span class="p">)</span>
+        <span class="n">get_settings_manager</span><span class="p">()</span><span class="o">.</span><span class="n">set_string</span><span class="p">(</span><span class="s2">&quot;/isaaclab/rendering/rendering_mode&quot;</span><span class="p">,</span> <span class="n">rendering_mode</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_animation_recording_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store animation recording settings in carb settings.&quot;&quot;&quot;</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-
-        <span class="c1"># check if recording is enabled</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store animation recording settings in settings.&quot;&quot;&quot;</span>
         <span class="n">recording_enabled</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;anim_recording_enabled&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">recording_enabled</span><span class="p">:</span>
             <span class="k">return</span>
@@ -1567,26 +1554,22 @@
                 <span class="sa">f</span><span class="s2">&quot; &#39;anim_recording_stop_time&#39; </span><span class="si">{</span><span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;anim_recording_stop_time&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># grab config</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;anim_recording_start_time&quot;</span><span class="p">)</span>
         <span class="n">stop_time</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;anim_recording_stop_time&quot;</span><span class="p">)</span>
 
-        <span class="c1"># store config in carb settings</span>
-        <span class="n">carb_settings</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-        <span class="n">carb_settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/enabled&quot;</span><span class="p">,</span> <span class="n">recording_enabled</span><span class="p">)</span>
-        <span class="n">carb_settings</span><span class="o">.</span><span class="n">set_float</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/start_time&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
-        <span class="n">carb_settings</span><span class="o">.</span><span class="n">set_float</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/stop_time&quot;</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings_manager</span><span class="p">()</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/enabled&quot;</span><span class="p">,</span> <span class="n">recording_enabled</span><span class="p">)</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_float</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/start_time&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_float</span><span class="p">(</span><span class="s2">&quot;/isaaclab/anim_recording/stop_time&quot;</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_visualizer_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store visualizer selection in carb settings.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store visualizer selection in settings.&quot;&quot;&quot;</span>
         <span class="n">visualizers</span> <span class="o">=</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;visualizer&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">visualizers</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-
             <span class="n">visualizer_str</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">visualizers</span><span class="p">)</span>
-            <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span><span class="o">.</span><span class="n">set_string</span><span class="p">(</span><span class="s2">&quot;/isaaclab/visualizer&quot;</span><span class="p">,</span> <span class="n">visualizer_str</span><span class="p">)</span>
+            <span class="n">get_settings_manager</span><span class="p">()</span><span class="o">.</span><span class="n">set_string</span><span class="p">(</span><span class="s2">&quot;/isaaclab/visualizer&quot;</span><span class="p">,</span> <span class="n">visualizer_str</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_interrupt_signal_handle_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle the interrupt signal from the keyboard.&quot;&quot;&quot;</span>

@@ -629,19 +629,20 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni.physx.scripts.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">physx_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">omni.physx.scripts</span><span class="w"> </span><span class="kn">import</span> <span class="n">deformableUtils</span> <span class="k">as</span> <span class="n">deformable_utils</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysxSchema</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdPhysics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdPhysics</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.string</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_camel_case</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">apply_nested</span><span class="p">,</span>
     <span class="n">find_global_fixed_joint_prim</span><span class="p">,</span>
     <span class="n">get_all_matching_child_prims</span><span class="p">,</span>
+    <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">,</span>
     <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">schemas_cfg</span>
@@ -665,7 +666,7 @@
     <span class="s2">&quot;convexHull&quot;</span><span class="p">:</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">Tokens</span><span class="o">.</span><span class="n">convexHull</span><span class="p">,</span>
     <span class="s2">&quot;none&quot;</span><span class="p">:</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">Tokens</span><span class="o">.</span><span class="n">none</span><span class="p">,</span>
     <span class="s2">&quot;meshSimplification&quot;</span><span class="p">:</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">Tokens</span><span class="o">.</span><span class="n">meshSimplification</span><span class="p">,</span>
-    <span class="s2">&quot;sdf&quot;</span><span class="p">:</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">Tokens</span><span class="o">.</span><span class="n">sdf</span><span class="p">,</span>
+    <span class="s2">&quot;sdf&quot;</span><span class="p">:</span> <span class="s2">&quot;sdf&quot;</span><span class="p">,</span>  <span class="c1"># PhysX SDF mesh token; use string (pxr.Tf.Token not available in all envs)</span>
 <span class="p">}</span>
 
 
@@ -776,19 +777,21 @@
     <span class="c1"># check if prim has articulation applied on it</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">ArticulationRootAPI</span><span class="p">(</span><span class="n">articulation_prim</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
-    <span class="c1"># retrieve the articulation api</span>
-    <span class="n">physx_articulation_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxArticulationAPI</span><span class="p">(</span><span class="n">articulation_prim</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">physx_articulation_api</span><span class="p">:</span>
-        <span class="n">physx_articulation_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxArticulationAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">articulation_prim</span><span class="p">)</span>
+    <span class="c1"># ensure PhysX articulation API is applied</span>
+    <span class="n">applied_schemas</span> <span class="o">=</span> <span class="n">articulation_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxArticulationAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_schemas</span><span class="p">:</span>
+        <span class="n">articulation_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxArticulationAPI&quot;</span><span class="p">)</span>
 
     <span class="c1"># convert to dict</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
     <span class="c1"># extract non-USD properties</span>
     <span class="n">fix_root_link</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fix_root_link&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-    <span class="c1"># set into physx api</span>
+    <span class="c1"># set into physx api (prim attributes under physxArticulation:*)</span>
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_articulation_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+            <span class="n">articulation_prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;physxArticulation:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
     <span class="c1"># fix root link based on input</span>
     <span class="c1"># we do the fixed joint processing later to not interfere with setting other properties</span>
@@ -826,23 +829,31 @@
             <span class="n">parent_prim</span> <span class="o">=</span> <span class="n">articulation_prim</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
             <span class="c1"># apply api to parent</span>
             <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">ArticulationRootAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">parent_prim</span><span class="p">)</span>
-            <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxArticulationAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">parent_prim</span><span class="p">)</span>
+            <span class="n">parent_applied</span> <span class="o">=</span> <span class="n">parent_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;PhysxArticulationAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parent_applied</span><span class="p">:</span>
+                <span class="n">parent_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxArticulationAPI&quot;</span><span class="p">)</span>
 
             <span class="c1"># copy the attributes</span>
             <span class="c1"># -- usd attributes</span>
             <span class="n">usd_articulation_api</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">ArticulationRootAPI</span><span class="p">(</span><span class="n">articulation_prim</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">usd_articulation_api</span><span class="o">.</span><span class="n">GetSchemaAttributeNames</span><span class="p">():</span>
                 <span class="n">attr</span> <span class="o">=</span> <span class="n">articulation_prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
-                <span class="n">parent_prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">Get</span><span class="p">())</span>
-            <span class="c1"># -- physx attributes</span>
-            <span class="n">physx_articulation_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxArticulationAPI</span><span class="p">(</span><span class="n">articulation_prim</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">physx_articulation_api</span><span class="o">.</span><span class="n">GetSchemaAttributeNames</span><span class="p">():</span>
-                <span class="n">attr</span> <span class="o">=</span> <span class="n">articulation_prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
-                <span class="n">parent_prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">Get</span><span class="p">())</span>
+                <span class="n">parent_attr</span> <span class="o">=</span> <span class="n">parent_prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">parent_attr</span><span class="p">:</span>
+                    <span class="n">parent_attr</span> <span class="o">=</span> <span class="n">parent_prim</span><span class="o">.</span><span class="n">CreateAttribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span><span class="o">.</span><span class="n">GetTypeName</span><span class="p">())</span>
+                <span class="n">parent_attr</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">Get</span><span class="p">())</span>
+            <span class="c1"># -- physx attributes (copy by name prefix)</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">articulation_prim</span><span class="o">.</span><span class="n">GetAttributes</span><span class="p">():</span>
+                <span class="n">aname</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">GetName</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">aname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;physxArticulation:&quot;</span><span class="p">):</span>
+                    <span class="n">parent_attr</span> <span class="o">=</span> <span class="n">parent_prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="n">aname</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">parent_attr</span><span class="p">:</span>
+                        <span class="n">parent_attr</span> <span class="o">=</span> <span class="n">parent_prim</span><span class="o">.</span><span class="n">CreateAttribute</span><span class="p">(</span><span class="n">aname</span><span class="p">,</span> <span class="n">attr</span><span class="o">.</span><span class="n">GetTypeName</span><span class="p">())</span>
+                    <span class="n">parent_attr</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">Get</span><span class="p">())</span>
 
             <span class="c1"># remove api from root</span>
+            <span class="n">articulation_prim</span><span class="o">.</span><span class="n">RemoveAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxArticulationAPI&quot;</span><span class="p">)</span>
             <span class="n">articulation_prim</span><span class="o">.</span><span class="n">RemoveAPI</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">ArticulationRootAPI</span><span class="p">)</span>
-            <span class="n">articulation_prim</span><span class="o">.</span><span class="n">RemoveAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxArticulationAPI</span><span class="p">)</span>
 
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span></div>
@@ -928,10 +939,10 @@
         <span class="k">return</span> <span class="kc">False</span>
     <span class="c1"># retrieve the USD rigid-body api</span>
     <span class="n">usd_rigid_body_api</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">RigidBodyAPI</span><span class="p">(</span><span class="n">rigid_body_prim</span><span class="p">)</span>
-    <span class="c1"># retrieve the physx rigid-body api</span>
-    <span class="n">physx_rigid_body_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxRigidBodyAPI</span><span class="p">(</span><span class="n">rigid_body_prim</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">physx_rigid_body_api</span><span class="p">:</span>
-        <span class="n">physx_rigid_body_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxRigidBodyAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">rigid_body_prim</span><span class="p">)</span>
+    <span class="c1"># ensure PhysX rigid body API is applied</span>
+    <span class="n">applied_schemas</span> <span class="o">=</span> <span class="n">rigid_body_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxRigidBodyAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_schemas</span><span class="p">:</span>
+        <span class="n">rigid_body_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxRigidBodyAPI&quot;</span><span class="p">)</span>
 
     <span class="c1"># convert to dict</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
@@ -939,9 +950,11 @@
     <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rigid_body_enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;kinematic_enabled&quot;</span><span class="p">]:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">usd_rigid_body_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="c1"># set into PhysX API</span>
+    <span class="c1"># set into PhysX API (prim attributes under physxRigidBody:*)</span>
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_rigid_body_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+            <span class="n">rigid_body_prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;physxRigidBody:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -1023,20 +1036,27 @@
         <span class="k">return</span> <span class="kc">False</span>
     <span class="c1"># retrieve the USD collision api</span>
     <span class="n">usd_collision_api</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">CollisionAPI</span><span class="p">(</span><span class="n">collider_prim</span><span class="p">)</span>
-    <span class="c1"># retrieve the collision api</span>
-    <span class="n">physx_collision_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxCollisionAPI</span><span class="p">(</span><span class="n">collider_prim</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">physx_collision_api</span><span class="p">:</span>
-        <span class="n">physx_collision_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxCollisionAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">collider_prim</span><span class="p">)</span>
+    <span class="c1"># ensure PhysX collision API is applied</span>
+    <span class="n">applied_schemas</span> <span class="o">=</span> <span class="n">collider_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxCollisionAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_schemas</span><span class="p">:</span>
+        <span class="n">collider_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxCollisionAPI&quot;</span><span class="p">)</span>
 
+    <span class="n">mesh_collision_cfg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;mesh_collision_property&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mesh_collision_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">modify_mesh_collision_properties</span><span class="p">(</span><span class="n">prim_path</span><span class="p">,</span> <span class="n">mesh_collision_cfg</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span>
     <span class="c1"># convert to dict</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="c1"># pop the mesh_collision_property since it is already set</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mesh_collision_property&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="c1"># set into USD API</span>
     <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;collision_enabled&quot;</span><span class="p">]:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">usd_collision_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="c1"># set into PhysX API</span>
+    <span class="c1"># set into PhysX API (prim attributes under physxCollision:*)</span>
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_collision_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+            <span class="n">collider_prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;physxCollision:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -1171,17 +1191,15 @@
         <span class="c1"># check its children</span>
         <span class="k">if</span> <span class="n">child_prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">RigidBodyAPI</span><span class="p">):</span>
             <span class="c1"># set sleep threshold to zero</span>
-            <span class="n">rb</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxRigidBodyAPI</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetPrimPath</span><span class="p">())</span>
-            <span class="n">rb</span><span class="o">.</span><span class="n">CreateSleepThresholdAttr</span><span class="p">()</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">child_applied</span> <span class="o">=</span> <span class="n">child_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;PhysxRigidBodyAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">child_applied</span><span class="p">:</span>
+                <span class="n">child_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxRigidBodyAPI&quot;</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span><span class="n">child_prim</span><span class="p">,</span> <span class="s2">&quot;physxRigidBody:sleepThreshold&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="c1"># add contact report API with threshold of zero</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">child_prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxContactReportAPI</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;PhysxContactReportAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">child_applied</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adding contact report API to prim: &#39;</span><span class="si">{</span><span class="n">child_prim</span><span class="o">.</span><span class="n">GetPrimPath</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                <span class="n">cr_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxContactReportAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">child_prim</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Contact report API already exists on prim: &#39;</span><span class="si">{</span><span class="n">child_prim</span><span class="o">.</span><span class="n">GetPrimPath</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                <span class="n">cr_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxContactReportAPI</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">child_prim</span><span class="o">.</span><span class="n">GetPrimPath</span><span class="p">())</span>
-            <span class="c1"># set threshold to zero</span>
-            <span class="n">cr_api</span><span class="o">.</span><span class="n">CreateThresholdAttr</span><span class="p">()</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
+                <span class="n">child_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxContactReportAPI&quot;</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span><span class="n">child_prim</span><span class="p">,</span> <span class="s2">&quot;physxContactReport:threshold&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="c1"># increment number of contact sensors</span>
             <span class="n">num_contact_sensors</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1255,18 +1273,17 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="c1"># check that prim is not a tendon child prim</span>
-    <span class="c1"># note: root prim is what &quot;controls&quot; the tendon so we still want to apply the drive to it</span>
-    <span class="k">if</span> <span class="n">prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAxisAPI</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAxisRootAPI</span><span class="p">):</span>
+    <span class="n">applied_schemas_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">())</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxTendonAxisAPI&quot;</span> <span class="ow">in</span> <span class="n">applied_schemas_str</span> <span class="ow">and</span> <span class="s2">&quot;PhysxTendonAxisRootAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_schemas_str</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># check if prim has joint drive applied on it</span>
     <span class="n">usd_drive_api</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">DriveAPI</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="n">drive_api_name</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">usd_drive_api</span><span class="p">:</span>
         <span class="n">usd_drive_api</span> <span class="o">=</span> <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">DriveAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="n">drive_api_name</span><span class="p">)</span>
-    <span class="c1"># check if prim has Physx joint drive applied on it</span>
-    <span class="n">physx_joint_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxJointAPI</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">physx_joint_api</span><span class="p">:</span>
-        <span class="n">physx_joint_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxJointAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+    <span class="c1"># ensure PhysX joint API is applied</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxJointAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_schemas_str</span><span class="p">:</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxJointAPI&quot;</span><span class="p">)</span>
 
     <span class="c1"># mapping from configuration name to USD attribute name</span>
     <span class="n">cfg_to_usd_map</span> <span class="o">=</span> <span class="p">{</span>
@@ -1291,11 +1308,13 @@
             <span class="c1"># N-m-s/rad --&gt; N-m-s/deg</span>
             <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;damping&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;damping&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
 
-    <span class="c1"># set into PhysX API</span>
+    <span class="c1"># set into PhysX API (prim attributes under physxJoint:*)</span>
     <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;max_velocity&quot;</span><span class="p">]:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">attr_name</span> <span class="o">=</span> <span class="n">cfg_to_usd_map</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
-        <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_joint_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">usd_attr_name</span> <span class="o">=</span> <span class="n">cfg_to_usd_map</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
+        <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+            <span class="n">prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;physxJoint:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">usd_attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
     <span class="c1"># set into USD API</span>
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">attr_name</span> <span class="o">=</span> <span class="n">cfg_to_usd_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
@@ -1347,24 +1366,23 @@
     <span class="c1"># get USD prim</span>
     <span class="n">tendon_prim</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prim_path</span><span class="p">)</span>
     <span class="c1"># check if prim has fixed tendon applied on it</span>
-    <span class="n">has_root_fixed_tendon</span> <span class="o">=</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAxisRootAPI</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_root_fixed_tendon</span><span class="p">:</span>
+    <span class="n">applied_schemas</span> <span class="o">=</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;PhysxTendonAxisRootAPI&quot;</span> <span class="ow">in</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">applied_schemas</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># resolve all available instances of the schema since it is multi-instance</span>
-    <span class="k">for</span> <span class="n">schema_name</span> <span class="ow">in</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">():</span>
-        <span class="c1"># only consider the fixed tendon schema</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">schema_name</span> <span class="ow">in</span> <span class="n">applied_schemas</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;PhysxTendonAxisRootAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema_name</span><span class="p">:</span>
             <span class="k">continue</span>
-        <span class="c1"># retrieve the USD tendon api</span>
-        <span class="n">instance_name</span> <span class="o">=</span> <span class="n">schema_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">physx_tendon_axis_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAxisRootAPI</span><span class="p">(</span><span class="n">tendon_prim</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">)</span>
-
-        <span class="c1"># convert to dict</span>
-        <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-        <span class="c1"># set into PhysX API</span>
+        <span class="c1"># set into PhysX API by attribute prefix schema_name: (e.g. PhysxTendonAxisRootAPI:default:stiffness)</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_tendon_axis_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+                <span class="n">tendon_prim</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schema_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">value</span><span class="p">,</span>
+                <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -1413,29 +1431,24 @@
     <span class="c1"># get USD prim</span>
     <span class="n">tendon_prim</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prim_path</span><span class="p">)</span>
     <span class="c1"># check if prim has spatial tendon applied on it</span>
-    <span class="n">has_spatial_tendon</span> <span class="o">=</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span><span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAttachmentRootAPI</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">HasAPI</span><span class="p">(</span>
-        <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAttachmentLeafAPI</span>
+    <span class="n">applied_schemas</span> <span class="o">=</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="n">has_spatial</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="s2">&quot;PhysxTendonAttachmentRootAPI&quot;</span> <span class="ow">in</span> <span class="n">s</span> <span class="ow">or</span> <span class="s2">&quot;PhysxTendonAttachmentLeafAPI&quot;</span> <span class="ow">in</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">applied_schemas</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_spatial_tendon</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_spatial</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="c1"># resolve all available instances of the schema since it is multi-instance</span>
-    <span class="k">for</span> <span class="n">schema_name</span> <span class="ow">in</span> <span class="n">tendon_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">():</span>
-        <span class="c1"># only consider the spatial tendon schema</span>
-        <span class="c1"># retrieve the USD tendon api</span>
-        <span class="k">if</span> <span class="s2">&quot;PhysxTendonAttachmentRootAPI&quot;</span> <span class="ow">in</span> <span class="n">schema_name</span><span class="p">:</span>
-            <span class="n">instance_name</span> <span class="o">=</span> <span class="n">schema_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">physx_tendon_spatial_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAttachmentRootAPI</span><span class="p">(</span><span class="n">tendon_prim</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;PhysxTendonAttachmentLeafAPI&quot;</span> <span class="ow">in</span> <span class="n">schema_name</span><span class="p">:</span>
-            <span class="n">instance_name</span> <span class="o">=</span> <span class="n">schema_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">physx_tendon_spatial_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxTendonAttachmentLeafAPI</span><span class="p">(</span><span class="n">tendon_prim</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">schema_name</span> <span class="ow">in</span> <span class="n">applied_schemas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;PhysxTendonAttachmentRootAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema_name</span> <span class="ow">and</span> <span class="s2">&quot;PhysxTendonAttachmentLeafAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema_name</span><span class="p">:</span>
             <span class="k">continue</span>
-        <span class="c1"># convert to dict</span>
-        <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-        <span class="c1"># set into PhysX API</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_tendon_spatial_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+                <span class="n">tendon_prim</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schema_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">value</span><span class="p">,</span>
+                <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span>
 
@@ -1492,9 +1505,10 @@
 
     <span class="c1"># get deformable-body USD prim</span>
     <span class="n">mesh_prim</span> <span class="o">=</span> <span class="n">matching_prims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c1"># check if prim has deformable-body applied on it</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxDeformableBodyAPI</span><span class="p">(</span><span class="n">mesh_prim</span><span class="p">):</span>
-        <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxDeformableBodyAPI</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">mesh_prim</span><span class="p">)</span>
+    <span class="c1"># ensure PhysX deformable body API is applied</span>
+    <span class="n">mesh_applied</span> <span class="o">=</span> <span class="n">mesh_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxDeformableBodyAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mesh_applied</span><span class="p">:</span>
+        <span class="n">mesh_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxDeformableBodyAPI&quot;</span><span class="p">)</span>
     <span class="c1"># set deformable body properties</span>
     <span class="n">modify_deformable_body_properties</span><span class="p">(</span><span class="n">mesh_prim</span><span class="o">.</span><span class="n">GetPrimPath</span><span class="p">(),</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span></div>
 
@@ -1551,13 +1565,10 @@
     <span class="n">deformable_body_prim</span> <span class="o">=</span> <span class="n">stage</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prim_path</span><span class="p">)</span>
 
     <span class="c1"># check if the prim is valid and has the deformable-body API</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">deformable_body_prim</span><span class="o">.</span><span class="n">IsValid</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxDeformableBodyAPI</span><span class="p">(</span><span class="n">deformable_body_prim</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">deformable_body_prim</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">False</span>
-
-    <span class="c1"># retrieve the physx deformable-body api</span>
-    <span class="n">physx_deformable_body_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxDeformableBodyAPI</span><span class="p">(</span><span class="n">deformable_body_prim</span><span class="p">)</span>
-    <span class="c1"># retrieve the physx deformable api</span>
-    <span class="n">physx_deformable_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxDeformableAPI</span><span class="p">(</span><span class="n">physx_deformable_body_api</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxDeformableBodyAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">deformable_body_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># convert to dict</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
@@ -1586,15 +1597,23 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="c1"># obtain the PhysX collision API (this is set when the deformable body is added)</span>
-    <span class="n">physx_collision_api</span> <span class="o">=</span> <span class="n">PhysxSchema</span><span class="o">.</span><span class="n">PhysxCollisionAPI</span><span class="p">(</span><span class="n">deformable_body_prim</span><span class="p">)</span>
+    <span class="c1"># ensure PhysX deformable API is applied (set when add_physx_deformable_body runs; apply if missing)</span>
+    <span class="n">deformable_applied</span> <span class="o">=</span> <span class="n">deformable_body_prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxCollisionAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">deformable_applied</span><span class="p">:</span>
+        <span class="n">deformable_body_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxCollisionAPI&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;PhysxDeformableAPI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">deformable_applied</span><span class="p">:</span>
+        <span class="n">deformable_body_prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="s2">&quot;PhysxDeformableAPI&quot;</span><span class="p">)</span>
 
-    <span class="c1"># set into PhysX API</span>
+    <span class="c1"># set into PhysX API (prim attributes: physxCollision:* for rest/contact offset, physxDeformable:* for rest)</span>
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rest_offset&quot;</span><span class="p">,</span> <span class="s2">&quot;contact_offset&quot;</span><span class="p">]:</span>
-            <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_collision_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+                <span class="n">deformable_body_prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;physxCollision:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">physx_deformable_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span>
+                <span class="n">deformable_body_prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;physxDeformable:</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cC&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
 
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span></div>
@@ -1605,56 +1624,63 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_physx_collision_namespace</span><span class="p">(</span><span class="n">schema_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert PhysX schema name to attribute namespace used on the prim.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">schema_name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;PhysX schema name must be provided for mesh collision properties.&quot;</span><span class="p">)</span>
+    <span class="n">schema_name</span> <span class="o">=</span> <span class="n">schema_name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;API&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">schema_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="n">schema_name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_usd_mesh_collision_api</span><span class="p">(</span><span class="n">api_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve the USD mesh collision API from a string name.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;USD schema name must be provided for mesh collision properties.&quot;</span><span class="p">)</span>
+    <span class="n">usd_api</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="p">,</span> <span class="n">api_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">usd_api</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;USD schema &#39;</span><span class="si">{</span><span class="n">api_name</span><span class="si">}</span><span class="s2">&#39; not found in UsdPhysics.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">usd_api</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_mesh_collision_api_and_attrs</span><span class="p">(</span>
     <span class="n">cfg</span><span class="p">:</span> <span class="n">schemas_cfg</span><span class="o">.</span><span class="n">MeshCollisionPropertiesCfg</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the mesh collision API function and custom attributes from the configuration.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the mesh collision API type/value and custom attributes from the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        cfg: The configuration for the mesh collision properties.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A tuple containing the API function to use and a dictionary of custom attributes.</span>
+<span class="sd">        A tuple of ((api_type, api_value), custom_attrs). api_type is &quot;usd&quot; or &quot;physx&quot;;</span>
+<span class="sd">        api_value is the USD API class (callable) or PhysX schema name string.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: When neither USD nor PhysX API can be determined to be used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># We use the number of user set attributes outside of the API function</span>
-    <span class="c1"># to determine which API to use in ambiguous cases, so collect them here</span>
     <span class="n">custom_attrs</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;usd_func&quot;</span><span class="p">,</span> <span class="s2">&quot;physx_func&quot;</span><span class="p">,</span> <span class="s2">&quot;mesh_approximation_name&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;usd_api&quot;</span><span class="p">,</span> <span class="s2">&quot;physx_api&quot;</span><span class="p">,</span> <span class="s2">&quot;mesh_approximation_name&quot;</span><span class="p">]</span>
     <span class="p">}</span>
 
     <span class="n">use_usd_api</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">use_phsyx_api</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">use_physx_api</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="c1"># We have some custom attributes and allow them</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">custom_attrs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="ow">in</span> <span class="n">PHYSX_MESH_COLLISION_CFGS</span><span class="p">:</span>
-        <span class="n">use_phsyx_api</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="c1"># We have no custom attributes</span>
+        <span class="n">use_physx_api</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">custom_attrs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="ow">in</span> <span class="n">USD_MESH_COLLISION_CFGS</span><span class="p">:</span>
-            <span class="c1"># Use the USD API</span>
             <span class="n">use_usd_api</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Use the PhysX API</span>
-            <span class="n">use_phsyx_api</span> <span class="o">=</span> <span class="kc">True</span>
-
+            <span class="n">use_physx_api</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">custom_attrs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="ow">in</span> <span class="n">USD_MESH_COLLISION_CFGS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Args are specified but the USD Mesh API doesn&#39;t support them!&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">use_usd_api</span><span class="p">:</span>
-        <span class="c1"># Use USD API for corresponding attributes</span>
-        <span class="c1"># For mesh collision approximation attribute, we set it explicitly in `modify_mesh_collision_properties``</span>
-        <span class="n">api_func</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">usd_func</span>
-    <span class="k">elif</span> <span class="n">use_phsyx_api</span><span class="p">:</span>
-        <span class="n">api_func</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">physx_func</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either USD or PhysX API should be used for modifying mesh collision attributes!&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">api_func</span><span class="p">,</span> <span class="n">custom_attrs</span>
+    <span class="k">if</span> <span class="n">use_usd_api</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;usd_api&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;usd&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">usd_api</span><span class="p">),</span> <span class="n">custom_attrs</span>
+    <span class="k">if</span> <span class="n">use_physx_api</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;physx_api&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;physx&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">physx_api</span><span class="p">),</span> <span class="n">custom_attrs</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either USD or PhysX API should be used for modifying mesh collision attributes!&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">define_mesh_collision_properties</span><span class="p">(</span>
@@ -1679,11 +1705,15 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">prim</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prim path &#39;</span><span class="si">{</span><span class="n">prim_path</span><span class="si">}</span><span class="s2">&#39; is not valid.&quot;</span><span class="p">)</span>
 
-    <span class="n">api_func</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">extract_mesh_collision_api_and_attrs</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">api_type</span><span class="p">,</span> <span class="n">api_value</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="n">extract_mesh_collision_api_and_attrs</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
 
-    <span class="c1"># Only enable if not already enabled</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_func</span><span class="p">(</span><span class="n">prim</span><span class="p">):</span>
-        <span class="n">api_func</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">api_type</span> <span class="o">==</span> <span class="s2">&quot;usd&quot;</span><span class="p">:</span>
+        <span class="n">usd_api_class</span> <span class="o">=</span> <span class="n">_get_usd_mesh_collision_api</span><span class="p">(</span><span class="n">api_value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">usd_api_class</span><span class="p">(</span><span class="n">prim</span><span class="p">):</span>
+            <span class="n">usd_api_class</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">api_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">():</span>
+            <span class="n">prim</span><span class="o">.</span><span class="n">AddAppliedSchema</span><span class="p">(</span><span class="n">api_value</span><span class="p">)</span>
 
     <span class="n">modify_mesh_collision_properties</span><span class="p">(</span><span class="n">prim_path</span><span class="o">=</span><span class="n">prim_path</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="n">stage</span><span class="p">)</span>
 
@@ -1729,19 +1759,23 @@
         <span class="n">UsdPhysics</span><span class="o">.</span><span class="n">MeshCollisionAPI</span><span class="p">(</span><span class="n">prim</span><span class="p">),</span> <span class="s2">&quot;Approximation&quot;</span><span class="p">,</span> <span class="n">approximation_token</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">)</span>
 
-    <span class="n">api_func</span><span class="p">,</span> <span class="n">custom_attrs</span> <span class="o">=</span> <span class="n">extract_mesh_collision_api_and_attrs</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">api_type</span><span class="p">,</span> <span class="n">api_value</span><span class="p">),</span> <span class="n">custom_attrs</span> <span class="o">=</span> <span class="n">extract_mesh_collision_api_and_attrs</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
 
-    <span class="c1"># retrieve the mesh collision API</span>
-    <span class="n">mesh_collision_api</span> <span class="o">=</span> <span class="n">api_func</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
-
-    <span class="c1"># set custom attributes into mesh collision API</span>
-    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">custom_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="c1"># Only &quot;Attribute&quot; attr should be in format &quot;boundingSphere&quot;, so set camel_case to be False</span>
-        <span class="k">if</span> <span class="n">attr_name</span> <span class="o">==</span> <span class="s2">&quot;Attribute&quot;</span><span class="p">:</span>
-            <span class="n">camel_case</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">camel_case</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">mesh_collision_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="n">camel_case</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">api_type</span> <span class="o">==</span> <span class="s2">&quot;usd&quot;</span><span class="p">:</span>
+        <span class="n">usd_api_class</span> <span class="o">=</span> <span class="n">_get_usd_mesh_collision_api</span><span class="p">(</span><span class="n">api_value</span><span class="p">)</span>
+        <span class="n">mesh_collision_api</span> <span class="o">=</span> <span class="n">usd_api_class</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mesh_collision_api</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">custom_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">camel_case</span> <span class="o">=</span> <span class="n">attr_name</span> <span class="o">!=</span> <span class="s2">&quot;Attribute&quot;</span>
+            <span class="n">safe_set_attribute_on_usd_schema</span><span class="p">(</span><span class="n">mesh_collision_api</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="n">camel_case</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">api_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetAppliedSchemas</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">attr_namespace</span> <span class="o">=</span> <span class="n">_get_physx_collision_namespace</span><span class="p">(</span><span class="n">api_value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">custom_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">attr_token</span> <span class="o">=</span> <span class="n">attr_name</span> <span class="k">if</span> <span class="n">attr_name</span> <span class="o">==</span> <span class="s2">&quot;Attribute&quot;</span> <span class="k">else</span> <span class="n">to_camel_case</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="s2">&quot;cC&quot;</span><span class="p">)</span>
+            <span class="n">safe_set_attribute_on_usd_prim</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr_namespace</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">attr_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">camel_case</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># success</span>
     <span class="k">return</span> <span class="kc">True</span>

@@ -636,11 +636,11 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">packaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">UsdGeom</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim_utils</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.utils.sensors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sensor_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.app.settings_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings_manager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">XformPrimView</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_camel_case</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_to_torch</span>
@@ -752,8 +752,8 @@
 
         <span class="c1"># toggle rendering of rtx sensors as True</span>
         <span class="c1"># this flag is read by SimulationContext to determine if rtx sensors should be rendered</span>
-        <span class="n">carb_settings_iface</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-        <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/rtx_sensors&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings_manager</span><span class="p">()</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/isaaclab/render/rtx_sensors&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># This is only introduced in isaac sim 6.0</span>
         <span class="n">isaac_sim_version</span> <span class="o">=</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span>
@@ -761,11 +761,11 @@
             <span class="c1"># Set RTX flag to enable fast path if only depth or albedo is requested</span>
             <span class="n">supported_fast_types</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;distance_to_camera&quot;</span><span class="p">,</span> <span class="s2">&quot;distance_to_image_plane&quot;</span><span class="p">,</span> <span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="s2">&quot;albedo&quot;</span><span class="p">}</span>
             <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">data_type</span> <span class="ow">in</span> <span class="n">supported_fast_types</span> <span class="k">for</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span><span class="p">):</span>
-                <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/rtx/sdg/force/disableColorRender&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/rtx/sdg/force/disableColorRender&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># If we have GUI / viewport enabled, we turn off fast path so that the viewport is not black</span>
-            <span class="k">if</span> <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/isaaclab/has_gui&quot;</span><span class="p">):</span>
-                <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/rtx/sdg/force/disableColorRender&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/isaaclab/has_gui&quot;</span><span class="p">):</span>
+                <span class="n">settings</span><span class="o">.</span><span class="n">set_bool</span><span class="p">(</span><span class="s2">&quot;/rtx/sdg/force/disableColorRender&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;albedo&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">data_types</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -780,7 +780,7 @@
         <span class="c1"># Set simple shading mode (if requested) before rendering</span>
         <span class="n">simple_shading_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_simple_shading_mode</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">simple_shading_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">set_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODE_SETTING</span><span class="p">,</span> <span class="n">simple_shading_mode</span><span class="p">)</span>
+            <span class="n">settings</span><span class="o">.</span><span class="n">set_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SIMPLE_SHADING_MODE_SETTING</span><span class="p">,</span> <span class="n">simple_shading_mode</span><span class="p">)</span>
 
         <span class="c1"># spawn the asset</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1051,8 +1051,7 @@
 <span class="sd">            RuntimeError: If the number of camera prims in the view does not match the number of environments.</span>
 <span class="sd">            RuntimeError: If replicator was not found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">carb_settings_iface</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/isaaclab/cameras_enabled&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_settings_manager</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/isaaclab/cameras_enabled&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="s2">&quot;A camera was spawned without the --enable_cameras flag. Please use --enable_cameras to enable&quot;</span>
                 <span class="s2">&quot; rendering.&quot;</span>
