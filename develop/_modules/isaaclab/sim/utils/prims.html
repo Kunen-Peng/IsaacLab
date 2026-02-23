@@ -647,7 +647,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.queries</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_matching_prim_paths</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.semantics</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_labels</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span><span class="p">,</span> <span class="n">get_current_stage_id</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span><span class="p">,</span> <span class="n">get_current_stage_id</span><span class="p">,</span> <span class="n">resolve_paths</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.transforms</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_world_pose_to_local</span><span class="p">,</span> <span class="n">standardize_xform_ops</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -841,46 +841,6 @@
         <span class="s2">&quot;DeletePrimsCommand&quot;</span><span class="p">,</span>
         <span class="n">paths</span><span class="o">=</span><span class="n">prim_path</span><span class="p">,</span>
         <span class="n">stage</span><span class="o">=</span><span class="n">stage</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">success</span></div>
-
-
-<div class="viewcode-block" id="move_prim"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.prims.move_prim">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">move_prim</span><span class="p">(</span><span class="n">path_from</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path_to</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">keep_world_transform</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Moves a prim from one path to another within a USD stage.</span>
-
-<span class="sd">    This function moves the prim from the source path to the destination path. If the :attr:`keep_world_transform`</span>
-<span class="sd">    is set to True, the world transform of the prim is kept. This implies that the prim&#39;s local transform is reset</span>
-<span class="sd">    such that the prim&#39;s world transform is the same as the source path&#39;s world transform. If it is set to False,</span>
-<span class="sd">    the prim&#39;s local transform is preserved.</span>
-
-<span class="sd">    .. warning::</span>
-<span class="sd">        Reparenting or moving prims in USD is an expensive operation that may trigger</span>
-<span class="sd">        significant recomposition costs, especially in large or deeply layered stages.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        path_from: Path of the USD Prim you wish to move</span>
-<span class="sd">        path_to: Final destination of the prim</span>
-<span class="sd">        keep_world_transform: Whether to keep the world transform of the prim. Defaults to True.</span>
-<span class="sd">        stage: The stage to move the prim in. Defaults to None, in which case the current stage is used.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        True if the prim was moved successfully, False otherwise.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; # given the stage: /World/Cube. Move the prim Cube outside the prim World</span>
-<span class="sd">        &gt;&gt;&gt; sim_utils.move_prim(&quot;/World/Cube&quot;, &quot;/Cube&quot;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># get stage handle</span>
-    <span class="n">stage</span> <span class="o">=</span> <span class="n">get_current_stage</span><span class="p">()</span> <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stage</span>
-    <span class="c1"># move prim</span>
-    <span class="n">success</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-        <span class="s2">&quot;MovePrimCommand&quot;</span><span class="p">,</span>
-        <span class="n">path_from</span><span class="o">=</span><span class="n">path_from</span><span class="p">,</span>
-        <span class="n">path_to</span><span class="o">=</span><span class="n">path_to</span><span class="p">,</span>
-        <span class="n">keep_world_transform</span><span class="o">=</span><span class="n">keep_world_transform</span><span class="p">,</span>
-        <span class="n">stage_or_context</span><span class="o">=</span><span class="n">stage</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">success</span></div>
 
@@ -1194,8 +1154,8 @@
     <span class="n">Sdf</span><span class="o">.</span><span class="n">CopySpec</span><span class="p">(</span><span class="n">source_layer</span><span class="p">,</span> <span class="n">source_prim_path</span><span class="p">,</span> <span class="n">target_layer</span><span class="p">,</span> <span class="n">target_prim_path</span><span class="p">)</span>
     <span class="c1"># set the default prim</span>
     <span class="n">target_layer</span><span class="o">.</span><span class="n">defaultPrim</span> <span class="o">=</span> <span class="n">Sdf</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">target_prim_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
-    <span class="c1"># resolve all paths relative to layer path</span>
-    <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">resolve_paths</span><span class="p">(</span><span class="n">source_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">target_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+    <span class="c1"># resolve paths so asset references remain valid from the new location</span>
+    <span class="n">resolve_paths</span><span class="p">(</span><span class="n">source_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">target_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
     <span class="c1"># save the stage</span>
     <span class="n">target_layer</span><span class="o">.</span><span class="n">Save</span><span class="p">()</span></div>
 

@@ -631,34 +631,138 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">builtins</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generator</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.app</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaacsim.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">stage</span> <span class="k">as</span> <span class="n">sim_stage</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdUtils</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_isaac_sim_version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_isaac_sim_version</span><span class="p">,</span> <span class="n">has_kit</span>
 
 <span class="c1"># import logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">_context</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>  <span class="c1"># thread-local storage to handle nested contexts and concurrent access</span>
 
-<span class="c1"># _context is a singleton design in isaacsim and for that reason</span>
-<span class="c1">#  until we fully replace all modules that references the singleton(such as XformPrim, Prim ....), we have to point</span>
-<span class="c1">#  that singleton to this _context</span>
-<span class="n">sim_stage</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">_context</span>  <span class="c1"># type: ignore</span>
+<span class="c1"># Kit-dependent imports (only available when running with Kit/Isaac Sim)</span>
+<span class="k">if</span> <span class="n">has_kit</span><span class="p">():</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.app</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_ancestral</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a prim is brought into composition by its ancestor (an ancestral prim).</span>
+
+<span class="sd">    This is a pure USD implementation of ``omni.usd.check_ancestral``.</span>
+
+<span class="sd">    An ancestral prim is one that exists due to a reference, payload, or other composition arc</span>
+<span class="sd">    on an ancestor prim. Such prims cannot be directly deleted because they are &quot;opinions&quot; from</span>
+<span class="sd">    the referenced asset, not locally authored prims.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        prim: The USD prim to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if the prim is an ancestral prim, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">prim</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">prim</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_ancestral_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively check if any composition node is due to an ancestor.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">IsDueToAncestor</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">_check_ancestral_node</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+
+    <span class="n">prim_index</span> <span class="o">=</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetPrimIndex</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">prim_index</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">_check_ancestral_node</span><span class="p">(</span><span class="n">prim_index</span><span class="o">.</span><span class="n">rootNode</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="resolve_paths"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.resolve_paths">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">resolve_paths</span><span class="p">(</span>
+    <span class="n">src_layer_identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">dst_layer_identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">store_relative_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve external asset paths in a destination layer relative to a source layer.</span>
+
+<span class="sd">    When content is copied from one USD layer to another (e.g., via ``Sdf.CopySpec`` or</span>
+<span class="sd">    ``layer.TransferContent``), relative asset paths that were valid from the source</span>
+<span class="sd">    layer&#39;s location may become invalid from the destination layer&#39;s location. This</span>
+<span class="sd">    function recalculates those paths.</span>
+
+<span class="sd">    This uses USD&#39;s built-in ``UsdUtils.ModifyAssetPaths`` to update all external references</span>
+<span class="sd">    (sublayers, references, payloads, asset paths) in the destination layer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src_layer_identifier: The identifier (path) of the source layer.</span>
+<span class="sd">        dst_layer_identifier: The identifier (path) of the destination layer.</span>
+<span class="sd">        store_relative_path: Whether to store paths as relative. Defaults to True.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from pxr import Sdf</span>
+<span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # After copying content to a new layer</span>
+<span class="sd">        &gt;&gt;&gt; source_layer = stage.GetRootLayer()</span>
+<span class="sd">        &gt;&gt;&gt; target_layer = Sdf.Layer.CreateNew(&quot;/path/to/output.usd&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; target_layer.TransferContent(source_layer)</span>
+<span class="sd">        &gt;&gt;&gt; sim_utils.resolve_paths(source_layer.identifier, target_layer.identifier)</span>
+<span class="sd">        &gt;&gt;&gt; target_layer.Save()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">src_layer</span> <span class="o">=</span> <span class="n">Sdf</span><span class="o">.</span><span class="n">Layer</span><span class="o">.</span><span class="n">FindOrOpen</span><span class="p">(</span><span class="n">src_layer_identifier</span><span class="p">)</span>
+    <span class="n">dst_layer</span> <span class="o">=</span> <span class="n">Sdf</span><span class="o">.</span><span class="n">Layer</span><span class="o">.</span><span class="n">FindOrOpen</span><span class="p">(</span><span class="n">dst_layer_identifier</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">src_layer</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source layer not found: </span><span class="si">{</span><span class="n">src_layer_identifier</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dst_layer</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Destination layer not found: </span><span class="si">{</span><span class="n">dst_layer_identifier</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">dst_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dst_layer</span><span class="o">.</span><span class="n">realPath</span> <span class="ow">or</span> <span class="n">dst_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_modify_path</span><span class="p">(</span><span class="n">asset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">asset_path</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">asset_path</span>
+        <span class="n">resolved</span> <span class="o">=</span> <span class="n">src_layer</span><span class="o">.</span><span class="n">ComputeAbsolutePath</span><span class="p">(</span><span class="n">asset_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">store_relative_path</span> <span class="ow">and</span> <span class="n">resolved</span> <span class="ow">and</span> <span class="n">dst_dir</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">resolved</span><span class="p">,</span> <span class="n">dst_dir</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">resolved</span>
+        <span class="k">return</span> <span class="n">resolved</span> <span class="ow">or</span> <span class="n">asset_path</span>
+
+    <span class="n">UsdUtils</span><span class="o">.</span><span class="n">ModifyAssetPaths</span><span class="p">(</span><span class="n">dst_layer</span><span class="p">,</span> <span class="n">_modify_path</span><span class="p">)</span></div>
+
+
+<span class="c1"># ##############################################################################</span>
+<span class="c1"># Public API</span>
+<span class="c1"># ##############################################################################</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># _context is a singleton design in isaacsim and for that reason</span>
+    <span class="c1">#  until we fully replace all modules that references the singleton(such as XformPrim, Prim ....), we have to point</span>
+    <span class="c1">#  that singleton to this _context</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">isaacsim.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">stage</span> <span class="k">as</span> <span class="n">sim_stage</span>
+
+    <span class="n">sim_stage</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">_context</span>  <span class="c1"># type: ignore</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="create_new_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.create_new_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_new_stage</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new stage attached to the USD context.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new in-memory USD stage.</span>
+
+<span class="sd">    Creates a new stage using pure USD (``Usd.Stage.CreateInMemory()``).</span>
+
+<span class="sd">    If Kit is running and Kit extensions need to discover this stage (e.g.</span>
+<span class="sd">    PhysX, ``isaacsim.core.prims.Articulation``), call</span>
+<span class="sd">    :func:`attach_stage_to_usd_context` after scene setup.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Usd.Stage: The created USD stage.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        RuntimeError: When failed to create a new stage.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
@@ -668,77 +772,17 @@
 <span class="sd">                       sessionLayer=Sdf.Find(&#39;anon:0x7fba6c01c5c0:World7-session.usda&#39;),</span>
 <span class="sd">                       pathResolverContext=&lt;invalid repr&gt;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">new_stage</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">get_stage</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Failed to create a new stage. Please check if the USD context is valid.&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="create_new_stage_in_memory"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.create_new_stage_in_memory">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_new_stage_in_memory</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a new stage in memory, if supported.</span>
-
-<span class="sd">    .. versionadded:: 2.3.0</span>
-<span class="sd">        This function is available in Isaac Sim 5.0 and later. For backwards</span>
-<span class="sd">        compatibility, it falls back to creating a new stage attached to the USD context.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The new stage in memory.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; sim_utils.create_new_stage_in_memory()</span>
-<span class="sd">        Usd.Stage.Open(rootLayer=Sdf.Find(&#39;anon:0xf7b00e0:tmp.usda&#39;),</span>
-<span class="sd">                       sessionLayer=Sdf.Find(&#39;anon:0xf7cd2e0:tmp-session.usda&#39;),</span>
-<span class="sd">                       pathResolverContext=&lt;invalid repr&gt;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Isaac Sim &lt; 5.0 does not support creating a new stage in memory. Falling back to creating a new&quot;</span>
-            <span class="s2">&quot; stage attached to USD context.&quot;</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">create_new_stage</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="o">.</span><span class="n">CreateInMemory</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="get_context_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.get_context_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_context_stage</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the stage attached to the USD context, if any.</span>
-
-<span class="sd">    The &quot;context stage&quot; is the USD stage attached to the Omniverse application&#39;s</span>
-<span class="sd">    UsdContext. This is the stage that:</span>
-
-<span class="sd">    * The viewport renders</span>
-<span class="sd">    * The Stage panel in the UI displays</span>
-<span class="sd">    * Most Isaac Sim/Omniverse systems operate on by default</span>
-
-<span class="sd">    This is different from an &quot;in-memory stage&quot; created via</span>
-<span class="sd">    :func:`create_new_stage_in_memory`, which exists only in RAM. Note that when</span>
-<span class="sd">    using ``SimulationCfg(create_stage_in_memory=True)``, the in-memory stage is</span>
-<span class="sd">    automatically attached to the USD context at ``SimulationContext`` creation.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The stage attached to the USD context, or None if no stage is attached.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; stage = sim_utils.get_context_stage()</span>
-<span class="sd">        &gt;&gt;&gt; if stage is not None:</span>
-<span class="sd">        ...     print(&quot;Context has a stage attached&quot;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">context</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="n">get_stage</span><span class="p">()</span></div>
+    <span class="n">stage</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span> <span class="o">=</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="o">.</span><span class="n">CreateInMemory</span><span class="p">()</span>
+    <span class="n">_context</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">stage</span>
+    <span class="n">UsdUtils</span><span class="o">.</span><span class="n">StageCache</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span><span class="o">.</span><span class="n">Insert</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stage</span></div>
 
 
 <div class="viewcode-block" id="is_current_stage_in_memory"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.is_current_stage_in_memory">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_current_stage_in_memory</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if the current stage is NOT attached to the USD context.</span>
 
 <span class="sd">    This function compares the current stage (from :func:`get_current_stage`) with</span>
-<span class="sd">    the context stage (from :func:`get_context_stage`). If they are different,</span>
+<span class="sd">    the stage attached to Kit&#39;s ``omni.usd`` context. If they are different,</span>
 <span class="sd">    the current stage is considered &quot;in memory&quot; - meaning it&#39;s not the stage</span>
 <span class="sd">    that the viewport/UI displays.</span>
 
@@ -746,50 +790,54 @@
 <span class="sd">    stage created via :func:`create_new_stage_in_memory` with</span>
 <span class="sd">    ``SimulationCfg(create_stage_in_memory=True)``.</span>
 
+<span class="sd">    In kitless mode (no USD context), this always returns True.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        True if the current stage is different from (not attached to) the context stage.</span>
 <span class="sd">        Also returns True if there is no context stage at all.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Get current stage</span>
-    <span class="n">current_stage</span> <span class="o">=</span> <span class="n">get_current_stage</span><span class="p">()</span>
-    <span class="n">context_stage</span> <span class="o">=</span> <span class="n">get_context_stage</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_kit</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="c1"># If no context stage exists, current stage is definitely not attached to it</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
+
+    <span class="n">context</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="n">context_stage</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_stage</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">context_stage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="c1"># Compare by identity - are they the same stage object?</span>
-    <span class="c1"># Note: We can&#39;t just compare IDs because different stage objects could</span>
-    <span class="c1"># theoretically have the same ID if one was closed and another opened.</span>
-    <span class="k">return</span> <span class="n">current_stage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">context_stage</span></div>
+    <span class="k">return</span> <span class="n">get_current_stage</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">context_stage</span></div>
 
 
-<div class="viewcode-block" id="open_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.open_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">open_stage</span><span class="p">(</span><span class="n">usd_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Open the given usd file and replace currently opened stage.</span>
+<div class="viewcode-block" id="open_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.open_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">open_stage</span><span class="p">(</span><span class="n">usd_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Open the given USD file.</span>
+
+<span class="sd">    Opens a USD file using pure USD (``Usd.Stage.Open()``). If Kit is available and</span>
+<span class="sd">    context attachment is needed for viewport/UI display, use</span>
+<span class="sd">    :func:`attach_stage_to_usd_context` after opening the stage.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        usd_path: The path to the USD file to open.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        True if operation is successful, otherwise False.</span>
+<span class="sd">        The opened USD stage.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: When input path is not a supported file type by USD.</span>
+<span class="sd">        RuntimeError: When failed to open the stage.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># check if USD file is supported</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="o">.</span><span class="n">IsSupportedFile</span><span class="p">(</span><span class="n">usd_path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The USD file at path &#39;</span><span class="si">{</span><span class="n">usd_path</span><span class="si">}</span><span class="s2">&#39; is not supported.&quot;</span><span class="p">)</span>
 
-    <span class="c1"># get USD context</span>
-    <span class="n">usd_context</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span>
-    <span class="c1"># disable save to recent files</span>
-    <span class="n">usd_context</span><span class="o">.</span><span class="n">disable_save_to_recent_files</span><span class="p">()</span>
-    <span class="c1"># open stage</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">usd_context</span><span class="o">.</span><span class="n">open_stage</span><span class="p">(</span><span class="n">usd_path</span><span class="p">)</span>
-    <span class="c1"># enable save to recent files</span>
-    <span class="n">usd_context</span><span class="o">.</span><span class="n">enable_save_to_recent_files</span><span class="p">()</span>
-    <span class="c1"># return result</span>
-    <span class="k">return</span> <span class="n">result</span></div>
+    <span class="n">stage</span> <span class="o">=</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">usd_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to open USD stage at path &#39;</span><span class="si">{</span><span class="n">usd_path</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+    <span class="c1"># Set as current stage so get_current_stage() can find it</span>
+    <span class="n">_context</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">stage</span>
+    <span class="k">return</span> <span class="n">stage</span></div>
 
 
 <div class="viewcode-block" id="use_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.use_stage">[docs]</a><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
@@ -926,8 +974,10 @@
     <span class="n">root_layer</span> <span class="o">=</span> <span class="n">get_current_stage</span><span class="p">()</span><span class="o">.</span><span class="n">GetRootLayer</span><span class="p">()</span>
     <span class="c1"># transfer content from root layer to new layer</span>
     <span class="n">layer</span><span class="o">.</span><span class="n">TransferContent</span><span class="p">(</span><span class="n">root_layer</span><span class="p">)</span>
-    <span class="c1"># resolve paths</span>
-    <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">resolve_paths</span><span class="p">(</span><span class="n">root_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+
+    <span class="c1"># resolve paths so asset references remain valid from the new location</span>
+    <span class="n">resolve_paths</span><span class="p">(</span><span class="n">root_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+
     <span class="c1"># save layer</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">Save</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
@@ -940,49 +990,30 @@
     <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="close_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.close_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">close_stage</span><span class="p">(</span><span class="n">callback_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Closes the current USD stage.</span>
+<div class="viewcode-block" id="close_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.close_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">close_stage</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Closes the current USD stage by clearing the stage cache.</span>
 
 <span class="sd">    .. note::</span>
 
 <span class="sd">        Once the stage is closed, it is necessary to open a new stage or create a</span>
 <span class="sd">        new one in order to work on it.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        callback_fn: A callback function to call while closing the stage.</span>
-<span class="sd">            The function should take two arguments: a boolean indicating whether the stage is closing</span>
-<span class="sd">            and a string indicating the error message if the stage closing fails. Defaults to None,</span>
-<span class="sd">            in which case the stage will be closed without a callback.</span>
-
 <span class="sd">    Returns:</span>
-<span class="sd">        True if operation is successful, otherwise False.</span>
+<span class="sd">        True if operation is successful.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
 <span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; sim_utils.close_stage()</span>
 <span class="sd">        True</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-
-<span class="sd">    Example with callback function:</span>
-<span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; def callback(*args, **kwargs):</span>
-<span class="sd">        ...     print(&quot;callback:&quot;, args, kwargs)</span>
-<span class="sd">        &gt;&gt;&gt; sim_utils.close_stage(callback)</span>
-<span class="sd">        True</span>
-<span class="sd">        &gt;&gt;&gt; sim_utils.close_stage(callback)</span>
-<span class="sd">        callback: (False, &#39;Stage opening or closing already in progress!!&#39;) {}</span>
-<span class="sd">        False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">callback_fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">close_stage</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">close_stage_with_callback</span><span class="p">(</span><span class="n">callback_fn</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span></div>
+    <span class="n">stage_cache</span> <span class="o">=</span> <span class="n">UsdUtils</span><span class="o">.</span><span class="n">StageCache</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span>
+    <span class="n">stage_cache</span><span class="o">.</span><span class="n">Clear</span><span class="p">()</span>
+    <span class="n">_context</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="is_prim_deletable"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.is_prim_deletable">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_prim_deletable</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_prim_deletable</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a prim can be safely deleted.</span>
 
 <span class="sd">    This function checks various conditions to determine if a prim should be deleted:</span>
@@ -1007,9 +1038,10 @@
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetMetadata</span><span class="p">(</span><span class="s2">&quot;hide_in_stage_window&quot;</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">check_ancestral</span><span class="p">(</span><span class="n">prim</span><span class="p">):</span>
+    <span class="c1"># Check ancestral prims (from USD references) using pure USD helper</span>
+    <span class="k">if</span> <span class="n">_check_ancestral</span><span class="p">(</span><span class="n">prim</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span></div>
+    <span class="k">return</span> <span class="kc">True</span>
 
 
 <div class="viewcode-block" id="clear_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.clear_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">clear_stage</span><span class="p">(</span><span class="n">predicate</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1042,9 +1074,9 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_predicate_from_path</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Prim</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">predicate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">is_prim_deletable</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_is_prim_deletable</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
         <span class="c1"># Custom predicate must also pass the deletable check</span>
-        <span class="k">return</span> <span class="n">predicate</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_prim_deletable</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">predicate</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_is_prim_deletable</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
 
     <span class="c1"># get all prims to delete</span>
     <span class="n">prims</span> <span class="o">=</span> <span class="n">get_all_matching_child_prims</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">_predicate_from_path</span><span class="p">)</span>
@@ -1055,26 +1087,6 @@
 
     <span class="k">if</span> <span class="n">builtins</span><span class="o">.</span><span class="n">ISAAC_LAUNCHED_FROM_TERMINAL</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get_app_interface</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="is_stage_loading"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.is_stage_loading">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_stage_loading</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function to see if any files are being loaded.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        True if loading, False otherwise</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; import isaaclab.sim as sim_utils</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; sim_utils.is_stage_loading()</span>
-<span class="sd">        False</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">context</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">loading</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_stage_loading_status</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">loading</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="get_current_stage"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.utils.html#isaaclab.sim.utils.stage.get_current_stage">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_current_stage</span><span class="p">(</span><span class="n">fabric</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="p">:</span>
@@ -1094,14 +1106,16 @@
 <span class="sd">                       sessionLayer=Sdf.Find(&#39;anon:0x7fba6c01c5c0:World7-session.usda&#39;),</span>
 <span class="sd">                       pathResolverContext=&lt;invalid repr&gt;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">stage</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_context</span><span class="p">,</span> <span class="s2">&quot;stage&quot;</span><span class="p">,</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">get_stage</span><span class="p">())</span>
+    <span class="c1"># First check thread-local context for an in-memory stage</span>
+    <span class="n">stage</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_context</span><span class="p">,</span> <span class="s2">&quot;stage&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fabric</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">usdrt</span>
 
-    <span class="k">if</span> <span class="n">fabric</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">usdrt</span>
-
-        <span class="c1"># Get stage ID and attach to Fabric stage</span>
-        <span class="n">stage_id</span> <span class="o">=</span> <span class="n">get_current_stage_id</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">usdrt</span><span class="o">.</span><span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="o">.</span><span class="n">Attach</span><span class="p">(</span><span class="n">stage_id</span><span class="p">)</span>
+            <span class="c1"># Get stage ID and attach to Fabric stage</span>
+            <span class="n">stage_id</span> <span class="o">=</span> <span class="n">get_current_stage_id</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">usdrt</span><span class="o">.</span><span class="n">Usd</span><span class="o">.</span><span class="n">Stage</span><span class="o">.</span><span class="n">Attach</span><span class="p">(</span><span class="n">stage_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stage</span>
 
     <span class="k">return</span> <span class="n">stage</span></div>
 

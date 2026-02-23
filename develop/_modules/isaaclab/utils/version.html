@@ -633,6 +633,24 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">packaging.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">Version</span>
 
 
+<div class="viewcode-block" id="has_kit"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.utils.html#isaaclab.utils.version.has_kit">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">has_kit</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if Kit (Omniverse Kit) is available in the current environment.</span>
+
+<span class="sd">    Returns True when running inside an Omniverse Kit application (e.g. Isaac Sim).</span>
+<span class="sd">    Returns False in kitless mode (e.g. Newton physics backend without Kit).</span>
+
+<span class="sd">    Not cached with ``lru_cache`` because this may be called before ``AppLauncher``</span>
+<span class="sd">    finishes starting Kit, which would permanently lock in a ``False`` result.</span>
+<span class="sd">    The underlying ``import`` is already cached by Python and ``get_app()`` is cheap.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.app</span>
+
+        <span class="k">return</span> <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get_app</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
 <div class="viewcode-block" id="get_isaac_sim_version"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.utils.html#isaaclab.utils.version.get_isaac_sim_version">[docs]</a><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_isaac_sim_version</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Version</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the Isaac Sim version as a Version object, cached for performance.</span>

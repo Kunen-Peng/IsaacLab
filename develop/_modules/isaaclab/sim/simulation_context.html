@@ -638,13 +638,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdPhysics</span><span class="p">,</span> <span class="n">UsdUtils</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim_utils</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stage_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicsManager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_new_stage_in_memory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_new_stage</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">KitVisualizerCfg</span><span class="p">,</span> <span class="n">NewtonVisualizerCfg</span><span class="p">,</span> <span class="n">RerunVisualizerCfg</span><span class="p">,</span> <span class="n">Visualizer</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.scene_data_providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneDataProvider</span>
@@ -725,28 +724,33 @@
         <span class="c1"># Get or create stage based on config</span>
         <span class="n">stage_cache</span> <span class="o">=</span> <span class="n">UsdUtils</span><span class="o">.</span><span class="n">StageCache</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">create_stage_in_memory</span><span class="p">:</span>
-            <span class="c1"># Create a fresh in-memory stage</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">create_new_stage_in_memory</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">create_new_stage</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Use existing stage from USD context, or create a new one</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">get_stage</span><span class="p">()</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">new_stage</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">get_stage</span><span class="p">()</span>
+            <span class="c1"># Prefer the thread-local current stage (set by create_new_stage / test fixtures)</span>
+            <span class="c1"># over cache lookup, since the cache may contain stale stages from prior tests.</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stage_utils</span><span class="o">.</span><span class="n">_context</span><span class="p">,</span> <span class="s2">&quot;stage&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">current</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">all_stages</span> <span class="o">=</span> <span class="n">stage_cache</span><span class="o">.</span><span class="n">GetAllStages</span><span class="p">()</span> <span class="k">if</span> <span class="n">stage_cache</span><span class="o">.</span><span class="n">Size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[]</span>  <span class="c1"># type: ignore[union-attr]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">all_stages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">all_stages</span> <span class="k">else</span> <span class="n">create_new_stage</span><span class="p">()</span>
 
-        <span class="c1"># Ensure stage is in USD cache and get its ID</span>
-        <span class="n">cached_id</span> <span class="o">=</span> <span class="n">stage_cache</span><span class="o">.</span><span class="n">GetId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span>  <span class="c1"># type: ignore[union-attr]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_id</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
-            <span class="n">cached_id</span> <span class="o">=</span> <span class="n">stage_cache</span><span class="o">.</span><span class="n">Insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span>  <span class="c1"># type: ignore[union-attr]</span>
-        <span class="n">stage_id</span> <span class="o">=</span> <span class="n">cached_id</span><span class="o">.</span><span class="n">ToLongInt</span><span class="p">()</span>
+        <span class="c1"># Ensure stage is in the USD cache</span>
+        <span class="n">stage_id</span> <span class="o">=</span> <span class="n">stage_cache</span><span class="o">.</span><span class="n">GetId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span><span class="o">.</span><span class="n">ToLongInt</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
+        <span class="k">if</span> <span class="n">stage_id</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">stage_cache</span><span class="o">.</span><span class="n">Insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span>  <span class="c1"># type: ignore[union-attr]</span>
 
         <span class="c1"># Set as current stage in thread-local context for get_current_stage()</span>
         <span class="n">stage_utils</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span>
 
-        <span class="c1"># Attach in-memory stage to USD context immediately to ensure proper lifecycle events</span>
-        <span class="c1"># This allows PhysX and viewport to receive stage events and prevents cleanup issues</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">create_stage_in_memory</span><span class="p">:</span>
-            <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">attach_stage_with_callback</span><span class="p">(</span><span class="n">stage_id</span><span class="p">)</span>
+        <span class="c1"># When Kit is running, attach the stage to Kit&#39;s USD context so that</span>
+        <span class="c1"># Kit extensions (PhysX views, Articulation, viewport) can discover it.</span>
+        <span class="k">if</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">has_kit</span><span class="p">():</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
+
+            <span class="n">kit_context</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">kit_context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">kit_context</span><span class="o">.</span><span class="n">get_stage</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">:</span>
+                <span class="n">kit_context</span><span class="o">.</span><span class="n">attach_stage_with_callback</span><span class="p">(</span><span class="n">stage_cache</span><span class="o">.</span><span class="n">GetId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span><span class="o">.</span><span class="n">ToLongInt</span><span class="p">())</span>
 
         <span class="c1"># Acquire settings interface and create helper</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_carb_settings</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
@@ -1218,7 +1222,9 @@
                 <span class="nb">delattr</span><span class="p">(</span><span class="n">stage_utils</span><span class="o">.</span><span class="n">_context</span><span class="p">,</span> <span class="s2">&quot;stage&quot;</span><span class="p">)</span>
 
             <span class="c1"># Close the USD context stage (symmetric with attach in __init__)</span>
-            <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">close_stage</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">has_kit</span><span class="p">():</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
+                <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">close_stage</span><span class="p">()</span>
 
             <span class="c1"># Clear instance</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1276,7 +1282,7 @@
     <span class="n">sim</span><span class="p">:</span> <span class="n">SimulationContext</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">create_new_stage</span><span class="p">:</span>
-            <span class="n">stage_utils</span><span class="o">.</span><span class="n">create_new_stage</span><span class="p">()</span>
+            <span class="n">sim_utils</span><span class="o">.</span><span class="n">create_new_stage</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">sim_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">gravity</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.81</span><span class="p">)</span> <span class="k">if</span> <span class="n">gravity_enabled</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>

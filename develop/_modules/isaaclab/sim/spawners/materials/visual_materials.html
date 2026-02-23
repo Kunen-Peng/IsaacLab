@@ -629,12 +629,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">omni.usd.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateMdlMaterialPrimCommand</span><span class="p">,</span> <span class="n">CreateShaderPrimFromSdrCommand</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdShade</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">clone</span><span class="p">,</span> <span class="n">safe_set_attribute_on_usd_prim</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">NVIDIA_NUCLEUS_DIR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">has_kit</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">visual_materials_cfg</span>
@@ -671,6 +671,13 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If a prim already exists at the given path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if Kit is available (required for shader creation commands)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_kit</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot spawn preview surface material &#39;</span><span class="si">{</span><span class="n">prim_path</span><span class="si">}</span><span class="s2">&#39; in kitless mode. &quot;</span>
+            <span class="s2">&quot;This functionality requires Kit/Isaac Sim as it uses omni.usd.commands.&quot;</span>
+        <span class="p">)</span>
+
     <span class="c1"># get stage handle</span>
     <span class="n">stage</span> <span class="o">=</span> <span class="n">get_current_stage</span><span class="p">()</span>
 
@@ -682,6 +689,8 @@
         <span class="c1"># handle scene creation on a custom stage.</span>
         <span class="n">material_prim</span> <span class="o">=</span> <span class="n">UsdShade</span><span class="o">.</span><span class="n">Material</span><span class="o">.</span><span class="n">Define</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">prim_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">material_prim</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">omni.usd.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateShaderPrimFromSdrCommand</span>
+
             <span class="n">shader_prim</span> <span class="o">=</span> <span class="n">CreateShaderPrimFromSdrCommand</span><span class="p">(</span>
                 <span class="n">parent_path</span><span class="o">=</span><span class="n">prim_path</span><span class="p">,</span>
                 <span class="n">identifier</span><span class="o">=</span><span class="s2">&quot;UsdPreviewSurface&quot;</span><span class="p">,</span>
@@ -747,6 +756,13 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If a prim already exists at the given path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if Kit is available (required for MDL material creation commands)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_kit</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot spawn MDL material &#39;</span><span class="si">{</span><span class="n">prim_path</span><span class="si">}</span><span class="s2">&#39; in kitless mode. &quot;</span>
+            <span class="s2">&quot;This functionality requires Kit/Isaac Sim as it uses omni.usd.commands.&quot;</span>
+        <span class="p">)</span>
+
     <span class="c1"># get stage handle</span>
     <span class="n">stage</span> <span class="o">=</span> <span class="n">get_current_stage</span><span class="p">()</span>
 
@@ -754,6 +770,8 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">stage</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prim_path</span><span class="p">)</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
         <span class="c1"># extract material name from path</span>
         <span class="n">material_name</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">mdl_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">omni.usd.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateMdlMaterialPrimCommand</span>
+
         <span class="n">CreateMdlMaterialPrimCommand</span><span class="p">(</span>
             <span class="n">mtl_url</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">mdl_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">NVIDIA_NUCLEUS_DIR</span><span class="o">=</span><span class="n">NVIDIA_NUCLEUS_DIR</span><span class="p">),</span>
             <span class="n">mtl_name</span><span class="o">=</span><span class="n">material_name</span><span class="p">,</span>

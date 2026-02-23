@@ -637,7 +637,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">packaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">UsdGeom</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim_utils</span>
@@ -936,11 +935,8 @@
                 <span class="c1"># convert numpy scalar to Python float for USD compatibility (NumPy 2.0+)</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param_value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
                     <span class="n">param_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">param_value</span><span class="p">)</span>
-                <span class="c1"># set value</span>
-                <span class="c1"># note: We have to do it this way because the camera might be on a different</span>
-                <span class="c1">#   layer (default cameras are on session layer), and this is the simplest</span>
-                <span class="c1">#   way to set the property on the right layer.</span>
-                <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">set_prop_val</span><span class="p">(</span><span class="n">param_attr</span><span class="p">(),</span> <span class="n">param_value</span><span class="p">)</span>
+                <span class="c1"># set value using pure USD API</span>
+                <span class="n">param_attr</span><span class="p">()</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">param_value</span><span class="p">)</span>
         <span class="c1"># update the internal buffers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_intrinsic_matrices</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span></div>
 

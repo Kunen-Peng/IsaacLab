@@ -988,6 +988,7 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-isaaclab.utils.version">Version operations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.utils.version.has_kit"><code class="docutils literal notranslate"><span class="pre">has_kit()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.utils.version.get_isaac_sim_version"><code class="docutils literal notranslate"><span class="pre">get_isaac_sim_version()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.utils.version.compare_versions"><code class="docutils literal notranslate"><span class="pre">compare_versions()</span></code></a></li>
 </ul>
@@ -5374,15 +5375,29 @@ to all the joints of the articulation. We use a slice to make the indexing more 
 <p><strong>Functions:</strong></p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.utils.version.get_isaac_sim_version" title="isaaclab.utils.version.get_isaac_sim_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_isaac_sim_version</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.utils.version.has_kit" title="isaaclab.utils.version.has_kit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_kit</span></code></a>()</p></td>
+<td><p>Check if Kit (Omniverse Kit) is available in the current environment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.utils.version.get_isaac_sim_version" title="isaaclab.utils.version.get_isaac_sim_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_isaac_sim_version</span></code></a>()</p></td>
 <td><p>Get the Isaac Sim version as a Version object, cached for performance.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.utils.version.compare_versions" title="isaaclab.utils.version.compare_versions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare_versions</span></code></a>(v1, v2)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.utils.version.compare_versions" title="isaaclab.utils.version.compare_versions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare_versions</span></code></a>(v1, v2)</p></td>
 <td><p>Compare two version strings and return the comparison result.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<dl class="py function">
+<dt class="sig sig-object py" id="isaaclab.utils.version.has_kit">
+<span class="sig-prename descclassname"><span class="pre">isaaclab.utils.version.</span></span><span class="sig-name descname"><span class="pre">has_kit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/utils/version.html#has_kit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.utils.version.has_kit" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if Kit (Omniverse Kit) is available in the current environment.</p>
+<p>Returns True when running inside an Omniverse Kit application (e.g. Isaac Sim).
+Returns False in kitless mode (e.g. Newton physics backend without Kit).</p>
+<p>Not cached with <code class="docutils literal notranslate"><span class="pre">lru_cache</span></code> because this may be called before <code class="docutils literal notranslate"><span class="pre">AppLauncher</span></code>
+finishes starting Kit, which would permanently lock in a <code class="docutils literal notranslate"><span class="pre">False</span></code> result.
+The underlying <code class="docutils literal notranslate"><span class="pre">import</span></code> is already cached by Python and <code class="docutils literal notranslate"><span class="pre">get_app()</span></code> is cheap.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="isaaclab.utils.version.get_isaac_sim_version">
 <span class="sig-prename descclassname"><span class="pre">isaaclab.utils.version.</span></span><span class="sig-name descname"><span class="pre">get_isaac_sim_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Version</span></span></span><a class="reference internal" href="../../../_modules/isaaclab/utils/version.html#get_isaac_sim_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.utils.version.get_isaac_sim_version" title="Permalink to this definition">#</a></dt>
@@ -5977,6 +5992,7 @@ The returned tensor contains <code class="xref py py-obj docutils literal notran
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-isaaclab.utils.version">Version operations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.utils.version.has_kit"><code class="docutils literal notranslate"><span class="pre">has_kit()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.utils.version.get_isaac_sim_version"><code class="docutils literal notranslate"><span class="pre">get_isaac_sim_version()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab.utils.version.compare_versions"><code class="docutils literal notranslate"><span class="pre">compare_versions()</span></code></a></li>
 </ul>

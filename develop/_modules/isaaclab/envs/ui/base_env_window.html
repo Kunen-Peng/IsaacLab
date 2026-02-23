@@ -638,7 +638,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni.usd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysxSchema</span><span class="p">,</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdPhysics</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span><span class="p">,</span> <span class="n">resolve_paths</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.ui.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManagerLiveVisualizer</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -981,8 +981,8 @@
                 <span class="c1"># if prim is a joint type then disable it</span>
                 <span class="k">if</span> <span class="n">prim</span><span class="o">.</span><span class="n">IsA</span><span class="p">(</span><span class="n">UsdPhysics</span><span class="o">.</span><span class="n">Joint</span><span class="p">):</span>
                     <span class="n">prim</span><span class="o">.</span><span class="n">GetAttribute</span><span class="p">(</span><span class="s2">&quot;physics:jointEnabled&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-            <span class="c1"># resolve all paths relative to layer path</span>
-            <span class="n">omni</span><span class="o">.</span><span class="n">usd</span><span class="o">.</span><span class="n">resolve_paths</span><span class="p">(</span><span class="n">source_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">temp_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+            <span class="c1"># resolve paths so asset references remain valid from the new location</span>
+            <span class="n">resolve_paths</span><span class="p">(</span><span class="n">source_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">temp_layer</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
             <span class="c1"># save the stage</span>
             <span class="n">temp_layer</span><span class="o">.</span><span class="n">Save</span><span class="p">()</span>
             <span class="c1"># print the path to the saved stage</span>
