@@ -820,7 +820,7 @@ as a feature request elaborating on the required application.</p>
 <td><p>Configuration for simulation physics.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sim.PhysxCfg" title="isaaclab.sim.PhysxCfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysxCfg</span></code></a></p></td>
-<td><p></p></td>
+<td><p>DEPRECATED: Use PhysxCfg from isaaclab_physx.physics instead.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sim.RenderCfg" title="isaaclab.sim.RenderCfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RenderCfg</span></code></a></p></td>
 <td><p>Configuration for Omniverse RTX Renderer.</p></td>
@@ -885,10 +885,10 @@ as a feature request elaborating on the required application.</p>
 <td><p>Reset the simulation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sim.SimulationContext.step" title="isaaclab.sim.SimulationContext.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a>([render])</p></td>
-<td><p>Step physics, update visualizers, and optionally render.</p></td>
+<td><p>Step physics and optionally render.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab.sim.SimulationContext.render" title="isaaclab.sim.SimulationContext.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>([mode])</p></td>
-<td><p>Render the scene via all active visualizers.</p></td>
+<td><p>Update visualizers and render the scene.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab.sim.SimulationContext.update_visualizers" title="isaaclab.sim.SimulationContext.update_visualizers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_visualizers</span></code></a>(dt)</p></td>
 <td><p>Update visualizers without triggering renderer/GUI.</p></td>
@@ -1065,7 +1065,7 @@ as a feature request elaborating on the required application.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="isaaclab.sim.SimulationContext.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">render</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/sim/simulation_context.html#SimulationContext.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.SimulationContext.step" title="Permalink to this definition">#</a></dt>
-<dd><p>Step physics, update visualizers, and optionally render.</p>
+<dd><p>Step physics and optionally render.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>render</strong> – Whether to render the scene after stepping. Defaults to True.</p>
@@ -1076,7 +1076,12 @@ as a feature request elaborating on the required application.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="isaaclab.sim.SimulationContext.render">
 <span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/sim/simulation_context.html#SimulationContext.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.SimulationContext.render" title="Permalink to this definition">#</a></dt>
-<dd><p>Render the scene via all active visualizers.</p>
+<dd><p>Update visualizers and render the scene.</p>
+<p>Calls update_visualizers() so visualizers run at the render cadence (not at
+every physics step).  The actual RTX render pump (Kit <code class="docutils literal notranslate"><span class="pre">app.update()</span></code>) is
+handled lazily by camera sensors (see
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">_ensure_render_update()</span></code>) before they
+read annotator data, keeping this method backend-agnostic.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1325,10 +1330,11 @@ If None, the logs will be saved to the temp directory.</p>
 
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="py class">
 <dt class="sig sig-object py" id="isaaclab.sim.PhysxCfg">
-<span class="sig-prename descclassname"><span class="pre">isaaclab.sim.</span></span><span class="sig-name descname"><span class="pre">PhysxCfg</span></span><a class="headerlink" href="#isaaclab.sim.PhysxCfg" title="Permalink to this definition">#</a></dt>
-<dd><p>alias of <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">isaaclab.sim.</span></span><span class="sig-name descname"><span class="pre">PhysxCfg</span></span><a class="reference internal" href="../../../_modules/isaaclab/sim.html#PhysxCfg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.PhysxCfg" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PhysxCfg</span></code></p>
+<p>DEPRECATED: Use PhysxCfg from isaaclab_physx.physics instead.</p>
 </dd></dl>
 
 <dl class="py class">

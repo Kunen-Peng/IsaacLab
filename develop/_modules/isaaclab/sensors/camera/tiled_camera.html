@@ -902,6 +902,11 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render_data</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">output_data</span><span class="p">)</span>
             <span class="k">return</span>
 
+        <span class="c1"># Ensure the RTX renderer has been pumped so annotator buffers are fresh.</span>
+        <span class="c1"># This is a no-op if another camera instance already triggered the update</span>
+        <span class="c1"># for the current physics step, or if a visualizer already pumped it.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_render_update</span><span class="p">()</span>
+
         <span class="c1"># Extract the flattened image buffer</span>
         <span class="k">for</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">annotator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotators</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># check whether returned data is a dict (used for segmentation)</span>

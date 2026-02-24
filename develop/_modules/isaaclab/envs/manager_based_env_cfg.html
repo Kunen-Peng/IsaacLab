@@ -633,10 +633,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MISSING</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.envs.mdp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mdp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.devices.device_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevicesCfg</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.devices.openxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">XrCfg</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.devices.openxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">XrCfg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.managers</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventTermCfg</span> <span class="k">as</span> <span class="n">EventTerm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.managers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecorderManagerBaseCfg</span> <span class="k">as</span> <span class="n">DefaultEmptyRecorderManagerCfg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">InteractiveSceneCfg</span>
