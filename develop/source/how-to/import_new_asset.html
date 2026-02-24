@@ -842,15 +842,22 @@ which is then passed to the <a class="reference internal" href="../api/lab/isaac
 We made a few commonly modified settings to be available as command-line arguments when calling the
 <code class="docutils literal notranslate"><span class="pre">convert_mjcf.py</span></code>, and they are marked with <code class="docutils literal notranslate"><span class="pre">*</span></code> in the list. For a comprehensive list of the configuration
 parameters, please check the the documentation at <a class="reference external" href="https://docs.isaacsim.omniverse.nvidia.com/latest/importer_exporter/ext_isaacsim_asset_importer_mjcf.html">MJCF importer</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The MJCF importer was rewritten in Isaac Sim 5.0 to use the <code class="docutils literal notranslate"><span class="pre">mujoco-usd-converter</span></code> library.
+Settings such as <code class="docutils literal notranslate"><span class="pre">fix_base</span></code>, <code class="docutils literal notranslate"><span class="pre">import_sites</span></code>, <code class="docutils literal notranslate"><span class="pre">import_inertia_tensor</span></code>, and <code class="docutils literal notranslate"><span class="pre">make_instanceable</span></code>
+are no longer needed — the converter now handles these automatically based on the MJCF file content.</p>
+</div>
 <ul class="simple">
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">fix_base*</span></code> - Whether to fix the base of the robot.
-This depends on whether you have a floating-base or fixed-base robot. The command-line flag is
-<code class="docutils literal notranslate"><span class="pre">--fix-base</span></code> where when set, the importer will fix the base of the robot, otherwise it will default to floating-base.</p></li>
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">make_instanceable*</span></code> - Whether to create instanceable assets.
-Usually, this should be set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. The command-line flag is <code class="docutils literal notranslate"><span class="pre">--make-instanceable</span></code> where
-when set, the importer will create instanceable assets, otherwise it will default to non-instanceable.</p></li>
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">import_sites*</span></code> - Whether to parse the &lt;site&gt; tag in the MJCF.
-Usually, this should be set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. The command-line flag is <code class="docutils literal notranslate"><span class="pre">--import-sites</span></code> where when set, the importer will parse the &lt;site&gt; tag, otherwise it will default to not parsing the &lt;site&gt; tag.</p></li>
+<li><p><a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg.merge_mesh" title="isaaclab.sim.converters.MjcfConverterCfg.merge_mesh"><code class="xref py py-attr docutils literal notranslate"><span class="pre">merge_mesh</span></code></a> * - Whether to merge meshes where possible to
+optimize the model. The command-line flag is <code class="docutils literal notranslate"><span class="pre">--merge-mesh</span></code>.</p></li>
+<li><p><a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg.collision_from_visuals" title="isaaclab.sim.converters.MjcfConverterCfg.collision_from_visuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">collision_from_visuals</span></code></a> * - Whether to generate collision
+geometry from visual geometries. The command-line flag is <code class="docutils literal notranslate"><span class="pre">--collision-from-visuals</span></code>.</p></li>
+<li><p><a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg.collision_type" title="isaaclab.sim.converters.MjcfConverterCfg.collision_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">collision_type</span></code></a> * - Type of collision geometry to use
+(e.g. <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Convex</span> <span class="pre">Hull&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Convex</span> <span class="pre">Decomposition&quot;</span></code>). The command-line flag is
+<code class="docutils literal notranslate"><span class="pre">--collision-type</span></code>.</p></li>
+<li><p><a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg.self_collision" title="isaaclab.sim.converters.MjcfConverterCfg.self_collision"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self_collision</span></code></a> * - Whether to activate self-collisions
+between links of the articulation. The command-line flag is <code class="docutils literal notranslate"><span class="pre">--self-collision</span></code>.</p></li>
 </ul>
 <section id="id1">
 <h3>Example Usage<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
@@ -860,7 +867,7 @@ Usually, this should be set to <code class="docutils literal notranslate"><span 
 <input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" data-sync-group="os" data-sync-id="linux" for="sd-tab-item-2">
 <i class="fa-brands fa-linux"></i> Linux</label><div class="sd-tab-content docutils">
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># clone a repository with URDF files</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># clone a repository with MJCF files</span>
 git<span class="w"> </span>clone<span class="w"> </span>git@github.com:google-deepmind/mujoco_menagerie.git
 
 <span class="c1"># go to top of the Isaac Lab repository</span>
@@ -869,15 +876,14 @@ git<span class="w"> </span>clone<span class="w"> </span>git@github.com:google-de
 ./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/tools/convert_mjcf.py<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>../mujoco_menagerie/unitree_h1/h1.xml<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>source/isaaclab_assets/data/Robots/Unitree/h1.usd<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--import-sites<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--make-instanceable
+<span class="w">  </span>--merge-mesh
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" data-sync-group="os" data-sync-id="windows" for="sd-tab-item-3">
 <i class="fa-brands fa-windows"></i> Windows</label><div class="sd-tab-content docutils">
-<div class="highlight-batch notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="c1">: clone a repository with URDF files</span>
+<div class="highlight-batch notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="c1">: clone a repository with MJCF files</span>
 git clone git@github.com:google-deepmind/mujoco_menagerie.git
 
 <span class="p">:</span><span class="c1">: go to top of the Isaac Lab repository</span>
@@ -886,17 +892,15 @@ git clone git@github.com:google-deepmind/mujoco_menagerie.git
 isaaclab.bat -p scripts\tools\convert_mjcf.py <span class="se">^</span>
 <span class="se"> </span> ..\mujoco_menagerie\unitree_h1\h1.xml <span class="se">^</span>
 <span class="se"> </span> source\isaaclab_assets\data\Robots\Unitree\h1.usd <span class="se">^</span>
-<span class="se"> </span> --import-sites <span class="se">^</span>
-<span class="se"> </span> --make-instanceable
+<span class="se"> </span> --merge-mesh
 </pre></div>
 </div>
 </div>
 </div>
-<p>Executing the above script will create USD files inside the
+<p>Executing the above script will create the USD file inside the
 <code class="docutils literal notranslate"><span class="pre">source/isaaclab_assets/data/Robots/Unitree/</span></code> directory:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">h1.usd</span></code> - This is the main asset file. It contains all the non-mesh data.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Props/instanceable_assets.usd</span></code> - This is the mesh data file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h1.usd</span></code> - This is the converted USD asset file.</p></li>
 </ul>
 <figure class="align-center" style="width: 100%">
 <img alt="result of convert_mjcf.py" src="../../_images/tutorial_convert_mjcf.jpg" />

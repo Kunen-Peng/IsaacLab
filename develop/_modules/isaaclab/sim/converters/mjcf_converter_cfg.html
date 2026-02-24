@@ -624,33 +624,36 @@
 <span class="c1">#</span>
 <span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MISSING</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.converters.asset_converter_base_cfg</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssetConverterBaseCfg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">configclass</span>
 
 
 <div class="viewcode-block" id="MjcfConverterCfg"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg">[docs]</a><span class="nd">@configclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MjcfConverterCfg</span><span class="p">(</span><span class="n">AssetConverterBaseCfg</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The configuration class for MjcfConverter.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The configuration class for MjcfConverter.</span>
 
-    <span class="n">link_density</span> <span class="o">=</span> <span class="mf">0.0</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default density used for links. Defaults to 0.</span>
+<span class="sd">    .. note::</span>
+<span class="sd">        From Isaac Sim 5.0 onwards, the MJCF importer was rewritten to use the ``mujoco-usd-converter``</span>
+<span class="sd">        library. Several settings from the old importer (``fix_base``, ``link_density``,</span>
+<span class="sd">        ``import_inertia_tensor``, ``import_sites``) are no longer available as they are handled</span>
+<span class="sd">        automatically by the converter based on the MJCF file content.</span>
 
-<span class="sd">    This setting is only effective if ``&quot;inertial&quot;`` properties are missing in the MJCF.</span>
+<span class="sd">    .. note::</span>
+<span class="sd">        The :attr:`~AssetConverterBaseCfg.make_instanceable` setting from the base class is not</span>
+<span class="sd">        supported by the new MJCF importer and will be ignored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">import_inertia_tensor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the inertia tensor from mjcf. Defaults to True.</span>
+    <span class="n">merge_mesh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge meshes where possible to optimize the model. Defaults to False.&quot;&quot;&quot;</span>
 
-<span class="sd">    If the ``&quot;inertial&quot;`` tag is missing, then it is imported as an identity.</span>
+    <span class="n">collision_from_visuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate collision geometry from visual geometries. Defaults to False.&quot;&quot;&quot;</span>
+
+    <span class="n">collision_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of collision geometry to use. Defaults to ``&quot;default&quot;``.</span>
+
+<span class="sd">    Supported values are ``&quot;default&quot;``, ``&quot;Convex Hull&quot;``, and ``&quot;Convex Decomposition&quot;``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">fix_base</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">MISSING</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a fix joint to the root/base link. Defaults to True.&quot;&quot;&quot;</span>
-
-    <span class="n">import_sites</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the sites from the MJCF. Defaults to True.&quot;&quot;&quot;</span>
 
     <span class="n">self_collision</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Activate self-collisions between links of the articulation. Defaults to False.&quot;&quot;&quot;</span></div>

@@ -718,6 +718,14 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#warp-backend-for-asset-and-sensor-data">Warp Backend for Asset and Sensor Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-method-index-mask-split">Write Method Index/Mask Split</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timestampedbufferwarp">TimestampedBufferWarp</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjcf-importer">MJCF Importer</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removed-settings">Removed Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-settings">New Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#renamed-settings">Renamed Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updated-cli-tool">Updated CLI Tool</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updated-python-api">Updated Python API</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#need-help">Need Help?</a></li>
 </ul>
             </nav>
@@ -1572,6 +1580,113 @@ to <a class="reference internal" href="../api/lab/isaaclab.utils.html#isaaclab.u
 </pre></div>
 </div>
 </section>
+<section id="mjcf-importer">
+<h2>MJCF Importer<a class="headerlink" href="#mjcf-importer" title="Permalink to this heading">#</a></h2>
+<p>The MJCF importer in Isaac Sim was rewritten to use the <code class="docutils literal notranslate"><span class="pre">mujoco-usd-converter</span></code> library.
+The old C++ binding-based API (using Kit commands <code class="docutils literal notranslate"><span class="pre">MJCFCreateAsset</span></code>/<code class="docutils literal notranslate"><span class="pre">MJCFCreateImportConfig</span></code>
+and the <code class="docutils literal notranslate"><span class="pre">ImportConfig</span></code> class) has been replaced with a new pure-Python <code class="docutils literal notranslate"><span class="pre">MJCFImporter</span></code> class
+and <code class="docutils literal notranslate"><span class="pre">MJCFImporterConfig</span></code> dataclass.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The new MJCF importer produces USD assets with <strong>nested rigid bodies</strong> (i.e., <code class="docutils literal notranslate"><span class="pre">RigidBodyAPI</span></code>
+is applied to each link prim individually) instead of a single articulation root with rigid
+body applied only at the top level. This matches how MuJoCo represents bodies and is
+physically more accurate, but it may affect code that assumes a flat rigid body hierarchy.
+If you have downstream logic that traverses the USD structure of MJCF-imported assets,
+verify that it handles nested rigid body prims correctly.</p>
+</div>
+<section id="removed-settings">
+<h3>Removed Settings<a class="headerlink" href="#removed-settings" title="Permalink to this heading">#</a></h3>
+<p>The following <a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg" title="isaaclab.sim.converters.MjcfConverterCfg"><code class="xref py py-class docutils literal notranslate"><span class="pre">MjcfConverterCfg</span></code></a> settings have been <strong>removed</strong> because
+the new converter handles them automatically based on the MJCF file content:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fix_base</span></code> — base fixedness is now inferred from the MJCF <code class="docutils literal notranslate"><span class="pre">&lt;freejoint&gt;</span></code> tag.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">link_density</span></code> — density is now read directly from the MJCF model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">import_inertia_tensor</span></code> — inertia tensors are always imported.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">import_sites</span></code> — sites are always imported.</p></li>
+</ul>
+<p>The <a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.AssetConverterBaseCfg.make_instanceable" title="isaaclab.sim.converters.AssetConverterBaseCfg.make_instanceable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">make_instanceable</span></code></a> setting from the base class
+is also no longer supported and will be ignored.</p>
+</section>
+<section id="new-settings">
+<h3>New Settings<a class="headerlink" href="#new-settings" title="Permalink to this heading">#</a></h3>
+<p>The following new settings were added to <a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg" title="isaaclab.sim.converters.MjcfConverterCfg"><code class="xref py py-class docutils literal notranslate"><span class="pre">MjcfConverterCfg</span></code></a>:</p>
+</section>
+<section id="renamed-settings">
+<h3>Renamed Settings<a class="headerlink" href="#renamed-settings" title="Permalink to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Old (2.x)</p></th>
+<th class="head"><p>New (3.0)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self_collision</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">self_collision</span></code> (unchanged)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The underlying Isaac Sim API renamed <code class="docutils literal notranslate"><span class="pre">self_collision</span></code> to <code class="docutils literal notranslate"><span class="pre">allow_self_collision</span></code>.
+The IsaacLab <a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg" title="isaaclab.sim.converters.MjcfConverterCfg"><code class="xref py py-class docutils literal notranslate"><span class="pre">MjcfConverterCfg</span></code></a> keeps using <code class="docutils literal notranslate"><span class="pre">self_collision</span></code>
+for backward compatibility and maps it to the new name internally.</p>
+</div>
+</section>
+<section id="updated-cli-tool">
+<h3>Updated CLI Tool<a class="headerlink" href="#updated-cli-tool" title="Permalink to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">convert_mjcf.py</span></code> script has been updated to match the new importer settings.
+Old command-line flags (<code class="docutils literal notranslate"><span class="pre">--fix-base</span></code>, <code class="docutils literal notranslate"><span class="pre">--make-instanceable</span></code>, <code class="docutils literal notranslate"><span class="pre">--import-sites</span></code>)
+are no longer available.</p>
+<p><strong>Before (Isaac Lab 2.x):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/tools/convert_mjcf.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>../mujoco_menagerie/unitree_h1/h1.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>source/isaaclab_assets/data/Robots/Unitree/h1.usd<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--import-sites<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--make-instanceable
+</pre></div>
+</div>
+<p><strong>After (Isaac Lab 3.0):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/tools/convert_mjcf.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>../mujoco_menagerie/unitree_h1/h1.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>source/isaaclab_assets/data/Robots/Unitree/h1.usd<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--merge-mesh<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--self-collision
+</pre></div>
+</div>
+<p>New flags: <code class="docutils literal notranslate"><span class="pre">--merge-mesh</span></code>, <code class="docutils literal notranslate"><span class="pre">--collision-from-visuals</span></code>, <code class="docutils literal notranslate"><span class="pre">--collision-type</span></code>, <code class="docutils literal notranslate"><span class="pre">--self-collision</span></code>.</p>
+</section>
+<section id="updated-python-api">
+<h3>Updated Python API<a class="headerlink" href="#updated-python-api" title="Permalink to this heading">#</a></h3>
+<p>If you use <a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverter" title="isaaclab.sim.converters.MjcfConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MjcfConverter</span></code></a> or <a class="reference internal" href="../api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverterCfg" title="isaaclab.sim.converters.MjcfConverterCfg"><code class="xref py py-class docutils literal notranslate"><span class="pre">MjcfConverterCfg</span></code></a>
+directly in your code, update your configuration:</p>
+<p><strong>Before (Isaac Lab 2.x):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">MjcfConverter</span><span class="p">,</span> <span class="n">MjcfConverterCfg</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">MjcfConverterCfg</span><span class="p">(</span>
+    <span class="n">asset_path</span><span class="o">=</span><span class="s2">&quot;robot.xml&quot;</span><span class="p">,</span>
+    <span class="n">usd_dir</span><span class="o">=</span><span class="s2">&quot;/output/dir&quot;</span><span class="p">,</span>
+    <span class="n">fix_base</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">import_sites</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">make_instanceable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>After (Isaac Lab 3.0):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">MjcfConverter</span><span class="p">,</span> <span class="n">MjcfConverterCfg</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">MjcfConverterCfg</span><span class="p">(</span>
+    <span class="n">asset_path</span><span class="o">=</span><span class="s2">&quot;robot.xml&quot;</span><span class="p">,</span>
+    <span class="n">usd_dir</span><span class="o">=</span><span class="s2">&quot;/output/dir&quot;</span><span class="p">,</span>
+    <span class="n">merge_mesh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">collision_from_visuals</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">self_collision</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
 <section id="need-help">
 <h2>Need Help?<a class="headerlink" href="#need-help" title="Permalink to this heading">#</a></h2>
 <p>If you encounter issues during migration:</p>
@@ -1665,6 +1780,14 @@ to <a class="reference internal" href="../api/lab/isaaclab.utils.html#isaaclab.u
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#warp-backend-for-asset-and-sensor-data">Warp Backend for Asset and Sensor Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-method-index-mask-split">Write Method Index/Mask Split</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timestampedbufferwarp">TimestampedBufferWarp</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjcf-importer">MJCF Importer</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removed-settings">Removed Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-settings">New Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#renamed-settings">Renamed Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updated-cli-tool">Updated CLI Tool</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updated-python-api">Updated Python API</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#need-help">Need Help?</a></li>
 </ul>
   </nav></div>

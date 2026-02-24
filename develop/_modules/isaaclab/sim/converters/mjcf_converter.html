@@ -627,23 +627,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.commands</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.asset_converter_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssetConverterBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.mjcf_converter_cfg</span><span class="w"> </span><span class="kn">import</span> <span class="n">MjcfConverterCfg</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">isaacsim.asset.importer.mjcf</span>
 
 
 <div class="viewcode-block" id="MjcfConverter"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.MjcfConverter">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MjcfConverter</span><span class="p">(</span><span class="n">AssetConverterBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converter for a MJCF description file to a USD file.</span>
 
 <span class="sd">    This class wraps around the `isaacsim.asset.importer.mjcf`_ extension to provide a lazy implementation</span>
-<span class="sd">    for MJCF to USD conversion. It stores the output USD file in an instanceable format since that is</span>
-<span class="sd">    what is typically used in all learning related applications.</span>
+<span class="sd">    for MJCF to USD conversion. It uses the :class:`MJCFImporter` class and :class:`MJCFImporterConfig`</span>
+<span class="sd">    dataclass from Isaac Sim to perform the conversion.</span>
 
 <span class="sd">    .. caution::</span>
 <span class="sd">        The current lazy conversion implementation does not automatically trigger USD generation if</span>
@@ -651,10 +645,15 @@
 <span class="sd">        :obj:`AssetConverterBaseCfg.force_usd_conversion` to True or delete the output directory.</span>
 
 <span class="sd">    .. note::</span>
-<span class="sd">        From Isaac Sim 4.5 onwards, the extension name changed from ``omni.importer.mjcf`` to</span>
-<span class="sd">        ``isaacsim.asset.importer.mjcf``. This converter class now uses the latest extension from Isaac Sim.</span>
+<span class="sd">        From Isaac Sim 5.0 onwards, the MJCF importer uses the ``mujoco-usd-converter`` library</span>
+<span class="sd">        and the :class:`MJCFImporter` / :class:`MJCFImporterConfig` API. The old command-based API</span>
+<span class="sd">        (``MJCFCreateAsset`` / ``MJCFCreateImportConfig``) is deprecated.</span>
 
-<span class="sd">    .. _isaacsim.asset.importer.mjcf:  https://docs.isaacsim.omniverse.nvidia.com/latest/importer_exporter/ext_isaacsim_asset_importer_mjcf.html</span>
+<span class="sd">    .. note::</span>
+<span class="sd">        The :attr:`~AssetConverterBaseCfg.make_instanceable` setting from the base class is not</span>
+<span class="sd">        supported by the new MJCF importer and will be ignored.</span>
+
+<span class="sd">    .. _isaacsim.asset.importer.mjcf: https://docs.isaacsim.omniverse.nvidia.com/latest/importer_exporter/ext_isaacsim_asset_importer_mjcf.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">cfg</span><span class="p">:</span> <span class="n">MjcfConverterCfg</span>
@@ -664,8 +663,12 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the class.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            cfg: The configuration instance for URDF to USD conversion.</span>
+<span class="sd">            cfg: The configuration instance for MJCF to USD conversion.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The new MJCF importer outputs to: {usd_path}/{robot_name}/{robot_name}.usda</span>
+        <span class="c1"># Pre-adjust usd_file_name to match this output structure so that lazy conversion works correctly.</span>
+        <span class="n">file_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">asset_path</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">usd_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_basename</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_basename</span><span class="si">}</span><span class="s2">.usda&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span></div>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -673,57 +676,34 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_convert_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">MjcfConverterCfg</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls underlying Omniverse command to convert MJCF to USD.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls underlying Isaac Sim MJCFImporter to convert MJCF to USD.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            cfg: The configuration instance for MJCF to USD conversion.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">import_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_mjcf_import_config</span><span class="p">()</span>
-        <span class="n">file_basename</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">asset_path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
-        <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;MJCFCreateAsset&quot;</span><span class="p">,</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">isaacsim.asset.importer.mjcf</span><span class="w"> </span><span class="kn">import</span> <span class="n">MJCFImporter</span><span class="p">,</span> <span class="n">MJCFImporterConfig</span>
+
+        <span class="c1"># Clean up existing output subdirectory so the importer writes fresh files.</span>
+        <span class="c1"># The MJCFImporter outputs to {usd_dir}/{robot_name}/{robot_name}.usda and may</span>
+        <span class="c1"># skip writing if the output already exists from a previous conversion.</span>
+        <span class="n">file_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">asset_path</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output_subdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">usd_dir</span><span class="p">,</span> <span class="n">file_basename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_subdir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">output_subdir</span><span class="p">)</span>
+
+        <span class="n">import_config</span> <span class="o">=</span> <span class="n">MJCFImporterConfig</span><span class="p">(</span>
             <span class="n">mjcf_path</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">asset_path</span><span class="p">,</span>
-            <span class="n">import_config</span><span class="o">=</span><span class="n">import_config</span><span class="p">,</span>
-            <span class="n">dest_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">usd_path</span><span class="p">,</span>
-            <span class="n">prim_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">file_basename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">usd_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">usd_dir</span><span class="p">,</span>
+            <span class="n">merge_mesh</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">merge_mesh</span><span class="p">,</span>
+            <span class="n">collision_from_visuals</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">collision_from_visuals</span><span class="p">,</span>
+            <span class="n">collision_type</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">collision_type</span><span class="p">,</span>
+            <span class="n">allow_self_collision</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">self_collision</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_mjcf_import_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">isaacsim</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">importer</span><span class="o">.</span><span class="n">mjcf</span><span class="o">.</span><span class="n">_mjcf</span><span class="o">.</span><span class="n">ImportConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the import configuration for MJCF to USD conversion.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The constructed ``ImportConfig`` object containing the desired settings.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">_</span><span class="p">,</span> <span class="n">import_config</span> <span class="o">=</span> <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;MJCFCreateImportConfig&quot;</span><span class="p">)</span>
-
-        <span class="c1"># set the unit scaling factor, 1.0 means meters, 100.0 means cm</span>
-        <span class="c1"># import_config.set_distance_scale(1.0)</span>
-        <span class="c1"># set imported robot as default prim</span>
-        <span class="c1"># import_config.set_make_default_prim(True)</span>
-        <span class="c1"># add a physics scene to the stage on import if none exists</span>
-        <span class="c1"># import_config.set_create_physics_scene(False)</span>
-        <span class="c1"># set flag to parse &lt;site&gt; tag</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_import_sites</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="c1"># -- instancing settings</span>
-        <span class="c1"># meshes will be placed in a separate usd file</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_make_instanceable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">make_instanceable</span><span class="p">)</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_instanceable_usd_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">usd_instanceable_meshes_path</span><span class="p">)</span>
-
-        <span class="c1"># -- asset settings</span>
-        <span class="c1"># default density used for links, use 0 to auto-compute</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_density</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">link_density</span><span class="p">)</span>
-        <span class="c1"># import inertia tensor from urdf, if it is not specified in urdf it will import as identity</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_import_inertia_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">import_inertia_tensor</span><span class="p">)</span>
-
-        <span class="c1"># -- physics settings</span>
-        <span class="c1"># create fix joint for base link</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_fix_base</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">fix_base</span><span class="p">)</span>
-        <span class="c1"># self collisions between links in the articulation</span>
-        <span class="n">import_config</span><span class="o">.</span><span class="n">set_self_collision</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">self_collision</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">import_config</span></div>
+        <span class="n">importer</span> <span class="o">=</span> <span class="n">MJCFImporter</span><span class="p">(</span><span class="n">import_config</span><span class="p">)</span>
+        <span class="n">importer</span><span class="o">.</span><span class="n">import_mjcf</span><span class="p">()</span></div>
 </pre></div>
 
                 </article>
