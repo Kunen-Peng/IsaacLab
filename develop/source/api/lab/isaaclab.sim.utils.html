@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.3.2" />
-    <meta name="docbuild:last-update" content="Feb 23, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
   </head>
   
   
@@ -1059,6 +1059,8 @@ app updates internally with proper safeguards.</p></li>
 <dt class="sig sig-object py" id="isaaclab.sim.utils.stage.close_stage">
 <span class="sig-prename descclassname"><span class="pre">isaaclab.sim.utils.stage.</span></span><span class="sig-name descname"><span class="pre">close_stage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/isaaclab/sim/utils/stage.html#close_stage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab.sim.utils.stage.close_stage" title="Permalink to this definition">#</a></dt>
 <dd><p>Closes the current USD stage by clearing the stage cache.</p>
+<p>If Kit is running, this also closes the stage attached to the Kit USD context
+(<code class="docutils literal notranslate"><span class="pre">omni.usd.get_context().close_stage()</span></code>).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Once the stage is closed, it is necessary to open a new stage or create a
@@ -2768,7 +2770,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 23, 2026.
+  Last updated on Feb 24, 2026.
   <br/>
 </p>
   </div>
