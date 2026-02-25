@@ -793,6 +793,19 @@
 
     <span class="c1"># Verify if xform stack is reset</span>
     <span class="n">has_reset</span> <span class="o">=</span> <span class="n">xformable</span><span class="o">.</span><span class="n">GetResetXformStack</span><span class="p">()</span>
+
+    <span class="c1"># Ensure the prim has an &quot;over&quot; spec on the edit target layer. Prims from</span>
+    <span class="c1"># referenced USD files may only exist in the reference layer with no spec on</span>
+    <span class="c1"># the edit target. Inside an Sdf.ChangeBlock, AddXformOp calls CreateAttribute</span>
+    <span class="c1"># which needs an existing prim spec on the edit target — it cannot create one</span>
+    <span class="c1"># while stage recomposition is deferred.</span>
+    <span class="n">edit_layer</span> <span class="o">=</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetStage</span><span class="p">()</span><span class="o">.</span><span class="n">GetEditTarget</span><span class="p">()</span><span class="o">.</span><span class="n">GetLayer</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">edit_layer</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prim</span><span class="o">.</span><span class="n">GetPath</span><span class="p">()):</span>
+        <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="n">prim</span><span class="o">.</span><span class="n">GetPath</span><span class="p">()</span><span class="o">.</span><span class="n">GetPrefixes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">edit_layer</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+                <span class="n">parent_spec</span> <span class="o">=</span> <span class="n">edit_layer</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="n">prefix</span><span class="o">.</span><span class="n">GetParentPath</span><span class="p">())</span> <span class="ow">or</span> <span class="n">edit_layer</span><span class="o">.</span><span class="n">pseudoRoot</span>
+                <span class="n">Sdf</span><span class="o">.</span><span class="n">PrimSpec</span><span class="p">(</span><span class="n">parent_spec</span><span class="p">,</span> <span class="n">prefix</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">Sdf</span><span class="o">.</span><span class="n">SpecifierOver</span><span class="p">)</span>
+
     <span class="c1"># Batch the operations</span>
     <span class="k">with</span> <span class="n">Sdf</span><span class="o">.</span><span class="n">ChangeBlock</span><span class="p">():</span>
         <span class="c1"># Clear the existing transform operation order</span>

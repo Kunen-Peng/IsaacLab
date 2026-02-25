@@ -685,6 +685,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-a-rendering-mode">Selecting a Rendering Mode</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overwriting-specific-rendering-settings">Overwriting Specific Rendering Settings</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-limitations">Current Limitations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-usdvol-3d-gaussian-scenes-in-multiple-environments">Rendering UsdVol 3D Gaussian Scenes in Multiple Environments</a></li>
 </ul>
             </nav>
         </div>
@@ -856,6 +857,24 @@ Only use it as a last resort if other quality settings do not resolve the visual
 The value can be adjusted to a very high value to reduce disocclusion artifacts.</p>
 </div>
 </section>
+<section id="rendering-usdvol-3d-gaussian-scenes-in-multiple-environments">
+<h2>Rendering UsdVol 3D Gaussian Scenes in Multiple Environments<a class="headerlink" href="#rendering-usdvol-3d-gaussian-scenes-in-multiple-environments" title="Permalink to this heading">#</a></h2>
+<p>When using UsdVol volumes with 3D Gaussian particles (e.g. exported from
+<a class="reference external" href="https://github.com/nv-tlabs/3dgrut?tab=readme-ov-file#exporting-usdz-for-use-in-omniverse-and-isaac-sim">3DGRUT</a>)
+in <strong>multiple environments</strong>, you must set the following so the renderer uses the correct compositing path:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">render_cfg</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">RenderCfg</span><span class="p">(</span>
+   <span class="n">carb_settings</span><span class="o">=</span><span class="p">{</span>
+      <span class="s2">&quot;omni.rtx.nre.compositing.rendererHints&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+   <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>With multiple environments, each environment holds its own copy of the scene, increasing device memory use,
+and environments are rendered one after another, which can substantially slow down rendering.</p>
+</div>
+</section>
 </section>
 
 
@@ -907,6 +926,7 @@ The value can be adjusted to a very high value to reduce disocclusion artifacts.
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-a-rendering-mode">Selecting a Rendering Mode</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overwriting-specific-rendering-settings">Overwriting Specific Rendering Settings</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-limitations">Current Limitations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-usdvol-3d-gaussian-scenes-in-multiple-environments">Rendering UsdVol 3D Gaussian Scenes in Multiple Environments</a></li>
 </ul>
   </nav></div>
 
