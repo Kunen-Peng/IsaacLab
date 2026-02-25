@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -773,8 +774,14 @@
 <span class="sd">    Operations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DeformableObject.reset"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.DeformableObject.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="c1"># Think: Should we reset the kinematic targets when resetting the object?</span>
+<div class="viewcode-block" id="DeformableObject.reset"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.DeformableObject.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the deformable object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Should we reset the kinematic targets when resetting the object?</span>
         <span class="c1">#  This is not done in the current implementation. We assume users will reset the kinematic targets.</span>
         <span class="k">pass</span></div>
 
@@ -1346,7 +1353,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

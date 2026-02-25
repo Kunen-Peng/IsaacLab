@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -635,7 +636,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wp</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.physics.tensors.impl.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">physx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">UsdPhysics</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim_utils</span>
@@ -649,6 +649,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.rigid_object_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">RigidObjectData</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">omni.physics.tensors.impl.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">physx</span>
+
     <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.assets.rigid_object.rigid_object_cfg</span><span class="w"> </span><span class="kn">import</span> <span class="n">RigidObjectCfg</span>
 
 <span class="c1"># import logger</span>
@@ -750,12 +752,12 @@
 <span class="sd">    Operations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="RigidObject.reset"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RigidObject.reset"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the rigid object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># resolve all indices</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">env_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">env_ids</span> <span class="o">==</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
@@ -775,7 +777,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">active</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
                 <span class="c1"># Compose instantaneous wrench with permanent wrench</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">add_forces_and_torques</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">add_forces_and_torques_index</span><span class="p">(</span>
                     <span class="n">forces</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span><span class="o">.</span><span class="n">composed_force</span><span class="p">,</span>
                     <span class="n">torques</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span><span class="o">.</span><span class="n">composed_torque</span><span class="p">,</span>
                     <span class="n">body_ids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span><span class="p">,</span>
@@ -833,28 +835,31 @@
 
 <div class="viewcode-block" id="RigidObject.write_root_pose_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_pose_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_pose_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_pose</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root pose over selected environment indices into the simulation.</span>
 
-<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (w, x, y, z).</span>
+<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_pose: Root poses in simulation frame. Shape is (len(env_ids), 7).</span>
+<span class="sd">            root_pose: Root poses in simulation frame. Shape is (len(env_ids), 7)</span>
+<span class="sd">                or (len(env_ids),) with dtype wp.transformf.</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_pose_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_pose_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_pose_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_pose</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -864,40 +869,46 @@
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_pose: Root poses in simulation frame. Shape is (num_instances, 7).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            root_pose: Root poses in simulation frame. Shape is (num_instances, 7)</span>
+<span class="sd">                or (num_instances,) with dtype wp.transformf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_mask</span><span class="p">(</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_mask</span><span class="o">=</span><span class="n">env_mask</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_mask</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_mask</span><span class="o">=</span><span class="n">env_mask</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_velocity_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_velocity_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_velocity_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_velocity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root center of mass velocity over selected environment indices into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
-<span class="sd">        NOTE: This sets the velocity of the root&#39;s center of mass rather than the roots frame.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the root&#39;s center of mass rather than the root&#39;s frame.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_velocity: Root center of mass velocities in simulation world frame. Shape is (len(env_ids), 6).</span>
+<span class="sd">            root_velocity: Root center of mass velocities in simulation world frame. Shape is (len(env_ids), 6)</span>
+<span class="sd">                or (len(env_ids),) with dtype wp.spatial_vectorf.</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_velocity</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_velocity_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_velocity_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_velocity_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_velocity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -907,34 +918,37 @@
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_velocity: Root center of mass velocities in simulation world frame. Shape is (num_instances, 6).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            root_velocity: Root center of mass velocities in simulation world frame. Shape is (num_instances, 6)</span>
+<span class="sd">                or (num_instances,) with dtype wp.spatial_vectorf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_mask</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_velocity</span><span class="p">,</span> <span class="n">env_mask</span><span class="o">=</span><span class="n">env_mask</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_link_pose_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_link_pose_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_link_pose_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_pose</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root link pose over selected environment indices into the simulation.</span>
 
-<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (w, x, y, z).</span>
+<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_pose: Root link poses in simulation frame. Shape is (len(env_ids), 7) or (num_instances, 7).</span>
+<span class="sd">            root_pose: Root link poses in simulation frame. Shape is (len(env_ids), 7) or (num_instances, 7),</span>
+<span class="sd">                or (len(env_ids),) / (num_instances,) with dtype wp.transformf.</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -967,50 +981,54 @@
 
 <div class="viewcode-block" id="RigidObject.write_root_link_pose_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_link_pose_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_link_pose_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_pose</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root link pose over selected environment mask into the simulation.</span>
 
-<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (w, x, y, z).</span>
+<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_pose: Root poses in simulation frame. Shape is (num_instances, 7).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            root_pose: Root poses in simulation frame. Shape is (num_instances, 7)</span>
+<span class="sd">                or (num_instances,) with dtype wp.transformf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_com_pose_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_com_pose_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_com_pose_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_pose</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root center of mass pose over selected environment indices into the simulation.</span>
 
-<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (w, x, y, z).</span>
-<span class="sd">        The orientation is the orientation of the principle axes of inertia.</span>
+<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
+<span class="sd">        The orientation is the orientation of the principal axes of inertia.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data or full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_pose: Root center of mass poses in simulation frame. Shape is (len(env_ids), 7) or (num_instances, 7).</span>
+<span class="sd">            root_pose: Root center of mass poses in simulation frame. Shape is (len(env_ids), 7) or (num_instances, 7),</span>
+<span class="sd">                or (len(env_ids),) / (num_instances,) with dtype wp.transformf.</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1046,33 +1064,36 @@
 
 <div class="viewcode-block" id="RigidObject.write_root_com_pose_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_com_pose_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_com_pose_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_pose</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root center of mass pose over selected environment mask into the simulation.</span>
 
-<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (w, x, y, z).</span>
-<span class="sd">        The orientation is the orientation of the principle axes of inertia.</span>
+<span class="sd">        The root pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
+<span class="sd">        The orientation is the orientation of the principal axes of inertia.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_pose: Root center of mass poses in simulation frame. Shape is (num_instances, 7).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            root_pose: Root center of mass poses in simulation frame. Shape is (num_instances, 7)</span>
+<span class="sd">                or (num_instances,) with dtype wp.transformf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_pose</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_com_velocity_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_com_velocity_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_com_velocity_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_velocity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1080,18 +1101,21 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root center of mass velocity over selected environment indices into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
-<span class="sd">        NOTE: This sets the velocity of the root&#39;s center of mass rather than the roots frame.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the root&#39;s center of mass rather than the root&#39;s frame.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data or full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            root_velocity: Root center of mass velocities in simulation world frame.</span>
-<span class="sd">                Shape is (len(env_ids), 6) or (num_instances, 6).</span>
+<span class="sd">                Shape is (len(env_ids), 6) or (num_instances, 6),</span>
+<span class="sd">                or (len(env_ids),) / (num_instances,) with dtype wp.spatial_vectorf.</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1127,33 +1151,38 @@
 
 <div class="viewcode-block" id="RigidObject.write_root_com_velocity_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_com_velocity_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_com_velocity_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_velocity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root center of mass velocity over selected environment mask into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
-<span class="sd">        NOTE: This sets the velocity of the root&#39;s center of mass rather than the roots frame.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the root&#39;s center of mass rather than the root&#39;s frame.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_velocity: Root center of mass velocities in simulation world frame. Shape is (num_instances, 6).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            root_velocity: Root center of mass velocities in simulation world frame. Shape is (num_instances, 6)</span>
+<span class="sd">                or (num_instances,) with dtype wp.spatial_vectorf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_velocity</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_link_velocity_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_link_velocity_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_link_velocity_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_velocity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1161,18 +1190,21 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root link velocity over selected environment indices into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
-<span class="sd">        NOTE: This sets the velocity of the root&#39;s frame rather than the roots center of mass.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the root&#39;s frame rather than the root&#39;s center of mass.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data or full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            root_velocity: Root frame velocities in simulation world frame.</span>
-<span class="sd">                Shape is (len(env_ids), 6) or (num_instances, 6).</span>
+<span class="sd">                Shape is (len(env_ids), 6) or (num_instances, 6),</span>
+<span class="sd">                or (len(env_ids),) / (num_instances,) with dtype wp.spatial_vectorf.</span>
 <span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1213,30 +1245,34 @@
 
 <div class="viewcode-block" id="RigidObject.write_root_link_velocity_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_link_velocity_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_link_velocity_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">root_velocity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the root link velocity over selected environment mask into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
-<span class="sd">        NOTE: This sets the velocity of the root&#39;s frame rather than the roots center of mass.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the root&#39;s frame rather than the root&#39;s center of mass.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            root_velocity: Root frame velocities in simulation world frame. Shape is (num_instances, 6).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            root_velocity: Root frame velocities in simulation world frame. Shape is (num_instances, 6)</span>
+<span class="sd">                or (num_instances,) with dtype wp.spatial_vectorf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_velocity</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Operations - Setters.</span>
@@ -1244,6 +1280,7 @@
 
 <div class="viewcode-block" id="RigidObject.set_masses_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.set_masses_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_masses_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">masses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1293,6 +1330,7 @@
 
 <div class="viewcode-block" id="RigidObject.set_masses_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.set_masses_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_masses_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">masses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1309,7 +1347,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            masses: Masses of all bodies. Shape is (num_instances, num_bodies).</span>
 <span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve masks.</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1321,10 +1359,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
         <span class="c1"># Set full data to True to ensure the right code path is taken inside the kernel.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_masses_index</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_masses_index</span><span class="p">(</span><span class="n">masses</span><span class="o">=</span><span class="n">masses</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.set_coms_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.set_coms_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_coms_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">coms</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1373,6 +1412,7 @@
 
 <div class="viewcode-block" id="RigidObject.set_coms_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.set_coms_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_coms_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">coms</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1389,7 +1429,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            coms: Center of mass pose of all bodies. Shape is (num_instances, num_bodies, 7).</span>
 <span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve masks.</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1401,10 +1441,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
         <span class="c1"># Set full data to True to ensure the right code path is taken inside the kernel.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_coms_index</span><span class="p">(</span><span class="n">coms</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_coms_index</span><span class="p">(</span><span class="n">coms</span><span class="o">=</span><span class="n">coms</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.set_inertias_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.set_inertias_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_inertias_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">inertias</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1452,6 +1493,7 @@
 
 <div class="viewcode-block" id="RigidObject.set_inertias_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.set_inertias_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_inertias_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">inertias</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1468,7 +1510,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            inertias: Inertias of all bodies. Shape is (num_instances, num_bodies, 9).</span>
 <span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve masks.</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1480,7 +1522,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
         <span class="c1"># Set full data to True to ensure the right code path is taken inside the kernel.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_inertias_index</span><span class="p">(</span><span class="n">inertias</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_inertias_index</span><span class="p">(</span><span class="n">inertias</span><span class="o">=</span><span class="n">inertias</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Internal helper.</span>
@@ -1650,8 +1692,8 @@
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_state</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_state</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_state</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_state</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_com_state_to_sim"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_com_state_to_sim">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_com_state_to_sim</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">root_state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1664,8 +1706,8 @@
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_pose_to_sim_index</span><span class="p">(</span><span class="n">root_state</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_state</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_state</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_state</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObject.write_root_link_state_to_sim"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObject.write_root_link_state_to_sim">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_root_link_state_to_sim</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">root_state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1678,8 +1720,8 @@
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_state</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_state</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">root_state</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_root_link_velocity_to_sim_index</span><span class="p">(</span><span class="n">root_velocity</span><span class="o">=</span><span class="n">root_state</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span></div></div>
 </pre></div>
 
                 </article>
@@ -1727,7 +1769,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

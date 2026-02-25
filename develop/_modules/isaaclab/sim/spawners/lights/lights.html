@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -680,7 +681,7 @@
     <span class="c1"># delete spawner func specific parameters</span>
     <span class="k">del</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;prim_type&quot;</span><span class="p">]</span>
     <span class="c1"># delete custom attributes in the config that are not USD parameters</span>
-    <span class="n">non_usd_cfg_param_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;copy_from_source&quot;</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">,</span> <span class="s2">&quot;semantic_tags&quot;</span><span class="p">]</span>
+    <span class="n">non_usd_cfg_param_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;copy_from_source&quot;</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">,</span> <span class="s2">&quot;semantic_tags&quot;</span><span class="p">,</span> <span class="s2">&quot;spawn_path&quot;</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">non_usd_cfg_param_names</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">cfg</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
     <span class="c1"># set into USD API</span>
@@ -751,7 +752,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

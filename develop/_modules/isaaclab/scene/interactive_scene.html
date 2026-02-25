@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -634,10 +635,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">warp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeformableObject</span><span class="p">,</span> <span class="n">DeformableObjectCfg</span><span class="p">,</span> <span class="n">SurfaceGripper</span><span class="p">,</span> <span class="n">SurfaceGripperCfg</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">carb</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaacsim.core.cloner</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridCloner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab</span><span class="w"> </span><span class="kn">import</span> <span class="n">cloner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.assets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Articulation</span><span class="p">,</span>
     <span class="n">ArticulationCfg</span><span class="p">,</span>
@@ -652,7 +653,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.utils.stage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_stage</span><span class="p">,</span> <span class="n">get_current_stage_id</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">XformPrimView</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.terrains</span><span class="w"> </span><span class="kn">import</span> <span class="n">TerrainImporter</span><span class="p">,</span> <span class="n">TerrainImporterCfg</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_isaac_sim_version</span>
 
 <span class="c1"># Note: This is a temporary import for the VisuoTactileSensorCfg class.</span>
 <span class="c1"># It will be removed once the VisuoTactileSensor class is added to the core Isaac Lab framework.</span>
@@ -757,81 +757,48 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">=</span> <span class="n">SimulationContext</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">get_current_stage</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stage_id</span> <span class="o">=</span> <span class="n">get_current_stage_id</span><span class="p">()</span>
+        <span class="c1"># physics backend and clone fn (PhysX uses PhysxSchema/physx_replicate; Newton uses its own worlds)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">physics_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="s2">&quot;Physx&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_backend</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.cloner</span><span class="w"> </span><span class="kn">import</span> <span class="n">physx_replicate</span>
+
+            <span class="n">physics_clone_fn</span> <span class="o">=</span> <span class="n">physx_replicate</span>
+        <span class="k">elif</span> <span class="s2">&quot;Newton&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_backend</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_newton.cloner</span><span class="w"> </span><span class="kn">import</span> <span class="n">newton_replicate</span>
+
+            <span class="n">physics_clone_fn</span> <span class="o">=</span> <span class="n">newton_replicate</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported physics backend: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">physics_backend</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># physics scene path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physics_scene_path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># prepare cloner for environment replication</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span> <span class="o">=</span> <span class="n">GridCloner</span><span class="p">(</span><span class="n">spacing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">env_spacing</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">define_base_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">generate_paths</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span><span class="si">}</span><span class="s2">/env&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">num_envs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span><span class="si">}</span><span class="s2">/env_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">num_envs</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span> <span class="o">=</span> <span class="n">cloner</span><span class="o">.</span><span class="n">TemplateCloneCfg</span><span class="p">(</span>
+            <span class="n">clone_regex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="p">,</span>
+            <span class="n">clone_in_fabric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">clone_in_fabric</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">physics_clone_fn</span><span class="o">=</span><span class="n">physics_clone_fn</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="c1"># create source prim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="o">.</span><span class="n">DefinePrim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Xform&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="o">.</span><span class="n">DefinePrim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">template_root</span><span class="p">,</span> <span class="s2">&quot;Xform&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_fmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.*&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># allocate env indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">num_envs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="c1"># when replicate_physics=False, we assume heterogeneous environments and clone the xforms first.</span>
-        <span class="c1"># this triggers per-object level cloning in the spawner.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">:</span>
-            <span class="c1"># check version of Isaac Sim to determine whether clone_in_fabric is valid</span>
-            <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="c1"># clone the env xform</span>
-                <span class="n">env_origins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
-                    <span class="n">source_prim_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="n">prim_paths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
-                    <span class="n">replicate_physics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">copy_from_source</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">enable_env_ids</span><span class="o">=</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="kc">False</span>
-                    <span class="p">),</span>  <span class="c1"># this won&#39;t do anything because we are not replicating physics</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># clone the env xform</span>
-                <span class="n">env_origins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
-                    <span class="n">source_prim_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="n">prim_paths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
-                    <span class="n">replicate_physics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">copy_from_source</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">enable_env_ids</span><span class="o">=</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="kc">False</span>
-                    <span class="p">),</span>  <span class="c1"># this won&#39;t do anything because we are not replicating physics</span>
-                    <span class="n">clone_in_fabric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">clone_in_fabric</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">env_origins</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># otherwise, environment origins will be initialized during cloning at the end of environment creation</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cloner</span><span class="o">.</span><span class="n">grid_transforms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_envs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">env_spacing</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="c1"># copy empty prim of env_0 to env_1, env_2, ..., env_{num_envs-1} with correct location.</span>
+        <span class="n">cloner</span><span class="o">.</span><span class="n">usd_replicate</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">env_fmt</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_scene_setup_from_cfg</span><span class="p">():</span>
-            <span class="c1"># add entities from config</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_entities_from_cfg</span><span class="p">()</span>
-            <span class="c1"># clone environments on a global scope if environment is homogeneous</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">clone_environments</span><span class="p">(</span><span class="n">copy_from_source</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="c1"># replicate physics if we have more than one environment</span>
-            <span class="c1"># this is done to make scene initialization faster at play time</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">num_envs</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="c1"># check version of Isaac Sim to determine whether clone_in_fabric is valid</span>
-                <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">(</span>
-                        <span class="n">source_prim_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                        <span class="n">prim_paths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
-                        <span class="n">base_env_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span><span class="p">,</span>
-                        <span class="n">root_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.*&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-                        <span class="n">enable_env_ids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">(</span>
-                        <span class="n">source_prim_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                        <span class="n">prim_paths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
-                        <span class="n">base_env_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span><span class="p">,</span>
-                        <span class="n">root_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.*&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-                        <span class="n">enable_env_ids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
-                        <span class="n">clone_in_fabric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">clone_in_fabric</span><span class="p">,</span>
-                    <span class="p">)</span>
-
-            <span class="c1"># since env_ids is only applicable when replicating physics, we have to fallback to the previous method</span>
-            <span class="c1"># to filter collisions if replicate_physics is not enabled</span>
-            <span class="c1"># additionally, env_ids is only supported in GPU simulation</span>
-            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clone_environments</span><span class="p">(</span><span class="n">copy_from_source</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">))</span>
+            <span class="c1"># Collision filtering is PhysX-specific (PhysxSchema.PhysxSceneAPI)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="ow">and</span> <span class="s2">&quot;Physx&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_backend</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">filter_collisions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InteractiveScene.clone_environments"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.scene.html#isaaclab.scene.InteractiveScene.clone_environments">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">clone_environments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copy_from_source</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
@@ -842,57 +809,22 @@
 <span class="sd">            If True, clones are independent copies of the source prim and won&#39;t reflect its changes (start-up time</span>
 <span class="sd">            may increase). Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># check if user spawned different assets in individual environments</span>
-        <span class="c1"># this flag will be None if no multi asset is spawned</span>
-        <span class="n">carb_settings_iface</span> <span class="o">=</span> <span class="n">carb</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-        <span class="n">has_multi_assets</span> <span class="o">=</span> <span class="n">carb_settings_iface</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/isaaclab/spawn/multi_assets&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">has_multi_assets</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Varying assets might have been spawned under different environments.&quot;</span>
-                <span class="s2">&quot; However, the replicate physics flag is enabled in the &#39;InteractiveScene&#39; configuration.&quot;</span>
-                <span class="s2">&quot; This may adversely affect PhysX parsing. We recommend disabling this property.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># PhysX-only: set env id bit count for replicated physics. Newton handles env separation in its own API.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span> <span class="ow">and</span> <span class="s2">&quot;Physx&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_backend</span><span class="p">:</span>
+            <span class="n">prim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">(</span><span class="s2">&quot;/physicsScene&quot;</span><span class="p">)</span>
+            <span class="n">prim</span><span class="o">.</span><span class="n">CreateAttribute</span><span class="p">(</span><span class="s2">&quot;physxScene:envIdInBoundsBitCount&quot;</span><span class="p">,</span> <span class="n">Sdf</span><span class="o">.</span><span class="n">ValueTypeNames</span><span class="o">.</span><span class="n">Int</span><span class="p">)</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 
-        <span class="c1"># check version of Isaac Sim to determine whether clone_in_fabric is valid</span>
-        <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="c1"># clone the environment</span>
-            <span class="n">env_origins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
-                <span class="n">source_prim_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">prim_paths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
-                <span class="n">replicate_physics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">,</span>
-                <span class="n">copy_from_source</span><span class="o">=</span><span class="n">copy_from_source</span><span class="p">,</span>
-                <span class="n">enable_env_ids</span><span class="o">=</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="kc">False</span>
-                <span class="p">),</span>  <span class="c1"># this automatically filters collisions between environments</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_scene_setup_from_cfg</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">clone_physics</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">copy_from_source</span>
+            <span class="n">cloner</span><span class="o">.</span><span class="n">clone_from_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="n">num_clones</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_envs</span><span class="p">,</span> <span class="n">template_clone_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># clone the environment</span>
-            <span class="n">env_origins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
-                <span class="n">source_prim_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">prim_paths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
-                <span class="n">replicate_physics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span><span class="p">,</span>
-                <span class="n">copy_from_source</span><span class="o">=</span><span class="n">copy_from_source</span><span class="p">,</span>
-                <span class="n">enable_env_ids</span><span class="o">=</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="kc">False</span>
-                <span class="p">),</span>  <span class="c1"># this automatically filters collisions between environments</span>
-                <span class="n">clone_in_fabric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">clone_in_fabric</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">mapping</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_envs</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+            <span class="n">replicate_args</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">env_fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">env_fmt</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span><span class="p">,</span> <span class="n">mapping</span>
 
-        <span class="c1"># since env_ids is only applicable when replicating physics, we have to fallback to the previous method</span>
-        <span class="c1"># to filter collisions if replicate_physics is not enabled</span>
-        <span class="c1"># additionally, env_ids is only supported in GPU simulation</span>
-        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">replicate_physics</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">filter_collisions</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
-            <span class="c1"># if scene is specified through cfg, this is already taken care of</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_scene_setup_from_cfg</span><span class="p">():</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="s2">&quot;Collision filtering can only be automatically enabled when replicate_physics=True and using GPU&quot;</span>
-                    <span class="s2">&quot; simulation. Please call scene.filter_collisions(global_prim_paths) to filter collisions across&quot;</span>
-                    <span class="s2">&quot; environments.&quot;</span>
-                <span class="p">)</span>
-
-        <span class="c1"># in case of heterogeneous cloning, the env origins is specified at init</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">env_origins</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">copy_from_source</span><span class="p">:</span>
+                <span class="c1"># skip physx cloning, this means physx will walk and parse the stage one by one faithfully</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">physics_clone_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="o">*</span><span class="n">replicate_args</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">cloner</span><span class="o">.</span><span class="n">usd_replicate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="o">*</span><span class="n">replicate_args</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_env_origins</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InteractiveScene.filter_collisions"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.scene.html#isaaclab.scene.InteractiveScene.filter_collisions">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">filter_collisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_prim_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter environments collisions.</span>
@@ -920,7 +852,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span> <span class="o">+=</span> <span class="n">global_prim_paths</span>
 
         <span class="c1"># filter collisions within each environment instance</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cloner</span><span class="o">.</span><span class="n">filter_collisions</span><span class="p">(</span>
+        <span class="n">cloner</span><span class="o">.</span><span class="n">filter_collisions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">physics_scene_path</span><span class="p">,</span>
             <span class="s2">&quot;/World/collisions&quot;</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env_prim_paths</span><span class="p">,</span>
@@ -1341,19 +1274,40 @@
             <span class="k">for</span> <span class="n">asset_name</span><span class="p">,</span> <span class="n">asset_cfg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_add_entities_from_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_entities_from_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add scene entities from the config.&quot;&quot;&quot;</span>
         <span class="c1"># store paths that are in global collision filter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="c1"># parse the entire scene config and resolve regex</span>
-        <span class="k">for</span> <span class="n">asset_name</span><span class="p">,</span> <span class="n">asset_cfg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="c1"># skip keywords</span>
-            <span class="c1"># note: easier than writing a list of keywords: [num_envs, env_spacing, lazy_sensor_update]</span>
-            <span class="k">if</span> <span class="n">asset_name</span> <span class="ow">in</span> <span class="n">InteractiveSceneCfg</span><span class="o">.</span><span class="n">__dataclass_fields__</span> <span class="ow">or</span> <span class="n">asset_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="c1"># resolve regex</span>
+        <span class="c1"># Process non-sensor entities before sensors so that asset prims exist in the template</span>
+        <span class="c1"># when sensors (e.g. cameras attached to robot links) need to spawn under them.</span>
+        <span class="n">all_items</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">InteractiveSceneCfg</span><span class="o">.</span><span class="n">__dataclass_fields__</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">]</span>
+        <span class="n">ordered_items</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_items</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">SensorBaseCfg</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_items</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">SensorBaseCfg</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">asset_name</span><span class="p">,</span> <span class="n">asset_cfg</span> <span class="ow">in</span> <span class="n">ordered_items</span><span class="p">:</span>
+            <span class="c1"># resolve prim_path with env regex</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="s2">&quot;prim_path&quot;</span><span class="p">):</span>
                 <span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span> <span class="o">=</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ENV_REGEX_NS</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="p">)</span>
+            <span class="c1"># set spawn_path on spawner if cloning is needed</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="s2">&quot;spawn&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="s2">&quot;prim_path&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span> <span class="ow">in</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">:</span>
+                    <span class="n">template_base</span> <span class="o">=</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">template_root</span><span class="p">)</span>
+                    <span class="n">proto_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">template_prototype_identifier</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="n">SensorBaseCfg</span><span class="p">):</span>
+                        <span class="c1"># Sensor may be nested under a proto_asset_N prim (e.g. a camera on a robot</span>
+                        <span class="c1"># link). Search for the actual template location so spawning succeeds even</span>
+                        <span class="c1"># though the parent asset lives at template_root/&lt;Asset&gt;/proto_asset_0/...</span>
+                        <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_sensor_template_spawn_path</span><span class="p">(</span><span class="n">template_base</span><span class="p">,</span> <span class="n">proto_id</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template_base</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">proto_id</span><span class="si">}</span><span class="s2">_.*&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No cloning - spawn directly at prim_path</span>
+                    <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span> <span class="o">=</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span>
             <span class="c1"># create asset</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="n">TerrainImporterCfg</span><span class="p">):</span>
                 <span class="c1"># terrains are special entities since they define environment origins</span>
@@ -1369,6 +1323,16 @@
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="n">RigidObjectCollectionCfg</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">rigid_object_cfg</span> <span class="ow">in</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">rigid_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">prim_path</span> <span class="o">=</span> <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ENV_REGEX_NS</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="p">)</span>
+                    <span class="c1"># set spawn_path on spawner if cloning is needed</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rigid_object_cfg</span><span class="p">,</span> <span class="s2">&quot;spawn&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_ns</span> <span class="ow">in</span> <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">:</span>
+                            <span class="n">spawn_tmpl</span> <span class="o">=</span> <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">env_regex_ns</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">template_root</span>
+                            <span class="p">)</span>
+                            <span class="n">proto_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">template_prototype_identifier</span>
+                            <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">spawn_tmpl</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">proto_id</span><span class="si">}</span><span class="s2">_.*&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span> <span class="o">=</span> <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">prim_path</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_rigid_object_collections</span><span class="p">[</span><span class="n">asset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">class_type</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">rigid_object_cfg</span> <span class="ow">in</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">rigid_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rigid_object_cfg</span><span class="p">,</span> <span class="s2">&quot;collision_group&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rigid_object_cfg</span><span class="o">.</span><span class="n">collision_group</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
@@ -1408,7 +1372,7 @@
                 <span class="c1"># manually spawn asset</span>
                 <span class="k">if</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">func</span><span class="p">(</span>
-                        <span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">,</span>
+                        <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span><span class="p">,</span>
                         <span class="n">asset_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span>
                         <span class="n">translation</span><span class="o">=</span><span class="n">asset_cfg</span><span class="o">.</span><span class="n">init_state</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
                         <span class="n">orientation</span><span class="o">=</span><span class="n">asset_cfg</span><span class="o">.</span><span class="n">init_state</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span>
@@ -1418,10 +1382,47 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">[</span><span class="n">asset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">XformPrimView</span><span class="p">(</span><span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown asset config type for </span><span class="si">{</span><span class="n">asset_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">asset_cfg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
             <span class="c1"># store global collision paths</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">asset_cfg</span><span class="p">,</span> <span class="s2">&quot;collision_group&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">asset_cfg</span><span class="o">.</span><span class="n">collision_group</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                 <span class="n">asset_paths</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">find_matching_prim_paths</span><span class="p">(</span><span class="n">asset_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span> <span class="o">+=</span> <span class="n">asset_paths</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span> <span class="o">+=</span> <span class="n">asset_paths</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_sensor_template_spawn_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_base</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">proto_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the actual template spawn path for a sensor nested under a proto_asset prim.</span>
+
+<span class="sd">        Sensors parented to robot links live inside ``proto_asset_0`` rather than directly under</span>
+<span class="sd">        the template root.  For example, a wrist camera at</span>
+<span class="sd">        ``/World/template/Robot/panda_hand/wrist_cam`` is actually spawned at</span>
+<span class="sd">        ``/World/template/Robot/proto_asset_0/panda_hand/wrist_cam``.</span>
+
+<span class="sd">        This method inserts a ``proto_id_.*`` wildcard one level below the template root and</span>
+<span class="sd">        searches for the concrete parent prim so the camera spawner can find it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            template_base: Template path derived by replacing the env regex with the template root.</span>
+<span class="sd">                Example: ``/World/template/Robot/panda_hand/wrist_cam``.</span>
+<span class="sd">            proto_id: Prototype identifier prefix (e.g. ``proto_asset``).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Concrete spawn path (e.g. ``/World/template/Robot/proto_asset_0/panda_hand/wrist_cam``)</span>
+<span class="sd">            if the parent is found, otherwise ``template_base/proto_id_.*`` as a fallback.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">template_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloner_cfg</span><span class="o">.</span><span class="n">template_root</span>
+        <span class="c1"># rel = e.g. &quot;Robot/panda_hand/wrist_cam&quot;</span>
+        <span class="n">rel</span> <span class="o">=</span> <span class="n">template_base</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">template_root</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+        <span class="c1"># asset = &quot;Robot&quot;, remainder = &quot;panda_hand/wrist_cam&quot;</span>
+        <span class="n">asset</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">remainder</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template_base</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">proto_id</span><span class="si">}</span><span class="s2">_.*&quot;</span>
+
+        <span class="c1"># parent = &quot;panda_hand&quot;, leaf = &quot;wrist_cam&quot;</span>
+        <span class="n">parent</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">leaf</span> <span class="o">=</span> <span class="n">remainder</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="n">search</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template_root</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">asset</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">proto_id</span><span class="si">}</span><span class="s2">_.*/</span><span class="si">{</span><span class="n">parent</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template_root</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">asset</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">proto_id</span><span class="si">}</span><span class="s2">_.*&quot;</span>
+        <span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">find_matching_prim_paths</span><span class="p">(</span><span class="n">search</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">leaf</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">found</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template_base</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">proto_id</span><span class="si">}</span><span class="s2">_.*&quot;</span></div>
 </pre></div>
 
                 </article>
@@ -1469,7 +1470,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

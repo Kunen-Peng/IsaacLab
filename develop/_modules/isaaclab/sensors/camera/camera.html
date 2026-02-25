@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -628,12 +629,12 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">packaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">UsdGeom</span>
@@ -717,12 +718,6 @@
     <span class="p">}</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The set of sensor types that are not supported by the camera class.&quot;&quot;&quot;</span>
 
-    <span class="c1"># Class-level dedup stamp: tracks the last (sim instance, physics step) at</span>
-    <span class="c1"># which Kit&#39;s ``app.update()`` was pumped.  Keyed on ``id(sim)`` so that a</span>
-    <span class="c1"># new ``SimulationContext`` (e.g. in a new test) automatically invalidates</span>
-    <span class="c1"># any stale stamp from a previous instance.</span>
-    <span class="n">_last_render_update_key</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
     <span class="n">SIMPLE_SHADING_MODES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;simple_shading_constant_diffuse&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
         <span class="s2">&quot;simple_shading_diffuse_mdl&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -741,16 +736,6 @@
 <span class="sd">            RuntimeError: If no camera prim is found at the given path.</span>
 <span class="sd">            ValueError: If the provided data types are not supported by the camera.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># check if sensor path is valid</span>
-        <span class="c1"># note: currently we do not handle environment indices if there is a regex pattern in the leaf</span>
-        <span class="c1">#   For example, if the prim path is &quot;/World/Sensor_[1,2]&quot;.</span>
-        <span class="n">sensor_path</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sensor_path_is_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z0-9/_]+$&quot;</span><span class="p">,</span> <span class="n">sensor_path</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">sensor_path_is_regex</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid prim path for the camera sensor: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">Hint: Please ensure that the prim path does not contain any regex patterns in the leaf.&quot;</span>
-            <span class="p">)</span>
         <span class="c1"># perform check on supported data types</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_supported_data_types</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
         <span class="c1"># initialize base class</span>
@@ -790,6 +775,14 @@
 
         <span class="c1"># spawn the asset</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Use spawn_path when set (points to template location for scene-cloned sensors).</span>
+            <span class="c1"># This allows the camera to be spawned inside the asset template (e.g. inside</span>
+            <span class="c1"># proto_asset_0) before clone_environments replicates it to all env paths.</span>
+            <span class="n">spawn_target</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span> <span class="s2">&quot;spawn_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span>
+            <span class="p">)</span>
             <span class="c1"># compute the rotation offset</span>
             <span class="n">rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">offset</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">rot_offset</span> <span class="o">=</span> <span class="n">convert_camera_frame_orientation_convention</span><span class="p">(</span>
@@ -799,14 +792,17 @@
             <span class="c1"># ensure vertical aperture is set, otherwise replace with default for squared pixels</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">vertical_aperture</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">vertical_aperture</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">horizontal_aperture</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">width</span>
-            <span class="c1"># spawn the asset</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">func</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">offset</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="n">rot_offset</span>
-            <span class="p">)</span>
-        <span class="c1"># check that spawn was successful</span>
-        <span class="n">matching_prims</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">find_matching_prims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">spawn_target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">offset</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="n">rot_offset</span><span class="p">)</span>
+        <span class="c1"># check that spawn was successful; use spawn_path if set (template location) since env</span>
+        <span class="c1"># paths are not yet populated at init time — they are filled in by clone_environments.</span>
+        <span class="n">check_path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">spawn_path</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span> <span class="s2">&quot;spawn_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span>
+        <span class="p">)</span>
+        <span class="n">matching_prims</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">find_matching_prims</span><span class="p">(</span><span class="n">check_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_prims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find prim with path </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find prim with path </span><span class="si">{</span><span class="n">check_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="c1"># UsdGeom Camera prim for the sensor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sensor_prims</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">UsdGeom</span><span class="o">.</span><span class="n">Camera</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1026,16 +1022,17 @@
 <span class="sd">    Operations</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Camera.reset"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sensors.html#isaaclab.sensors.Camera.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Camera.reset"><a class="viewcode-back" href="../../../../source/api/lab/isaaclab.sensors.html#isaaclab.sensors.Camera.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_initialized</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="s2">&quot;Camera could not be initialized. Please ensure --enable_cameras is used to enable rendering.&quot;</span>
             <span class="p">)</span>
         <span class="c1"># reset the timestamps</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
-        <span class="c1"># resolve None</span>
-        <span class="c1"># note: cannot do smart indexing here since we do a for loop over data.</span>
-        <span class="k">if</span> <span class="n">env_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">)</span>
+        <span class="c1"># resolve to indices for torch indexing</span>
+        <span class="k">if</span> <span class="n">env_ids</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">to_torch</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">env_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span>
         <span class="c1"># reset the data</span>
         <span class="c1"># note: this recomputation is useful if one performs events such as randomizations on the camera poses.</span>
@@ -1175,16 +1172,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_buffers</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_intrinsic_matrices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ALL_INDICES</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_update_buffers_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_buffers_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+        <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">to_torch</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
         <span class="c1"># Increment frame count</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frame</span><span class="p">[</span><span class="n">env_ids</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="c1"># -- pose</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">update_latest_camera_pose</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_poses</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
         <span class="c1"># Ensure the RTX renderer has been pumped so annotator buffers are fresh.</span>
-        <span class="c1"># This is a no-op if another camera instance already triggered the update</span>
-        <span class="c1"># for the current physics step, or if a visualizer already pumped it.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_render_update</span><span class="p">()</span>
+        <span class="c1"># Lazy import Isaac RTX Renderer dependency.</span>
+        <span class="c1"># For now the Camera implementation works only with Isaac RTX Renderer.</span>
+        <span class="c1"># Future consideration should be to move Renderer from TiledCamera up the hierarchy to Camera</span>
+        <span class="c1"># to make the Camera backend-agnostic.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.renderers.isaac_rtx_renderer_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_isaac_rtx_render_update</span>
+
+        <span class="n">ensure_isaac_rtx_render_update</span><span class="p">()</span>
+
         <span class="c1"># -- read the data from annotator registry</span>
         <span class="c1"># check if buffer is called for the first time. If so then, allocate the memory</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1221,55 +1226,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Private Helpers</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_render_update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure the Kit RTX renderer has been pumped for the current physics step.</span>
-
-<span class="sd">        This keeps the Kit-specific ``app.update()`` logic inside the camera sensor</span>
-<span class="sd">        rather than in the backend-agnostic ``SimulationContext``.</span>
-
-<span class="sd">        Safe to call from multiple ``Camera`` / ``TiledCamera`` instances per step —</span>
-<span class="sd">        only the first call triggers ``app.update()``.  Subsequent calls are no-ops</span>
-<span class="sd">        because the class-level ``_last_render_update_key`` already matches the</span>
-<span class="sd">        current ``(id(sim), step_count)`` pair.</span>
-
-<span class="sd">        The key is a ``(sim_instance_id, step_count)`` tuple so that creating a new</span>
-<span class="sd">        ``SimulationContext`` (e.g. in a subsequent test) automatically invalidates</span>
-<span class="sd">        any stale stamp left over from a previous instance.</span>
-
-<span class="sd">        No-op conditions:</span>
-<span class="sd">            * Already called this step (dedup across camera instances).</span>
-<span class="sd">            * A visualizer already pumps ``app.update()`` (e.g. KitVisualizer).</span>
-<span class="sd">            * Rendering is not active.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sim</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">SimulationContext</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">sim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">sim</span><span class="p">),</span> <span class="n">sim</span><span class="o">.</span><span class="n">_physics_step_count</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">Camera</span><span class="o">.</span><span class="n">_last_render_update_key</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
-            <span class="k">return</span>  <span class="c1"># Already pumped this step (by another camera or a visualizer)</span>
-
-        <span class="c1"># If a visualizer already pumps the Kit app loop, mark as done and skip.</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">viz</span><span class="o">.</span><span class="n">pumps_app_update</span><span class="p">()</span> <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="n">sim</span><span class="o">.</span><span class="n">visualizers</span><span class="p">):</span>
-            <span class="n">Camera</span><span class="o">.</span><span class="n">_last_render_update_key</span> <span class="o">=</span> <span class="n">key</span>
-            <span class="k">return</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span><span class="o">.</span><span class="n">is_rendering</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="c1"># Sync physics results → Fabric so RTX sees updated positions.</span>
-        <span class="c1"># physics_manager.step() only runs simulate()/fetch_results() and does NOT</span>
-        <span class="c1"># call _update_fabric(), so without this the render would lag one frame behind.</span>
-        <span class="n">sim</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span>
-
-        <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.app</span>
-
-        <span class="n">sim</span><span class="o">.</span><span class="n">set_setting</span><span class="p">(</span><span class="s2">&quot;/app/player/playSimulations&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get_app</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-        <span class="n">sim</span><span class="o">.</span><span class="n">set_setting</span><span class="p">(</span><span class="s2">&quot;/app/player/playSimulations&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">Camera</span><span class="o">.</span><span class="n">_last_render_update_key</span> <span class="o">=</span> <span class="n">key</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_supported_data_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">CameraCfg</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks if the data types are supported by the ray-caster camera.&quot;&quot;&quot;</span>
@@ -1517,7 +1473,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

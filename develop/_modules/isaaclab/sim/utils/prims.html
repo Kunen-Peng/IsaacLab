@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -638,7 +639,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.commands</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaacsim.core.cloner</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cloner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdPhysics</span><span class="p">,</span> <span class="n">UsdShade</span><span class="p">,</span> <span class="n">UsdUtils</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.string</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_camel_case</span>
@@ -1291,10 +1291,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">source_prim_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">root_path</span><span class="p">]</span>
 
-        <span class="c1"># resolve prim paths for spawning and cloning</span>
-        <span class="n">prim_paths</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_prim_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">asset_path</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">source_prim_path</span> <span class="ow">in</span> <span class="n">source_prim_paths</span><span class="p">]</span>
+        <span class="c1"># resolve prim paths for spawning</span>
+        <span class="n">prim_spawn_path</span> <span class="o">=</span> <span class="n">prim_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.*&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
         <span class="c1"># spawn single instance</span>
-        <span class="n">prim</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cfg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">prim</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">prim_spawn_path</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># set the prim visibility</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">):</span>
             <span class="n">imageable</span> <span class="o">=</span> <span class="n">UsdGeom</span><span class="o">.</span><span class="n">Imageable</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
@@ -1317,27 +1317,19 @@
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s2">&quot;activate_contact_sensors&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">activate_contact_sensors</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">..schemas</span><span class="w"> </span><span class="kn">import</span> <span class="n">schemas</span> <span class="k">as</span> <span class="n">_schemas</span>
 
-            <span class="n">_schemas</span><span class="o">.</span><span class="n">activate_contact_sensors</span><span class="p">(</span><span class="n">prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">_schemas</span><span class="o">.</span><span class="n">activate_contact_sensors</span><span class="p">(</span><span class="n">prim_spawn_path</span><span class="p">)</span>
         <span class="c1"># clone asset using cloner API</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prim_paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">cloner</span> <span class="o">=</span> <span class="n">Cloner</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="n">stage</span><span class="p">)</span>
-            <span class="c1"># check version of Isaac Sim to determine whether clone_in_fabric is valid</span>
-            <span class="k">if</span> <span class="n">get_isaac_sim_version</span><span class="p">()</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="c1"># clone the prim</span>
-                <span class="n">cloner</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
-                    <span class="n">prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">prim_paths</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">replicate_physics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">copy_from_source</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">copy_from_source</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># clone the prim</span>
-                <span class="n">clone_in_fabric</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;clone_in_fabric&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="n">replicate_physics</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;replicate_physics&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="n">cloner</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
-                    <span class="n">prim_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="n">prim_paths</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-                    <span class="n">replicate_physics</span><span class="o">=</span><span class="n">replicate_physics</span><span class="p">,</span>
-                    <span class="n">copy_from_source</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">copy_from_source</span><span class="p">,</span>
-                    <span class="n">clone_in_fabric</span><span class="o">=</span><span class="n">clone_in_fabric</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_prim_paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># lazy import to avoid circular import</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.cloner</span><span class="w"> </span><span class="kn">import</span> <span class="n">usd_replicate</span>
+
+            <span class="n">formattable_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.*&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">asset_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">usd_replicate</span><span class="p">(</span>
+                <span class="n">stage</span><span class="o">=</span><span class="n">stage</span><span class="p">,</span>
+                <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="n">formattable_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span>
+                <span class="n">destinations</span><span class="o">=</span><span class="p">[</span><span class="n">formattable_path</span><span class="p">],</span>
+                <span class="n">env_ids</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">source_prim_paths</span><span class="p">)),</span>
+            <span class="p">)</span>
         <span class="c1"># return the source prim</span>
         <span class="k">return</span> <span class="n">prim</span>
 
@@ -1757,7 +1749,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

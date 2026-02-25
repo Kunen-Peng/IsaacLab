@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -1234,10 +1235,10 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.envs.mdp.html#isaaclab.envs.mdp.actions.actions_cfg.EMAJointPositionToLimitsActionCfg.alpha">alpha (isaaclab.envs.mdp.actions.actions_cfg.EMAJointPositionToLimitsActionCfg attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.height_field.hf_terrains_cfg.HfWaveTerrainCfg.amplitude_range">amplitude_range (isaaclab.terrains.height_field.hf_terrains_cfg.HfWaveTerrainCfg attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_pos">anchor_pos (isaaclab_teleop.XrCfg attribute)</a>
 </li>
       <li><a href="source/api/lab_teleop/isaaclab_teleop.html#isaaclab_teleop.XrCfg.anchor_prim_path">anchor_prim_path (isaaclab_teleop.XrCfg attribute)</a>
@@ -1265,6 +1266,8 @@
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.DistantLightCfg.angle">angle (isaaclab.sim.spawners.lights.DistantLightCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.schemas.html#isaaclab.sim.schemas.RigidBodyPropertiesCfg.angular_damping">angular_damping (isaaclab.sim.schemas.RigidBodyPropertiesCfg attribute)</a>
+</li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-Annotated-Dataset"><strong>Annotated Dataset</strong></a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.RenderCfg.antialiasing_mode">antialiasing_mode (isaaclab.sim.RenderCfg attribute)</a>
 </li>
@@ -3908,6 +3911,8 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.string.find_root_prim_path_from_regex">find_root_prim_path_from_regex() (in module isaaclab.utils.string)</a>
 </li>
+      <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.ContactSensor.find_sensors">find_sensors() (isaaclab.sensors.ContactSensor method)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.assets.html#isaaclab.assets.Articulation.find_spatial_tendons">find_spatial_tendons() (isaaclab.assets.Articulation method)</a>
 
       <ul>
@@ -4044,10 +4049,12 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.schemas.html#isaaclab.sim.schemas.FixedTendonPropertiesCfg">FixedTendonPropertiesCfg (class in isaaclab.sim.schemas)</a>
 </li>
-      <li><a href="source/api/lab/isaaclab.envs.mdp.html#isaaclab.envs.mdp.rewards.flat_orientation_l2">flat_orientation_l2() (in module isaaclab.envs.mdp.rewards)</a>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-FK"><strong>FK</strong></a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/api/lab/isaaclab.envs.mdp.html#isaaclab.envs.mdp.rewards.flat_orientation_l2">flat_orientation_l2() (in module isaaclab.envs.mdp.rewards)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.height_field.hf_terrains_cfg.HfDiscreteObstaclesTerrainCfg.flat_patch_sampling">flat_patch_sampling (isaaclab.terrains.height_field.hf_terrains_cfg.HfDiscreteObstaclesTerrainCfg attribute)</a>
 
       <ul>
@@ -4724,6 +4731,8 @@
         <li><a href="source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectData.heading_w">(isaaclab_physx.assets.RigidObjectData property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.CameraCfg.height">height (isaaclab.sensors.CameraCfg attribute)</a>
 
       <ul>
@@ -4752,8 +4761,6 @@
         <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshRepeatedPyramidsTerrainCfg.ObjectCfg.height">(isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshRepeatedPyramidsTerrainCfg.ObjectCfg attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.envs.mdp.html#isaaclab.envs.mdp.observations.height_scan">height_scan() (in module isaaclab.envs.mdp.observations)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.height_field.hf_terrains_cfg.HfDiscreteObstaclesTerrainCfg">HfDiscreteObstaclesTerrainCfg (class in isaaclab.terrains.height_field.hf_terrains_cfg)</a>
@@ -4779,29 +4786,9 @@
       <ul>
         <li><a href="source/api/lab/isaaclab.managers.html#isaaclab.managers.ObservationTermCfg.history_length">(isaaclab.managers.ObservationTermCfg attribute)</a>
 </li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.CameraCfg.history_length">(isaaclab.sensors.CameraCfg attribute)</a>
-</li>
         <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.ContactSensorCfg.history_length">(isaaclab.sensors.ContactSensorCfg attribute)</a>
 </li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.FrameTransformerCfg.history_length">(isaaclab.sensors.FrameTransformerCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.ImuCfg.history_length">(isaaclab.sensors.ImuCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.MultiMeshRayCasterCameraCfg.history_length">(isaaclab.sensors.MultiMeshRayCasterCameraCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.MultiMeshRayCasterCfg.history_length">(isaaclab.sensors.MultiMeshRayCasterCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.RayCasterCameraCfg.history_length">(isaaclab.sensors.RayCasterCameraCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.RayCasterCfg.history_length">(isaaclab.sensors.RayCasterCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.SensorBaseCfg.history_length">(isaaclab.sensors.SensorBaseCfg attribute)</a>
-</li>
-        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.TiledCameraCfg.history_length">(isaaclab.sensors.TiledCameraCfg attribute)</a>
-</li>
         <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.buffers.DelayBuffer.history_length">(isaaclab.utils.buffers.DelayBuffer property)</a>
-</li>
-        <li><a href="source/api/lab_contrib/isaaclab_contrib.sensors.html#isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length">(isaaclab_contrib.sensors.VisuoTactileSensorCfg attribute)</a>
 </li>
       </ul></li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshInvertedPyramidStairsTerrainCfg.holes">holes (isaaclab.terrains.trimesh.mesh_terrains_cfg.MeshInvertedPyramidStairsTerrainCfg attribute)</a>
@@ -4871,6 +4858,8 @@
       <li><a href="source/api/lab/isaaclab.actuators.html#isaaclab.actuators.IdealPDActuator">IdealPDActuator (class in isaaclab.actuators)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.actuators.html#isaaclab.actuators.IdealPDActuatorCfg">IdealPDActuatorCfg (class in isaaclab.actuators)</a>
+</li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-IK"><strong>IK</strong></a>
 </li>
       <li><a href="source/api/lab/isaaclab.controllers.html#isaaclab.controllers.DifferentialIKControllerCfg.ik_method">ik_method (isaaclab.controllers.DifferentialIKControllerCfg attribute)</a>
 </li>
@@ -5179,6 +5168,8 @@
 </li>
       </ul></li>
       <li><a href="source/api/lab/isaaclab.markers.html#isaaclab.markers.VisualizationMarkers.is_visible">is_visible() (isaaclab.markers.VisualizationMarkers method)</a>
+</li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-Isaac-Lab-Mimic-Mimic"><strong>Isaac Lab Mimic (Mimic)</strong></a>
 </li>
       <li><a href="source/api/lab/isaaclab.utils.html#isaaclab.utils.assets.ISAAC_NUCLEUS_DIR">ISAAC_NUCLEUS_DIR (in module isaaclab.utils.assets)</a>
 </li>
@@ -7283,6 +7274,8 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainGeneratorCfg.num_rows">num_rows (isaaclab.terrains.TerrainGeneratorCfg attribute)</a>
 </li>
+      <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.ContactSensor.num_sensors">num_sensors (isaaclab.sensors.ContactSensor property)</a>
+</li>
       <li><a href="source/api/lab/isaaclab.assets.html#isaaclab.assets.Articulation.num_spatial_tendons">num_spatial_tendons (isaaclab.assets.Articulation property)</a>
 
       <ul>
@@ -8415,6 +8408,12 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.RenderCfg">RenderCfg (class in isaaclab.sim)</a>
 </li>
+      <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.CameraCfg.renderer_cfg">renderer_cfg (isaaclab.sensors.CameraCfg attribute)</a>
+
+      <ul>
+        <li><a href="source/api/lab/isaaclab.sensors.html#isaaclab.sensors.TiledCameraCfg.renderer_cfg">(isaaclab.sensors.TiledCameraCfg attribute)</a>
+</li>
+      </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.RenderCfg.rendering_mode">rendering_mode (isaaclab.sim.RenderCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.trimesh.mesh_terrains.repeated_objects_terrain">repeated_objects_terrain() (in module isaaclab.terrains.trimesh.mesh_terrains)</a>
@@ -9971,8 +9970,6 @@
         <li><a href="source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_masses_index">(isaaclab_physx.assets.RigidObjectCollection method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.assets.html#isaaclab.assets.Articulation.set_masses_mask">set_masses_mask() (isaaclab.assets.Articulation method)</a>
 
       <ul>
@@ -10011,6 +10008,8 @@
         <li><a href="source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.Articulation.set_spatial_tendon_damping_index">(isaaclab_physx.assets.Articulation method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/api/lab/isaaclab.assets.html#isaaclab.assets.Articulation.set_spatial_tendon_damping_mask">set_spatial_tendon_damping_mask() (isaaclab.assets.Articulation method)</a>
 
       <ul>
@@ -10495,6 +10494,64 @@
 </li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.wrappers.spawn_multi_usd_file">spawn_multi_usd_file() (in module isaaclab.sim.spawners.wrappers)</a>
 </li>
+      <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.DeformableObjectSpawnerCfg.spawn_path">spawn_path (isaaclab.sim.spawners.DeformableObjectSpawnerCfg attribute)</a>
+
+      <ul>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.from_files.GroundPlaneCfg.spawn_path">(isaaclab.sim.spawners.from_files.GroundPlaneCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.from_files.UrdfFileCfg.spawn_path">(isaaclab.sim.spawners.from_files.UrdfFileCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.from_files.UsdFileCfg.spawn_path">(isaaclab.sim.spawners.from_files.UsdFileCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.CylinderLightCfg.spawn_path">(isaaclab.sim.spawners.lights.CylinderLightCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.DiskLightCfg.spawn_path">(isaaclab.sim.spawners.lights.DiskLightCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.DistantLightCfg.spawn_path">(isaaclab.sim.spawners.lights.DistantLightCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.DomeLightCfg.spawn_path">(isaaclab.sim.spawners.lights.DomeLightCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.LightCfg.spawn_path">(isaaclab.sim.spawners.lights.LightCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.lights.SphereLightCfg.spawn_path">(isaaclab.sim.spawners.lights.SphereLightCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.meshes.MeshCapsuleCfg.spawn_path">(isaaclab.sim.spawners.meshes.MeshCapsuleCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.meshes.MeshCfg.spawn_path">(isaaclab.sim.spawners.meshes.MeshCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.meshes.MeshConeCfg.spawn_path">(isaaclab.sim.spawners.meshes.MeshConeCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.meshes.MeshCuboidCfg.spawn_path">(isaaclab.sim.spawners.meshes.MeshCuboidCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.meshes.MeshCylinderCfg.spawn_path">(isaaclab.sim.spawners.meshes.MeshCylinderCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.meshes.MeshSphereCfg.spawn_path">(isaaclab.sim.spawners.meshes.MeshSphereCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.RigidObjectSpawnerCfg.spawn_path">(isaaclab.sim.spawners.RigidObjectSpawnerCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.sensors.FisheyeCameraCfg.spawn_path">(isaaclab.sim.spawners.sensors.FisheyeCameraCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.sensors.PinholeCameraCfg.spawn_path">(isaaclab.sim.spawners.sensors.PinholeCameraCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.CapsuleCfg.spawn_path">(isaaclab.sim.spawners.shapes.CapsuleCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.ConeCfg.spawn_path">(isaaclab.sim.spawners.shapes.ConeCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.CuboidCfg.spawn_path">(isaaclab.sim.spawners.shapes.CuboidCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.CylinderCfg.spawn_path">(isaaclab.sim.spawners.shapes.CylinderCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.ShapeCfg.spawn_path">(isaaclab.sim.spawners.shapes.ShapeCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.shapes.SphereCfg.spawn_path">(isaaclab.sim.spawners.shapes.SphereCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.SpawnerCfg.spawn_path">(isaaclab.sim.spawners.SpawnerCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.wrappers.MultiAssetSpawnerCfg.spawn_path">(isaaclab.sim.spawners.wrappers.MultiAssetSpawnerCfg attribute)</a>
+</li>
+        <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.wrappers.MultiUsdFileCfg.spawn_path">(isaaclab.sim.spawners.wrappers.MultiUsdFileCfg attribute)</a>
+</li>
+      </ul></li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.materials.spawn_preview_surface">spawn_preview_surface() (in module isaaclab.sim.spawners.materials)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.materials.spawn_rigid_body_material">spawn_rigid_body_material() (in module isaaclab.sim.spawners.materials)</a>
@@ -10528,6 +10585,8 @@
 </li>
       </ul></li>
       <li><a href="source/api/lab/isaaclab.envs.html#isaaclab.envs.DirectMARLEnv.state">state() (isaaclab.envs.DirectMARLEnv method)</a>
+</li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-State-based-Policy"><strong>State-based Policy</strong></a>
 </li>
       <li><a href="source/api/lab_rl/isaaclab_rl.html#isaaclab_rl.rsl_rl.RslRlPpoActorCriticCfg.state_dependent_std">state_dependent_std (isaaclab_rl.rsl_rl.RslRlPpoActorCriticCfg attribute)</a>
 
@@ -10693,6 +10752,8 @@
       </ul></li>
       <li><a href="source/api/lab/isaaclab.terrains.html#isaaclab.terrains.TerrainGeneratorCfg.sub_terrains">sub_terrains (isaaclab.terrains.TerrainGeneratorCfg attribute)</a>
 </li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-Subtask"><strong>Subtask</strong></a>
+</li>
       <li><a href="source/api/lab_mimic/isaaclab_mimic.datagen.html#isaaclab_mimic.datagen.DataGenInfoPool.subtask_boundaries">subtask_boundaries (isaaclab_mimic.datagen.DataGenInfoPool property)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.envs.html#isaaclab.envs.SubTaskConfig.subtask_start_offset_range">subtask_start_offset_range (isaaclab.envs.SubTaskConfig attribute)</a>
@@ -10782,6 +10843,8 @@
       <li><a href="source/api/lab/isaaclab.sim.converters.html#isaaclab.sim.converters.UrdfConverterCfg.JointDriveCfg.target_type">target_type (isaaclab.sim.converters.UrdfConverterCfg.JointDriveCfg attribute)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.controllers.html#isaaclab.controllers.OperationalSpaceControllerCfg.target_types">target_types (isaaclab.controllers.OperationalSpaceControllerCfg attribute)</a>
+</li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-Task-Space-Action"><strong>Task Space Action</strong></a>
 </li>
       <li><a href="source/api/lab/isaaclab.envs.mdp.html#isaaclab.envs.mdp.actions.actions_cfg.OperationalSpaceControllerActionCfg.task_frame_rel_path">task_frame_rel_path (isaaclab.envs.mdp.actions.actions_cfg.OperationalSpaceControllerActionCfg attribute)</a>
 </li>
@@ -11666,6 +11729,8 @@
       <li><a href="source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.visualizers">visualizers (isaaclab.sim.SimulationContext property)</a>
 </li>
       <li><a href="source/api/lab/isaaclab.sim.spawners.html#isaaclab.sim.spawners.materials.VisualMaterialCfg">VisualMaterialCfg (class in isaaclab.sim.spawners.materials)</a>
+</li>
+      <li><a href="source/overview/imitation-learning/teleop_imitation.html#term-Visuomotor-Policy"><strong>Visuomotor Policy:</strong></a>
 </li>
       <li><a href="source/api/lab_contrib/isaaclab_contrib.sensors.html#isaaclab_contrib.sensors.VisuoTactileSensor">VisuoTactileSensor (class in isaaclab_contrib.sensors)</a>
 </li>
@@ -12673,7 +12738,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

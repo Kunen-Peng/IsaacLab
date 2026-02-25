@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -698,17 +699,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="c1"># flag for whether the asset is initialized</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_initialized</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prim_paths</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># spawn the rigid objects</span>
         <span class="k">for</span> <span class="n">rigid_body_cfg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">rigid_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="c1"># check if the rigid object path is valid</span>
-            <span class="c1"># note: currently the spawner does not work if there is a regex pattern in the leaf</span>
-            <span class="c1">#   For example, if the prim path is &quot;/World/Object_[1,2]&quot; since the spawner will not</span>
-            <span class="c1">#   know which prim to spawn. This is a limitation of the spawner and not the asset.</span>
-            <span class="n">asset_path</span> <span class="o">=</span> <span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">asset_path_is_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z0-9/_]+$&quot;</span><span class="p">,</span> <span class="n">asset_path</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="c1"># spawn the asset</span>
-            <span class="k">if</span> <span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">asset_path_is_regex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">spawn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="o">.</span><span class="n">func</span><span class="p">(</span>
                     <span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">,</span>
                     <span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span>
@@ -719,7 +713,6 @@
             <span class="n">matching_prims</span> <span class="o">=</span> <span class="n">sim_utils</span><span class="o">.</span><span class="n">find_matching_prims</span><span class="p">(</span><span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_prims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find prim with path </span><span class="si">{</span><span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_prim_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rigid_body_cfg</span><span class="o">.</span><span class="n">prim_path</span><span class="p">)</span>
         <span class="c1"># stores object names</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_body_names_list</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -760,19 +753,36 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">instantaneous_wrench_composer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WrenchComposer</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantaneous wrench composer for the rigid object collection.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantaneous wrench composer.</span>
+
+<span class="sd">        Returns a :class:`~isaaclab.utils.wrench_composer.WrenchComposer` instance. Wrenches added or set to this wrench</span>
+<span class="sd">        composer are only valid for the current simulation step. At the end of the simulation step, the wrenches set</span>
+<span class="sd">        to this object are discarded. This is useful to apply forces that change all the time, things like drag forces</span>
+<span class="sd">        for instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">permanent_wrench_composer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WrenchComposer</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanent wrench composer for the rigid object collection.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanent wrench composer.</span>
+
+<span class="sd">        Returns a :class:`~isaaclab.utils.wrench_composer.WrenchComposer` instance. Wrenches added or set to this wrench</span>
+<span class="sd">        composer are persistent and are applied to the simulation at every step. This is useful to apply forces that</span>
+<span class="sd">        are constant over a period of time, things like the thrust of a motor for instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Operations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="RigidObjectCollection.reset"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">object_ids</span><span class="p">:</span> <span class="nb">slice</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="RigidObjectCollection.reset"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.reset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">object_ids</span><span class="p">:</span> <span class="nb">slice</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">object_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets all internal buffers of selected environments and objects.</span>
 
 <span class="sd">        Args:</span>
@@ -799,7 +809,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">active</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
                 <span class="c1"># Compose instantaneous wrench with permanent wrench</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">add_forces_and_torques</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_instantaneous_wrench_composer</span><span class="o">.</span><span class="n">add_forces_and_torques_index</span><span class="p">(</span>
                     <span class="n">forces</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span><span class="o">.</span><span class="n">composed_force</span><span class="p">,</span>
                     <span class="n">torques</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_permanent_wrench_composer</span><span class="o">.</span><span class="n">composed_torque</span><span class="p">,</span>
                     <span class="n">body_ids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span><span class="p">,</span>
@@ -863,7 +873,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            A tuple of lists containing the body indices and names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">obj_ids</span><span class="p">,</span> <span class="n">obj_names</span> <span class="o">=</span> <span class="n">string_utils</span><span class="o">.</span><span class="n">resolve_matching_names</span><span class="p">(</span><span class="n">name_keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_names</span><span class="p">,</span> <span class="n">preserve_order</span><span class="p">)</span>
+        <span class="n">obj_ids</span><span class="p">,</span> <span class="n">obj_names</span> <span class="o">=</span> <span class="n">string_utils</span><span class="o">.</span><span class="n">resolve_matching_names</span><span class="p">(</span><span class="n">name_keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_names</span><span class="p">,</span> <span class="n">preserve_order</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">obj_ids</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">obj_names</span></div>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -872,9 +882,10 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_pose_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_pose_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_pose_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_poses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body pose over selected environment and body indices into the simulation.</span>
 
@@ -884,22 +895,23 @@
 <span class="sd">            This method expects partial data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            body_poses: Body poses in simulation frame. Shape is (len(env_ids), len(body_ids), 7).</span>
-<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">            body_poses: Body poses in simulation frame. Shape is (len(env_ids), len(body_ids), 7)</span>
+<span class="sd">                or (len(env_ids), len(body_ids)) with dtype wp.transformf.</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
-<span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="o">=</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_pose_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_pose_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_pose_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_poses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body pose over selected environment mask into the simulation.</span>
 
@@ -909,12 +921,14 @@
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            body_poses: Body poses in simulation frame. Shape is (num_instances, num_bodies, 7).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
-<span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
+<span class="sd">            body_poses: Body poses in simulation frame. Shape is (num_instances, num_bodies, 7)</span>
+<span class="sd">                or (num_instances, num_bodies) with dtype wp.transformf.</span>
+<span class="sd">            body_mask: Body mask. If None, then all bodies are updated. Shape is (num_bodies,).</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
@@ -924,55 +938,67 @@
             <span class="n">body_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">body_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_poses</span><span class="o">=</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_velocity_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_velocity_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_velocity_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_velocities</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body velocity over selected environment and body indices into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
 
 <span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the body&#39;s center of mass rather than the body&#39;s frame.</span>
+
+<span class="sd">        .. note::</span>
 <span class="sd">            This method expects partial data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            body_velocities: Body velocities in simulation frame.</span>
-<span class="sd">                Shape is (len(env_ids), len(body_ids), 6) or (num_instances, num_bodies, 6).</span>
-<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">                Shape is (len(env_ids), len(body_ids), 6) or (num_instances, num_bodies, 6),</span>
+<span class="sd">                or (len(env_ids), len(body_ids)) / (num_instances, num_bodies) with dtype wp.spatial_vectorf.</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_velocities</span><span class="o">=</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_velocity_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_velocity_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_velocity_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_velocities</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body velocity over selected environment mask into the simulation.</span>
 
 <span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
 
 <span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the body&#39;s center of mass rather than the body&#39;s frame.</span>
+
+<span class="sd">        .. note::</span>
 <span class="sd">            This method expects full data.</span>
 
 <span class="sd">        .. tip::</span>
-<span class="sd">            For maximum performance we recommend looking at the actual implementation of the method in the backend.</span>
-<span class="sd">            Some backends may provide optimized implementations for masks / indices.</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            body_velocities: Body velocities in simulation frame.</span>
-<span class="sd">                Shape is (num_instances, num_bodies, 6).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
-<span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
+<span class="sd">                Shape is (num_instances, num_bodies, 6)</span>
+<span class="sd">                or (num_instances, num_bodies) with dtype wp.spatial_vectorf.</span>
+<span class="sd">            body_mask: Body mask. If None, then all bodies are updated. Shape is (num_bodies,).</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
@@ -982,22 +1008,35 @@
             <span class="n">body_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">body_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_velocities</span><span class="o">=</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_link_pose_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_link_pose_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_link_pose_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_poses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body link pose over selected environment and body indices into the simulation.</span>
 
+<span class="sd">        The body link pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects partial data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            body_poses: Body link poses in simulation frame.</span>
-<span class="sd">                Shape is (len(env_ids), len(body_ids), 7) or (num_instances, num_bodies, 7).</span>
-<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">                Shape is (len(env_ids), len(body_ids), 7) or (num_instances, num_bodies, 7),</span>
+<span class="sd">                or (len(env_ids), len(body_ids)) / (num_instances, num_bodies) with dtype wp.transformf.</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_env_ids</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
@@ -1034,37 +1073,62 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_link_pose_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_link_pose_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_link_pose_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_poses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body link pose over selected environment mask into the simulation.</span>
 
+<span class="sd">        The body link pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects full data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            body_poses: Body link poses in simulation frame. Shape is (num_instances, num_bodies, 7).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            body_poses: Body link poses in simulation frame. Shape is (num_instances, num_bodies, 7)</span>
+<span class="sd">                or (num_instances, num_bodies) with dtype wp.transformf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_ENV_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_poses</span><span class="o">=</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_com_pose_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_com_pose_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_com_pose_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_poses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body center of mass pose over selected environment and body indices into the simulation.</span>
 
+<span class="sd">        The body center of mass pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
+<span class="sd">        The orientation is the orientation of the principal axes of inertia.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects partial data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            body_poses: Body center of mass poses in simulation frame.</span>
-<span class="sd">                Shape is (len(env_ids), len(body_ids), 7) or (num_instances, num_bodies, 7).</span>
-<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">                Shape is (len(env_ids), len(body_ids), 7) or (num_instances, num_bodies, 7),</span>
+<span class="sd">                or (len(env_ids), len(body_ids)) / (num_instances, num_bodies) with dtype wp.transformf.</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_env_ids</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
@@ -1104,37 +1168,63 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_com_pose_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_com_pose_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_com_pose_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_poses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body center of mass pose over selected environment mask into the simulation.</span>
 
+<span class="sd">        The body center of mass pose comprises of the cartesian position and quaternion orientation in (x, y, z, w).</span>
+<span class="sd">        The orientation is the orientation of the principal axes of inertia.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects full data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            body_poses: Body center of mass poses in simulation frame. Shape is (num_instances, num_bodies, 7).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            body_poses: Body center of mass poses in simulation frame. Shape is (num_instances, num_bodies, 7)</span>
+<span class="sd">                or (num_instances, num_bodies) with dtype wp.transformf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_ENV_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="o">=</span><span class="n">body_poses</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_com_velocity_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_com_velocity_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_com_velocity_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_velocities</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body center of mass velocity over selected environment and body indices into the simulation.</span>
 
+<span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the body&#39;s center of mass rather than the body&#39;s frame.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects partial data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            body_velocities: Body center of mass velocities in simulation frame.</span>
-<span class="sd">                Shape is (len(env_ids), len(body_ids), 6) or (num_instances, num_bodies, 6).</span>
-<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">                Shape is (len(env_ids), len(body_ids), 6) or (num_instances, num_bodies, 6),</span>
+<span class="sd">                or (len(env_ids), len(body_ids)) / (num_instances, num_bodies) with dtype wp.spatial_vectorf.</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_env_ids</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
@@ -1173,38 +1263,68 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_com_velocity_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_com_velocity_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_com_velocity_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_velocities</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body center of mass velocity over selected environment mask into the simulation.</span>
 
+<span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the body&#39;s center of mass rather than the body&#39;s frame.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects full data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            body_velocities: Body center of mass velocities in simulation frame.</span>
-<span class="sd">                Shape is (num_instances, num_bodies, 6).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">                Shape is (num_instances, num_bodies, 6)</span>
+<span class="sd">                or (num_instances, num_bodies) with dtype wp.spatial_vectorf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_ENV_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_velocities</span><span class="o">=</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_link_velocity_to_sim_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_link_velocity_to_sim_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_link_velocity_to_sim_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_velocities</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">full_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body link velocity over selected environment and body indices into the simulation.</span>
 
+<span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the body&#39;s frame rather than the body&#39;s center of mass.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects partial data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            body_velocities: Body link velocities in simulation frame.</span>
-<span class="sd">                Shape is (len(env_ids), len(body_ids), 6) or (num_instances, num_bodies, 6).</span>
-<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
+<span class="sd">                Shape is (len(env_ids), len(body_ids), 6) or (num_instances, num_bodies, 6),</span>
+<span class="sd">                or (len(env_ids), len(body_ids)) / (num_instances, num_bodies) with dtype wp.spatial_vectorf.</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
+<span class="sd">            env_ids: Environment indices. If None, then all indices are used.</span>
 <span class="sd">            full_data: Whether to expect full data. Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_env_ids</span><span class="p">(</span><span class="n">env_ids</span><span class="p">)</span>
@@ -1248,22 +1368,38 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_link_velocity_to_sim_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_link_velocity_to_sim_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_link_velocity_to_sim_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">body_velocities</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the body link velocity over selected environment mask into the simulation.</span>
 
+<span class="sd">        The velocity comprises linear velocity (x, y, z) and angular velocity (x, y, z) in that order.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This sets the velocity of the body&#39;s frame rather than the body&#39;s center of mass.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method expects full data.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            For maximum performance we recommend using the index method. This is because in PhysX, the tensor API</span>
+<span class="sd">            is only supporting indexing, hence masks need to be converted to indices.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            body_velocities: Body link velocities in simulation frame. Shape is (num_instances, num_bodies, 6).</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            body_velocities: Body link velocities in simulation frame. Shape is (num_instances, num_bodies, 6)</span>
+<span class="sd">                or (num_instances, num_bodies) with dtype wp.spatial_vectorf.</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">            body_ids: Body indices. If None, then all indices are used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">env_mask</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_ENV_INDICES</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_velocity_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_velocities</span><span class="o">=</span><span class="n">body_velocities</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Operations - Setters.</span>
@@ -1271,6 +1407,7 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.set_masses_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_masses_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_masses_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">masses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1318,6 +1455,7 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.set_masses_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_masses_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_masses_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">masses</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1333,8 +1471,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            masses: Masses of all bodies. Shape is ``(num_instances, num_bodies)``.</span>
-<span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            body_mask: Body mask. If None, then all bodies are updated. Shape is (num_bodies,).</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve masks.</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1346,10 +1484,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
         <span class="c1"># Set full data to True to ensure the right code path is taken inside the kernel.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_masses_index</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_masses_index</span><span class="p">(</span><span class="n">masses</span><span class="o">=</span><span class="n">masses</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.set_coms_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_coms_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_coms_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">coms</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1400,6 +1539,7 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.set_coms_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_coms_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_coms_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">coms</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1415,8 +1555,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            coms: Center of mass pose of all bodies. Shape is ``(num_instances, num_bodies, 7)``.</span>
-<span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            body_mask: Body mask. If None, then all bodies are updated. Shape is (num_bodies,).</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve masks.</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1428,10 +1568,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
         <span class="c1"># Set full data to True to ensure the right code path is taken inside the kernel.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_coms_index</span><span class="p">(</span><span class="n">coms</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_coms_index</span><span class="p">(</span><span class="n">coms</span><span class="o">=</span><span class="n">coms</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.set_inertias_index"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_inertias_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_inertias_index</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">inertias</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1479,6 +1620,7 @@
 
 <div class="viewcode-block" id="RigidObjectCollection.set_inertias_mask"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.set_inertias_mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_inertias_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">inertias</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">body_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_mask</span><span class="p">:</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1494,8 +1636,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            inertias: Inertias of all bodies. Shape is ``(num_instances, num_bodies, 9)``.</span>
-<span class="sd">            body_mask: Body mask. If None, then all bodies are used.</span>
-<span class="sd">            env_mask: Environment mask. If None, then all indices are used.</span>
+<span class="sd">            body_mask: Body mask. If None, then all bodies are updated. Shape is (num_bodies,).</span>
+<span class="sd">            env_mask: Environment mask. If None, then all the instances are updated. Shape is (num_instances,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve masks.</span>
         <span class="k">if</span> <span class="n">env_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1507,7 +1649,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">body_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALL_BODY_INDICES</span>
         <span class="c1"># Set full data to True to ensure the right code path is taken inside the kernel.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_inertias_index</span><span class="p">(</span><span class="n">inertias</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_inertias_index</span><span class="p">(</span><span class="n">inertias</span><span class="o">=</span><span class="n">inertias</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">full_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Helper functions.</span>
@@ -1822,7 +1964,7 @@
         <span class="k">if</span> <span class="n">prim_path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_clear_callbacks</span><span class="p">()</span>
             <span class="k">return</span>
-        <span class="k">for</span> <span class="n">prim_path_expr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prim_paths</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">prim_path_expr</span> <span class="ow">in</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">prim_path</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">rigid_objects</span><span class="o">.</span><span class="n">values</span><span class="p">()]:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
                 <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;^&quot;</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prim_path_expr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span> <span class="n">prim_path</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;$&quot;</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="n">prim_path</span>
             <span class="p">)</span>
@@ -1858,8 +2000,10 @@
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="o">=</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_velocities</span><span class="o">=</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_com_state_to_sim"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_com_state_to_sim">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_com_state_to_sim</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1875,8 +2019,10 @@
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_pose_to_sim_index</span><span class="p">(</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="o">=</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_com_velocity_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_velocities</span><span class="o">=</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RigidObjectCollection.write_body_link_state_to_sim"><a class="viewcode-back" href="../../../../source/api/lab_physx/isaaclab_physx.assets.html#isaaclab_physx.assets.RigidObjectCollection.write_body_link_state_to_sim">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_body_link_state_to_sim</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1892,8 +2038,10 @@
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_velocity_to_sim_index</span><span class="p">(</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_pose_to_sim_index</span><span class="p">(</span><span class="n">body_poses</span><span class="o">=</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">7</span><span class="p">],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_body_link_velocity_to_sim_index</span><span class="p">(</span>
+            <span class="n">body_velocities</span><span class="o">=</span><span class="n">body_states</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">7</span><span class="p">:],</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">,</span> <span class="n">body_ids</span><span class="o">=</span><span class="n">body_ids</span>
+        <span class="p">)</span></div></div>
 </pre></div>
 
                 </article>
@@ -1941,7 +2089,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

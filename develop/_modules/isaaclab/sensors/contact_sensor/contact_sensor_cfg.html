@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -647,8 +648,10 @@
     <span class="n">track_friction_forces</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to track the friction forces at the contact points. Defaults to False.&quot;&quot;&quot;</span>
 
-    <span class="n">max_contact_data_count_per_prim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of contacts across all batches of the sensor to keep track of. Default is 4.</span>
+    <span class="n">max_contact_data_count_per_prim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of contacts across all batches of the sensor to keep track of.</span>
+
+<span class="sd">    When set to None, PhysX will use a default value of 4.</span>
 
 <span class="sd">    This parameter sets the total maximum counts of the simulation across all bodies and environments. The total number</span>
 <span class="sd">    of contacts allowed is max_contact_data_count_per_prim*num_envs*num_sensor_bodies.</span>
@@ -660,11 +663,17 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
+    <span class="n">history_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of past frames to store in the sensor buffers. Defaults to 0, which means that only</span>
+<span class="sd">    the current data is stored (no history).&quot;&quot;&quot;</span>
+
     <span class="n">track_air_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to track the air/contact time of the bodies (time between contacts). Defaults to False.&quot;&quot;&quot;</span>
 
-    <span class="n">force_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">force_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The threshold on the norm of the contact force that determines whether two bodies are in collision or not.</span>
+
+<span class="sd">    When set to None, PhysX will use a default value of 1.0, and Newton will use a default value of 0.0.</span>
 
 <span class="sd">    This value is only used for tracking the mode duration (the time in contact or in air),</span>
 <span class="sd">    if :attr:`track_air_time` is True.</span>
@@ -745,7 +754,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

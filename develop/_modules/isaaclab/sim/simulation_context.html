@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -786,7 +787,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_stopped</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># Monotonic physics-step counter used by camera sensors for</span>
-        <span class="c1"># render-update deduplication (see TiledCamera._ensure_render_update).</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physics_step_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="bp">self</span>  <span class="c1"># Mark as valid singleton only after successful init</span></div>
@@ -1102,17 +1102,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physics_step_count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">physics_manager</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">render</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rendering</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SimulationContext.render"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.sim.html#isaaclab.sim.SimulationContext.render">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update visualizers and render the scene.</span>
 
 <span class="sd">        Calls update_visualizers() so visualizers run at the render cadence (not at</span>
-<span class="sd">        every physics step).  The actual RTX render pump (Kit ``app.update()``) is</span>
-<span class="sd">        handled lazily by camera sensors (see</span>
-<span class="sd">        :meth:`~isaaclab.sensors.TiledCamera._ensure_render_update`) before they</span>
-<span class="sd">        read annotator data, keeping this method backend-agnostic.</span>
+<span class="sd">        every physics step). Camera sensors drive their configured renderer when</span>
+<span class="sd">        fetching data, so this method remains backend-agnostic.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_visualizers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_rendering_dt</span><span class="p">())</span>
 
@@ -1369,7 +1367,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

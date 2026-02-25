@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -364,6 +364,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../source/overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -642,7 +643,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysxManager</span> <span class="k">as</span> <span class="n">SimulationManager</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.assets.articulation.articulation_view</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArticulationView</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">omni.physics.tensors.impl.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">physx</span>
 
 <span class="c1"># import logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -669,7 +670,7 @@
     <span class="n">__backend_name__</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;physx&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The name of the backend for the articulation data.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_view</span><span class="p">:</span> <span class="n">ArticulationView</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_view</span><span class="p">:</span> <span class="n">physx</span><span class="o">.</span><span class="n">ArticulationView</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the articulation data.</span>
 
 <span class="sd">        Args:</span>
@@ -680,7 +681,7 @@
         <span class="c1"># Set the root articulation view</span>
         <span class="c1"># note: this is stored as a weak reference to avoid circular references between the asset class</span>
         <span class="c1">#  and the data container. This is important to avoid memory leaks.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_root_view</span><span class="p">:</span> <span class="n">ArticulationView</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">root_view</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_view</span><span class="p">:</span> <span class="n">physx</span><span class="o">.</span><span class="n">ArticulationView</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">root_view</span><span class="p">)</span>
 
         <span class="c1"># Set initial time stamp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -710,7 +711,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">is_primed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set whether the articulation data is fully instantiated and ready to use.</span>
 
-<span class="sd">        .. note:: Once this quantity is set to True, it cannot be changed.</span>
+<span class="sd">        .. note::</span>
+<span class="sd">            Once this quantity is set to True, it cannot be changed.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: The primed state.</span>
@@ -758,7 +760,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">default_root_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Default root pose ``[pos, quat]`` in the local environment frame.</span>
 
-<span class="sd">        The position and quaternion are of the articulation root&#39;s actor frame. Shape is (num_instances, 7).</span>
+<span class="sd">        The position and quaternion are of the articulation root&#39;s actor frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.transformf. In torch this resolves to (num_instances, 7).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_pose</span>
 
@@ -781,7 +784,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Default root velocity ``[lin_vel, ang_vel]`` in the local environment frame.</span>
 
 <span class="sd">        The linear and angular velocities are of the articulation root&#39;s center of mass frame.</span>
-<span class="sd">        Shape is (num_instances, 6).</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.spatial_vectorf. In torch this resolves to (num_instances, 6).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_vel</span>
 
@@ -800,40 +803,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_vel</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">default_root_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default root state ``[pos, quat, lin_vel, ang_vel]`` in the local environment frame.</span>
-
-
-<span class="sd">        The position and quaternion are of the articulation root&#39;s actor frame. Meanwhile, the linear and angular</span>
-<span class="sd">        velocities are of its center of mass frame. Shape is (num_instances, 13).</span>
-
-<span class="sd">        This quantity is configured through the :attr:`isaaclab.assets.ArticulationCfg.init_state` parameter.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;Reading the root state directly is deprecated since IsaacLab 3.0 and will be removed in a future version. &quot;</span>
-            <span class="s2">&quot;Please use the default_root_pose and default_root_vel properties instead.&quot;</span><span class="p">,</span>
-            <span class="ne">DeprecationWarning</span><span class="p">,</span>
-            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">shared_kernels</span><span class="o">.</span><span class="n">vec13f</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
-            <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_root_pose_and_vel_to_state</span><span class="p">,</span>
-            <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span>
-            <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_pose</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_vel</span><span class="p">,</span>
-            <span class="p">],</span>
-            <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span><span class="p">,</span>
-            <span class="p">],</span>
-            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">default_joint_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default joint positions of all joints. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default joint positions of all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        This quantity is configured through the :attr:`isaaclab.assets.ArticulationCfg.init_state` parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -855,7 +828,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">default_joint_vel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default joint velocities of all joints. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default joint velocities of all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        This quantity is configured through the :attr:`isaaclab.assets.ArticulationCfg.init_state` parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -881,7 +856,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_pos_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint position targets commanded by the user. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint position targets commanded by the user.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        For an implicit actuator model, the targets are directly set into the simulation.</span>
 <span class="sd">        For an explicit actuator model, the targets are used to compute the joint torques (see :attr:`applied_torque`),</span>
@@ -891,7 +868,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_vel_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint velocity targets commanded by the user. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint velocity targets commanded by the user.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        For an implicit actuator model, the targets are directly set into the simulation.</span>
 <span class="sd">        For an explicit actuator model, the targets are used to compute the joint torques (see :attr:`applied_torque`),</span>
@@ -901,7 +880,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_effort_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint effort targets commanded by the user. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint effort targets commanded by the user.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        For an implicit actuator model, the targets are directly set into the simulation.</span>
 <span class="sd">        For an explicit actuator model, the targets are used to compute the joint torques (see :attr:`applied_torque`),</span>
@@ -915,7 +896,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">computed_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint torques computed from the actuator model (before clipping). Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint torques computed from the actuator model (before clipping).</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        This quantity is the raw torque output from the actuator mode, before any clipping is applied.</span>
 <span class="sd">        It is exposed for users who want to inspect the computations inside the actuator model.</span>
@@ -925,7 +908,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">applied_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint torques applied from the actuator model (after clipping). Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint torques applied from the actuator model (after clipping).</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        These torques are set into the simulation, after clipping the :attr:`computed_torque` based on the</span>
 <span class="sd">        actuator model.</span>
@@ -938,7 +923,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint stiffness provided to the simulation. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint stiffness provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        In the case of explicit actuators, the value for the corresponding joints is zero.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -946,7 +933,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_damping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint damping provided to the simulation. Shape is (num_instances, num_joints)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint damping provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        In the case of explicit actuators, the value for the corresponding joints is zero.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -954,27 +943,42 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_armature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint armature provided to the simulation. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint armature provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_armature</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_friction_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint static friction coefficient provided to the simulation. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint static friction coefficient provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_friction_coeff</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_dynamic_friction_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint dynamic friction coefficient provided to the simulation. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint dynamic friction coefficient provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_dynamic_friction_coeff</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_viscous_friction_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint viscous friction coefficient provided to the simulation. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint viscous friction coefficient provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_viscous_friction_coeff</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_pos_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint position limits provided to the simulation. Shape is (num_instances, num_joints, 2).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint position limits provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.vec2f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_joints, 2).</span>
 
 <span class="sd">        The limits are in the order :math:`[lower, upper]`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -982,12 +986,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_vel_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint maximum velocity provided to the simulation. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint maximum velocity provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_vel_limits</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_effort_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint maximum effort provided to the simulation. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint maximum effort provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_effort_limits</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -996,7 +1006,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">soft_joint_pos_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Soft joint positions limits for all joints. Shape is (num_instances, num_joints, 2).</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Soft joint positions limits for all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.vec2f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_joints, 2).</span>
 
 <span class="sd">        The limits are in the order :math:`[lower, upper]`.The soft joint position limits are computed as</span>
 <span class="sd">        a sub-region of the :attr:`joint_pos_limits` based on the</span>
@@ -1017,7 +1030,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">soft_joint_vel_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Soft joint velocity limits for all joints. Shape is (num_instances, num_joints).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Soft joint velocity limits for all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
 
 <span class="sd">        These are obtained from the actuator model. It may differ from :attr:`joint_vel_limits` if the actuator model</span>
 <span class="sd">        has a variable velocity limit model. For instance, in a variable gear ratio actuator model.</span>
@@ -1026,7 +1041,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">gear_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gear ratio for relating motor torques to applied Joint torques. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gear ratio for relating motor torques to applied Joint torques.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gear_ratio</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1035,32 +1053,56 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fixed_tendon_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon stiffness provided to the simulation. Shape is (num_instances, num_fixed_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon stiffness provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_fixed_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_fixed_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_tendon_stiffness</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fixed_tendon_damping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon damping provided to the simulation. Shape is (num_instances, num_fixed_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon damping provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_fixed_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_fixed_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_tendon_damping</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fixed_tendon_limit_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon limit stiffness provided to the simulation. Shape is (num_instances, num_fixed_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon limit stiffness provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_fixed_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_fixed_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_tendon_limit_stiffness</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fixed_tendon_rest_length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon rest length provided to the simulation. Shape is (num_instances, num_fixed_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon rest length provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_fixed_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_fixed_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_tendon_rest_length</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fixed_tendon_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon offset provided to the simulation. Shape is (num_instances, num_fixed_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon offset provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_fixed_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_fixed_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_tendon_offset</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fixed_tendon_pos_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon position limits provided to the simulation. Shape is (num_instances, num_fixed_tendons, 2).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fixed tendon position limits provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_fixed_tendons), dtype = wp.vec2f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_fixed_tendons, 2).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_tendon_pos_limits</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1069,22 +1111,38 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">spatial_tendon_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon stiffness provided to the simulation. Shape is (num_instances, num_spatial_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon stiffness provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_spatial_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_spatial_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_tendon_stiffness</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">spatial_tendon_damping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon damping provided to the simulation. Shape is (num_instances, num_spatial_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon damping provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_spatial_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_spatial_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_tendon_damping</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">spatial_tendon_limit_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon limit stiffness provided to the simulation. Shape is (num_instances, num_spatial_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon limit stiffness provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_spatial_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_spatial_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_tendon_limit_stiffness</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">spatial_tendon_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon offset provided to the simulation. Shape is (num_instances, num_spatial_tendons).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spatial tendon offset provided to the simulation.</span>
+
+<span class="sd">        Shape is (num_instances, num_spatial_tendons), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_spatial_tendons).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_tendon_offset</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1093,7 +1151,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_pose_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link pose ``[pos, quat]`` in simulation world frame. Shape is (num_instances, 7).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link pose ``[pos, quat]`` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.transformf. In torch this resolves to (num_instances, 7).</span>
 
 <span class="sd">        This quantity is the pose of the articulation root&#39;s actor frame relative to the world.</span>
 <span class="sd">        The orientation is provided in (x, y, z, w) format.</span>
@@ -1107,7 +1166,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link velocity ``[lin_vel, ang_vel]`` in simulation world frame. Shape is (num_instances, 6).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link velocity ``[lin_vel, ang_vel]`` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.spatial_vectorf. In torch this resolves to (num_instances, 6).</span>
 
 <span class="sd">        This quantity contains the linear and angular velocities of the articulation root&#39;s actor frame</span>
 <span class="sd">        relative to the world.</span>
@@ -1132,7 +1192,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_pose_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass pose ``[pos, quat]`` in simulation world frame. Shape is (num_instances, 7).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass pose ``[pos, quat]`` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.transformf. In torch this resolves to (num_instances, 7).</span>
 
 <span class="sd">        This quantity is the pose of the articulation root&#39;s center of mass frame relative to the world.</span>
 <span class="sd">        The orientation is provided in (x, y, z, w) format.</span>
@@ -1157,7 +1218,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass velocity ``[lin_vel, ang_vel]`` in simulation world frame. Shape is (num_instances, 6).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass velocity ``[lin_vel, ang_vel]`` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.spatial_vectorf. In torch this resolves to (num_instances, 6).</span>
 
 <span class="sd">        This quantity contains the linear and angular velocities of the articulation root&#39;s center of mass frame</span>
 <span class="sd">        relative to the world.</span>
@@ -1174,20 +1236,28 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Body mass ``wp.float32`` in the world frame. Shape is (num_instances, num_bodies).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Body mass in the world frame.</span>
+
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.float32. In torch this resolves to (num_instances, num_bodies).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_body_mass</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_view</span><span class="o">.</span><span class="n">get_masses</span><span class="p">())</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_mass</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_inertia</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Body inertia ``wp.mat33`` in the world frame. Shape is (num_instances, num_bodies, 3, 3).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flattened body inertia in the world frame.</span>
+
+<span class="sd">        Shape is (num_instances, num_bodies, 9), dtype = wp.float32. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 9).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_body_inertia</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_view</span><span class="o">.</span><span class="n">get_inertias</span><span class="p">())</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_inertia</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_link_pose_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Body link pose ``[pos, quat]`` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 7).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.transformf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 7).</span>
 
 <span class="sd">        This quantity is the pose of the articulation links&#39; actor frame relative to the world.</span>
 <span class="sd">        The orientation is provided in (x, y, z, w) format.</span>
@@ -1204,7 +1274,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_link_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Body link velocity ``[lin_vel, ang_vel]`` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 6).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.spatial_vectorf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 6).</span>
 
 <span class="sd">        This quantity contains the linear and angular velocities of the articulation links&#39; actor frame</span>
 <span class="sd">        relative to the world.</span>
@@ -1230,7 +1301,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_pose_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Body center of mass pose ``[pos, quat]`` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 7).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.transformf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 7).</span>
 
 <span class="sd">        This quantity is the pose of the center of mass frame of the articulation links relative to the world.</span>
 <span class="sd">        The orientation is provided in (x, y, z, w) format.</span>
@@ -1255,7 +1327,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Body center of mass velocity ``[lin_vel, ang_vel]`` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 6).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.spatial_vectorf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 6).</span>
 
 <span class="sd">        This quantity contains the linear and angular velocities of the articulation links&#39; center of mass frame</span>
 <span class="sd">        relative to the world.</span>
@@ -1267,84 +1340,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_vel_w</span><span class="o">.</span><span class="n">data</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">body_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;State of all bodies `[pos, quat, lin_vel, ang_vel]` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 13).</span>
-
-<span class="sd">        The position and quaternion are of all the articulation links&#39; actor frame. Meanwhile, the linear and angular</span>
-<span class="sd">        velocities are of the articulation links&#39;s center of mass frame.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
-            <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
-                <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_body_pose_and_vel_to_state</span><span class="p">,</span>
-                <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_bodies</span><span class="p">),</span>
-                <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">body_link_pose_w</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">body_com_vel_w</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">data</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">body_link_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;State of all bodies&#39; link frame`[pos, quat, lin_vel, ang_vel]` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 13).</span>
-
-<span class="sd">        The position, quaternion, and linear/angular velocity are of the body&#39;s link frame relative to the world.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
-            <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
-                <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_body_pose_and_vel_to_state</span><span class="p">,</span>
-                <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_bodies</span><span class="p">),</span>
-                <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">body_link_pose_w</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">body_link_vel_w</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">data</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">body_com_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;State of all bodies center of mass `[pos, quat, lin_vel, ang_vel]` in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 13).</span>
-
-<span class="sd">        The position, quaternion, and linear/angular velocity are of the body&#39;s center of mass frame relative to the</span>
-<span class="sd">        world. Center of mass frame is assumed to be the same orientation as the link rather than the orientation of the</span>
-<span class="sd">        principle inertia.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
-            <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
-                <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_body_pose_and_vel_to_state</span><span class="p">,</span>
-                <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_bodies</span><span class="p">),</span>
-                <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">body_com_pose_w</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">body_com_vel_w</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">data</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_acc_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Acceleration of all bodies center of mass ``[lin_acc, ang_acc]``.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 6).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.spatial_vectorf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 6).</span>
 
 <span class="sd">        All values are relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1358,7 +1357,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_pose_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Center of mass pose ``[pos, quat]`` of all bodies in their respective body&#39;s link frames.</span>
-<span class="sd">        Shape is (num_instances, 1, 7).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.transformf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 7).</span>
 
 <span class="sd">        This quantity is the pose of the center of mass frame of the rigid body relative to the body&#39;s link frame.</span>
 <span class="sd">        The orientation is provided in (x, y, z, w) format.</span>
@@ -1377,7 +1377,7 @@
 <span class="sd">        Shape is (num_instances, num_bodies, 6). All body reaction wrenches are provided including the root body to the</span>
 <span class="sd">        world of an articulation.</span>
 
-<span class="sd">        For more information on joint wrenches, please check the`PhysX documentation`_ and the underlying</span>
+<span class="sd">        For more information on joint wrenches, please check the `PhysX documentation`_ and the underlying</span>
 <span class="sd">        `PhysX Tensor API`_.</span>
 
 <span class="sd">        .. _`PhysX documentation`: https://nvidia-omniverse.github.io/PhysX/physx/5.5.1/docs/Articulations.html#link-incoming-joint-force</span>
@@ -1397,7 +1397,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint positions of all joints. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint positions of all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_pos</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="c1"># read data from simulation and set the buffer data and timestamp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_joint_pos</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_view</span><span class="o">.</span><span class="n">get_dof_positions</span><span class="p">()</span>
@@ -1406,7 +1409,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_vel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint velocities of all joints. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint velocities of all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_vel</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="c1"># read data from simulation and set the buffer data and timestamp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_joint_vel</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_view</span><span class="o">.</span><span class="n">get_dof_velocities</span><span class="p">()</span>
@@ -1415,7 +1421,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">joint_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint acceleration of all joints. Shape is (num_instances, num_joints).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Joint acceleration of all joints.</span>
+
+<span class="sd">        Shape is (num_instances, num_joints), dtype = wp.float32. In torch this resolves to (num_instances, num_joints).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_acc</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="c1"># note: we use finite differencing to compute acceleration</span>
             <span class="n">time_elapsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_acc</span><span class="o">.</span><span class="n">timestamp</span>
@@ -1441,7 +1450,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">projected_gravity_b</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Projection of the gravity direction on base frame. Shape is (num_instances, 3).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Projection of the gravity direction on base frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projected_gravity_b</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
                 <span class="n">shared_kernels</span><span class="o">.</span><span class="n">quat_apply_inverse_1D_kernel</span><span class="p">,</span>
@@ -1455,7 +1465,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">heading_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yaw heading of the base frame (in radians). Shape is (num_instances,).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yaw heading of the base frame (in radians). Shape is (num_instances,), dtype = wp.float32.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This quantity is computed by assuming that the forward-direction of the base</span>
@@ -1474,10 +1484,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_lin_vel_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link linear velocity in base frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link linear velocity in base frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
-<span class="sd">        This quantity is the linear velocity of the articulation root&#39;s actor frame with respect to the</span>
-<span class="sd">        its actor frame.</span>
+<span class="sd">        This quantity is the linear velocity of the articulation root&#39;s actor frame with respect to its actor frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_link_lin_vel_b</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
@@ -1492,10 +1502,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_ang_vel_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link angular velocity in base world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link angular velocity in base frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
-<span class="sd">        This quantity is the angular velocity of the articulation root&#39;s actor frame with respect to the</span>
-<span class="sd">        its actor frame.</span>
+<span class="sd">        This quantity is the angular velocity of the articulation root&#39;s actor frame with respect to its actor frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_link_ang_vel_b</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
@@ -1510,10 +1520,11 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_lin_vel_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass linear velocity in base frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass linear velocity in base frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
-<span class="sd">        This quantity is the linear velocity of the articulation root&#39;s center of mass frame with respect to the</span>
-<span class="sd">        its actor frame.</span>
+<span class="sd">        This quantity is the linear velocity of the articulation root&#39;s center of mass frame</span>
+<span class="sd">        with respect to its actor frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_com_lin_vel_b</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
@@ -1528,10 +1539,11 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_ang_vel_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass angular velocity in base world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass angular velocity in base frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
-<span class="sd">        This quantity is the angular velocity of the articulation root&#39;s center of mass frame with respect to the</span>
-<span class="sd">        its actor frame.</span>
+<span class="sd">        This quantity is the angular velocity of the articulation root&#39;s center of mass frame</span>
+<span class="sd">        with respect to its actor frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_com_ang_vel_b</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
             <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
@@ -1550,7 +1562,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_pos_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link position in simulation world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link position in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
 <span class="sd">        This quantity is the position of the actor frame of the root rigid body relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1558,7 +1571,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_quat_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link orientation (x, y, z, w) in simulation world frame. Shape is (num_instances, 4).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link orientation (x, y, z, w) in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.quatf. In torch this resolves to (num_instances, 4).</span>
 
 <span class="sd">        This quantity is the orientation of the actor frame of the root rigid body.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1566,7 +1580,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_lin_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root linear velocity in simulation world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root linear velocity in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
 <span class="sd">        This quantity is the linear velocity of the root rigid body&#39;s actor frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1574,7 +1589,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_link_ang_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link angular velocity in simulation world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root link angular velocity in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
 <span class="sd">        This quantity is the angular velocity of the actor frame of the root rigid body relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1582,23 +1598,26 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_pos_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass position in simulation world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass position in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
-<span class="sd">        This quantity is the position of the actor frame of the root rigid body relative to the world.</span>
+<span class="sd">        This quantity is the position of the center of mass frame of the root rigid body relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pos_from_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_com_pose_w</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_quat_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass orientation (x, y, z, w) in simulation world frame. Shape is (num_instances, 4).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass orientation (x, y, z, w) in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.quatf. In torch this resolves to (num_instances, 4).</span>
 
-<span class="sd">        This quantity is the orientation of the actor frame of the root rigid body relative to the world.</span>
+<span class="sd">        This quantity is the orientation of the principal axes of inertia of the root rigid body relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_quat_from_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_com_pose_w</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_lin_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass linear velocity in simulation world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass linear velocity in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
 <span class="sd">        This quantity is the linear velocity of the root rigid body&#39;s center of mass frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1606,7 +1625,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_com_ang_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass angular velocity in simulation world frame. Shape is (num_instances, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root center of mass angular velocity in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances,), dtype = wp.vec3f. In torch this resolves to (num_instances, 3).</span>
 
 <span class="sd">        This quantity is the angular velocity of the root rigid body&#39;s center of mass frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1614,7 +1634,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_link_pos_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Positions of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Positions of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
 <span class="sd">        This quantity is the position of the articulation bodies&#39; actor frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1622,7 +1644,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_link_quat_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation (x, y, z, w) of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 4).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation (x, y, z, w) of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.quatf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 4).</span>
 
 <span class="sd">        This quantity is the orientation of the articulation bodies&#39; actor frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1630,40 +1654,49 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_link_lin_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear velocity of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear velocity of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
-<span class="sd">        This quantity is the linear velocity of the articulation bodies&#39; center of mass frame relative to the world.</span>
+<span class="sd">        This quantity is the linear velocity of the articulation bodies&#39; actor frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_lin_vel_from_spatial_vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body_link_vel_w</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_link_ang_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Angular velocity of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Angular velocity of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
-<span class="sd">        This quantity is the angular velocity of the articulation bodies&#39; center of mass frame relative to the world.</span>
+<span class="sd">        This quantity is the angular velocity of the articulation bodies&#39; actor frame relative to the world.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ang_vel_from_spatial_vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body_link_vel_w</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_pos_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Positions of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Positions of all bodies&#39; center of mass in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
-<span class="sd">        This quantity is the position of the articulation bodies&#39; actor frame.</span>
+<span class="sd">        This quantity is the position of the articulation bodies&#39; center of mass frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pos_from_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body_com_pose_w</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_quat_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation (x, y, z, w) of the principle axis of inertia of all bodies in simulation world frame.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 4).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation (x, y, z, w) of the principal axes of inertia of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.quatf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 4).</span>
 
-<span class="sd">        This quantity is the orientation of the articulation bodies&#39; actor frame.</span>
+<span class="sd">        This quantity is the orientation of the articulation bodies&#39; principal axes of inertia.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_quat_from_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body_com_pose_w</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_lin_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear velocity of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear velocity of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
 <span class="sd">        This quantity is the linear velocity of the articulation bodies&#39; center of mass frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1671,7 +1704,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_ang_vel_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Angular velocity of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Angular velocity of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
 <span class="sd">        This quantity is the angular velocity of the articulation bodies&#39; center of mass frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1679,7 +1714,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_lin_acc_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear acceleration of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear acceleration of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
 <span class="sd">        This quantity is the linear acceleration of the articulation bodies&#39; center of mass frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1687,7 +1724,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_ang_acc_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Angular acceleration of all bodies in simulation world frame. Shape is (num_instances, num_bodies, 3).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Angular acceleration of all bodies in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
 <span class="sd">        This quantity is the angular acceleration of the articulation bodies&#39; center of mass frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1696,18 +1735,21 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_pos_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Center of mass position of all of the bodies in their respective link frames.</span>
-<span class="sd">        Shape is (num_instances, num_bodies, 3).</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.vec3f. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 3).</span>
 
-<span class="sd">        This quantity is the center of mass location relative to its body&#39;slink frame.</span>
+<span class="sd">        This quantity is the center of mass location relative to its body&#39;s link frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pos_from_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body_com_pose_b</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">body_com_quat_b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation (x, y, z, w) of the principle axis of inertia of all of the bodies in their</span>
-<span class="sd">        respective link frames. Shape is (num_instances, num_bodies, 4).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation (x, y, z, w) of the principal axes of inertia of all of the bodies in their</span>
+<span class="sd">        respective link frames.</span>
+<span class="sd">        Shape is (num_instances, num_bodies), dtype = wp.quatf. In torch this resolves to</span>
+<span class="sd">        (num_instances, num_bodies, 4).</span>
 
-<span class="sd">        This quantity is the orientation of the principles axes of inertia relative to its body&#39;s link frame.</span>
+<span class="sd">        This quantity is the orientation of the principal axes of inertia relative to its body&#39;s link frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_quat_from_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body_com_pose_b</span><span class="p">)</span>
 
@@ -1945,6 +1987,38 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_root_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default root state ``[pos, quat, lin_vel, ang_vel]`` in the local environment frame.</span>
+
+
+<span class="sd">        The position and quaternion are of the articulation root&#39;s actor frame. Meanwhile, the linear and angular</span>
+<span class="sd">        velocities are of its center of mass frame. Shape is (num_instances, 13).</span>
+
+<span class="sd">        This quantity is configured through the :attr:`isaaclab.assets.ArticulationCfg.init_state` parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Reading the root state directly is deprecated since IsaacLab 3.0 and will be removed in a future version. &quot;</span>
+            <span class="s2">&quot;Please use the default_root_pose and default_root_vel properties instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">shared_kernels</span><span class="o">.</span><span class="n">vec13f</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
+            <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_root_pose_and_vel_to_state</span><span class="p">,</span>
+            <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_pose</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_vel</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_root_state</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">root_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wp</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated, same as :attr:`root_link_pose_w` and :attr:`root_com_vel_w`.&quot;&quot;&quot;</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -2020,7 +2094,100 @@
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_root_com_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_com_state_w</span><span class="o">.</span><span class="n">data</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_com_state_w</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">body_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;State of all bodies `[pos, quat, lin_vel, ang_vel]` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies, 13).</span>
+
+<span class="sd">        The position and quaternion are of all the articulation links&#39; actor frame. Meanwhile, the linear and angular</span>
+<span class="sd">        velocities are of the articulation links&#39; center of mass frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The `body_state_w` property will be deprecated in IsaacLab 4.0. Please use `body_link_pose_w` and &quot;</span>
+            <span class="s2">&quot;`body_com_vel_w` instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
+            <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
+                <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_body_pose_and_vel_to_state</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_bodies</span><span class="p">),</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">body_link_pose_w</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">body_com_vel_w</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_state_w</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">body_link_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;State of all bodies&#39; link frame`[pos, quat, lin_vel, ang_vel]` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies, 13).</span>
+
+<span class="sd">        The position, quaternion, and linear/angular velocity are of the body&#39;s link frame relative to the world.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The `body_link_state_w` property will be deprecated in IsaacLab 4.0. Please use `body_link_pose_w` and &quot;</span>
+            <span class="s2">&quot;`body_link_vel_w` instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
+            <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
+                <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_body_pose_and_vel_to_state</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_bodies</span><span class="p">),</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">body_link_pose_w</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">body_link_vel_w</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_link_state_w</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">body_com_state_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;State of all bodies center of mass `[pos, quat, lin_vel, ang_vel]` in simulation world frame.</span>
+<span class="sd">        Shape is (num_instances, num_bodies, 13).</span>
+
+<span class="sd">        The position, quaternion, and linear/angular velocity are of the body&#39;s center of mass frame relative to the</span>
+<span class="sd">        world. Center of mass frame is assumed to be the same orientation as the link rather than the orientation of the</span>
+<span class="sd">        principal inertia.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The `body_com_state_w` property will be deprecated in IsaacLab 4.0. Please use `body_com_pose_w` and &quot;</span>
+            <span class="s2">&quot;`body_com_vel_w` instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span><span class="p">:</span>
+            <span class="n">wp</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
+                <span class="n">shared_kernels</span><span class="o">.</span><span class="n">concat_body_pose_and_vel_to_state</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_bodies</span><span class="p">),</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">body_com_pose_w</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">body_com_vel_w</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">outputs</span><span class="o">=</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_timestamp</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_com_state_w</span><span class="o">.</span><span class="n">data</span></div>
 </pre></div>
 
                 </article>
@@ -2068,7 +2235,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

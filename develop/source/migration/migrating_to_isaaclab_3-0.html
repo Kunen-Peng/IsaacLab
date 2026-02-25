@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -365,6 +365,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -682,8 +683,10 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-isaaclab-physx-extension">New <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> Extension</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-backend-architecture">Multi-Backend Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-isaaclab-physx-and-isaaclab-newton-extensions">New <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> and <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> Extensions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unchanged-imports">Unchanged Imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-isaaclab-newton-extension">New <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> Extension</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sensor-pose-properties-deprecation">Sensor Pose Properties Deprecation</a></li>
 </ul>
 </li>
@@ -745,10 +748,38 @@ from the core Isaac Lab API. This allows for future support of different physics
 maintaining a consistent user-facing API.</p>
 <p>This guide covers the main breaking changes and deprecations you need to address when migrating
 from Isaac Lab 2.x to Isaac Lab 3.0.</p>
-<section id="new-isaaclab-physx-extension">
-<h2>New <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> Extension<a class="headerlink" href="#new-isaaclab-physx-extension" title="Permalink to this heading">#</a></h2>
-<p>A new extension <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> has been introduced to contain PhysX-specific implementations
-of asset classes. The following classes have been moved to this new extension:</p>
+<section id="multi-backend-architecture">
+<h2>Multi-Backend Architecture<a class="headerlink" href="#multi-backend-architecture" title="Permalink to this heading">#</a></h2>
+<p>Isaac Lab 3.0 introduces a <strong>factory-based multi-backend architecture</strong> that allows asset classes
+to be backed by different physics engines — currently <strong>PhysX</strong> and <strong>Newton</strong>.</p>
+<p>When you instantiate an asset class from the <code class="docutils literal notranslate"><span class="pre">isaaclab</span></code> package (e.g., <code class="docutils literal notranslate"><span class="pre">Articulation</span></code>,
+<code class="docutils literal notranslate"><span class="pre">RigidObject</span></code>), a factory automatically resolves and loads the correct backend implementation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Articulation</span><span class="p">,</span> <span class="n">ArticulationCfg</span>
+
+<span class="c1"># The factory pattern creates the appropriate backend implementation.</span>
+<span class="c1"># No import changes are needed — the same isaaclab imports work regardless of backend.</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">Articulation</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">ArticulationCfg</span><span class="p">(</span><span class="o">...</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The factory works by convention: for a class defined in <code class="docutils literal notranslate"><span class="pre">isaaclab.assets.articulation</span></code>, it
+imports the matching class from <code class="docutils literal notranslate"><span class="pre">isaaclab_{backend}.assets.articulation</span></code>. This means the
+<code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> and <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> packages mirror the <code class="docutils literal notranslate"><span class="pre">isaaclab</span></code> module structure.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The backend is currently set to <code class="docutils literal notranslate"><span class="pre">&quot;physx&quot;</span></code> by default. Newton backend support is being
+actively developed. When backend selection is fully configurable, you will be able to
+switch backends without changing any asset import paths.</p>
+</div>
+</section>
+<section id="new-isaaclab-physx-and-isaaclab-newton-extensions">
+<h2>New <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> and <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> Extensions<a class="headerlink" href="#new-isaaclab-physx-and-isaaclab-newton-extensions" title="Permalink to this heading">#</a></h2>
+<p>Two new backend extensions have been introduced:</p>
+<ul class="simple">
+<li><p><strong>``isaaclab_physx``</strong> — PhysX-specific implementations of all asset and sensor classes.</p></li>
+<li><p><strong>``isaaclab_newton``</strong> — Newton-specific implementations of asset classes (Articulation and
+RigidObject).</p></li>
+</ul>
+<p>The following classes have been moved to <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code>:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 50.0%" />
@@ -806,6 +837,29 @@ you can import from <code class="docutils literal notranslate"><span class="pre"
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.sensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContactSensor</span><span class="p">,</span> <span class="n">ContactSensorData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.sensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Imu</span><span class="p">,</span> <span class="n">ImuData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.sensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">FrameTransformer</span><span class="p">,</span> <span class="n">FrameTransformerData</span>
+</pre></div>
+</div>
+</section>
+<section id="new-isaaclab-newton-extension">
+<h3>New <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> Extension<a class="headerlink" href="#new-isaaclab-newton-extension" title="Permalink to this heading">#</a></h3>
+<p>A new extension <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> provides Newton physics backend implementations for:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Articulation</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">ArticulationData</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">RigidObject</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">RigidObjectData</span></code></p></li>
+</ul>
+<p>These classes implement the same base interfaces as their PhysX counterparts
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseArticulation</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseRigidObject</span></code>),
+ensuring a consistent API across backends. They use the same warp-based data conventions
+(<code class="docutils literal notranslate"><span class="pre">wp.array</span></code> with structured types, <code class="docutils literal notranslate"><span class="pre">_index</span></code> / <code class="docutils literal notranslate"><span class="pre">_mask</span></code> write methods).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> extension requires the <code class="docutils literal notranslate"><span class="pre">newton</span></code> package and its dependencies
+(<code class="docutils literal notranslate"><span class="pre">mujoco</span></code>, <code class="docutils literal notranslate"><span class="pre">mujoco-warp</span></code>). These are installed automatically when installing the
+<code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> package.</p>
+</div>
+<p>If you need to import Newton implementations directly (e.g., for type hints or subclassing):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_newton.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Articulation</span> <span class="k">as</span> <span class="n">NewtonArticulation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_newton.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">RigidObject</span> <span class="k">as</span> <span class="n">NewtonRigidObject</span>
 </pre></div>
 </div>
 </section>
@@ -1446,10 +1500,10 @@ boolean mask selecting which environments to update. The <code class="docutils l
 <span class="n">robot</span><span class="o">.</span><span class="n">write_root_pose_to_sim</span><span class="p">(</span><span class="n">pose_data</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">)</span>
 
 <span class="c1"># After (Isaac Lab 3.x) — indexed variant (partial data)</span>
-<span class="n">robot</span><span class="o">.</span><span class="n">write_root_pose_to_sim_index</span><span class="p">(</span><span class="n">pose_data</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">)</span>
+<span class="n">robot</span><span class="o">.</span><span class="n">write_root_pose_to_sim_index</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">pose_data</span><span class="p">,</span> <span class="n">env_ids</span><span class="o">=</span><span class="n">env_ids</span><span class="p">)</span>
 
 <span class="c1"># After (Isaac Lab 3.x) — mask variant (full data, boolean mask)</span>
-<span class="n">robot</span><span class="o">.</span><span class="n">write_root_pose_to_sim_mask</span><span class="p">(</span><span class="n">pose_data</span><span class="p">,</span> <span class="n">env_mask</span><span class="p">)</span>
+<span class="n">robot</span><span class="o">.</span><span class="n">write_root_pose_to_sim_mask</span><span class="p">(</span><span class="n">root_pose</span><span class="o">=</span><span class="n">pose_data</span><span class="p">,</span> <span class="n">env_mask</span><span class="o">=</span><span class="n">env_mask</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="pst-scrollable-table-container"><table class="table" id="id2">
@@ -1764,8 +1818,10 @@ directly in your code, update your configuration:</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-isaaclab-physx-extension">New <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> Extension</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-backend-architecture">Multi-Backend Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-isaaclab-physx-and-isaaclab-newton-extensions">New <code class="docutils literal notranslate"><span class="pre">isaaclab_physx</span></code> and <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> Extensions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unchanged-imports">Unchanged Imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-isaaclab-newton-extension">New <code class="docutils literal notranslate"><span class="pre">isaaclab_newton</span></code> Extension</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sensor-pose-properties-deprecation">Sensor Pose Properties Deprecation</a></li>
 </ul>
 </li>
@@ -1842,7 +1898,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>

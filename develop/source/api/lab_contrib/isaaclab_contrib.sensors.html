@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 24, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
   </head>
   
   
@@ -367,6 +367,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../overview/imitation-learning/index.html">Imitation Learning</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../overview/imitation-learning/teleop_imitation.html">Teleoperation and Imitation Learning with Isaac Lab Mimic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../overview/imitation-learning/humanoids_imitation.html">Examples: Data Generation and Imitation Learning for Humanoids</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../overview/imitation-learning/augmented_imitation.html">Augmented Imitation Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../overview/imitation-learning/skillgen.html">SkillGen for Automated Demonstration Generation</a></li>
 </ul>
@@ -713,7 +714,6 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_camera_tactile"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.enable_camera_tactile</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.prim_path"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.prim_path</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.update_period"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.update_period</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.history_length</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.debug_vis"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.debug_vis</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_force_field"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.enable_force_field</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_array_size"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.tactile_array_size</span></code></a></li>
@@ -874,7 +874,7 @@ should be specified before simulation.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensor.__init__" title="isaaclab_contrib.sensors.VisuoTactileSensor.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(cfg)</p></td>
 <td><p>Initializes the tactile sensor object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensor.reset" title="isaaclab_contrib.sensors.VisuoTactileSensor.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a>([env_ids])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensor.reset" title="isaaclab_contrib.sensors.VisuoTactileSensor.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a>([env_ids, env_mask])</p></td>
 <td><p>Resets the sensor internals.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensor.get_initial_render" title="isaaclab_contrib.sensors.VisuoTactileSensor.get_initial_render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_initial_render</span></code></a>()</p></td>
@@ -928,7 +928,7 @@ code snippet in your sensor implementation:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="isaaclab_contrib.sensors.VisuoTactileSensor.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://trimesh.org/trimesh.typed.html#trimesh.typed.Sequence" title="(in trimesh)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_contrib/sensors/tacsl_sensor/visuotactile_sensor.html#VisuoTactileSensor.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab_contrib.sensors.VisuoTactileSensor.reset" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">wp.array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/isaaclab_contrib/sensors/tacsl_sensor/visuotactile_sensor.html#VisuoTactileSensor.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#isaaclab_contrib.sensors.VisuoTactileSensor.reset" title="Permalink to this definition">#</a></dt>
 <dd><p>Resets the sensor internals.</p>
 </dd></dl>
 
@@ -1103,43 +1103,40 @@ It can capture tactile RGB/depth images and compute penalty-based contact forces
 <tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.update_period" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.update_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_period</span></code></a></p></td>
 <td><p>Update period of the sensor buffers (in seconds).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">history_length</span></code></a></p></td>
-<td><p>Number of past frames to store in the sensor buffers.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.debug_vis" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.debug_vis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">debug_vis</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.debug_vis" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.debug_vis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">debug_vis</span></code></a></p></td>
 <td><p>Whether to visualize the sensor.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_force_field" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_force_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_force_field</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_force_field" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_force_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_force_field</span></code></a></p></td>
 <td><p>Whether to enable force field tactile sensing.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_array_size" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_array_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tactile_array_size</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_array_size" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_array_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tactile_array_size</span></code></a></p></td>
 <td><p>Number of tactile points for force field sensing in (rows, cols) format.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_margin" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_margin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tactile_margin</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_margin" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_margin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tactile_margin</span></code></a></p></td>
 <td><p>Margin for tactile point generation (in meters).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.contact_object_prim_path_expr" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.contact_object_prim_path_expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contact_object_prim_path_expr</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.contact_object_prim_path_expr" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.contact_object_prim_path_expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contact_object_prim_path_expr</span></code></a></p></td>
 <td><p>Prim path expression to find the contact object for force field computation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.normal_contact_stiffness" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.normal_contact_stiffness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normal_contact_stiffness</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.normal_contact_stiffness" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.normal_contact_stiffness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normal_contact_stiffness</span></code></a></p></td>
 <td><p>Normal contact stiffness for penalty-based force computation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.friction_coefficient" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.friction_coefficient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">friction_coefficient</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.friction_coefficient" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.friction_coefficient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">friction_coefficient</span></code></a></p></td>
 <td><p>Friction coefficient for shear forces.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tangential_stiffness" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.tangential_stiffness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangential_stiffness</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tangential_stiffness" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.tangential_stiffness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangential_stiffness</span></code></a></p></td>
 <td><p>Tangential stiffness for shear forces.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.camera_cfg" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.camera_cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">camera_cfg</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.camera_cfg" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.camera_cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">camera_cfg</span></code></a></p></td>
 <td><p>Camera configuration for tactile RGB/depth sensing.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualizer_cfg" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualizer_cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualizer_cfg</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualizer_cfg" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualizer_cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualizer_cfg</span></code></a></p></td>
 <td><p>The configuration object for the visualization markers.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.trimesh_vis_tactile_points" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.trimesh_vis_tactile_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trimesh_vis_tactile_points</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.trimesh_vis_tactile_points" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.trimesh_vis_tactile_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trimesh_vis_tactile_points</span></code></a></p></td>
 <td><p>Whether to visualize tactile points for debugging using trimesh.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualize_sdf_closest_pts" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualize_sdf_closest_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize_sdf_closest_pts</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualize_sdf_closest_pts" title="isaaclab_contrib.sensors.VisuoTactileSensorCfg.visualize_sdf_closest_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize_sdf_closest_pts</span></code></a></p></td>
 <td><p>Whether to visualize SDF closest points for debugging.</p></td>
 </tr>
 </tbody>
@@ -1179,13 +1176,6 @@ will be replaced with the environment namespace.</p>
 <dt class="sig sig-object py" id="isaaclab_contrib.sensors.VisuoTactileSensorCfg.update_period">
 <span class="sig-name descname"><span class="pre">update_period</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.update_period" title="Permalink to this definition">#</a></dt>
 <dd><p>Update period of the sensor buffers (in seconds). Defaults to 0.0 (update every step).</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length">
-<span class="sig-name descname"><span class="pre">history_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length" title="Permalink to this definition">#</a></dt>
-<dd><p>Number of past frames to store in the sensor buffers. Defaults to 0, which means that only
-the current data is stored (no history).</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1493,7 +1483,6 @@ Isaac Lab Nucleus directory at <code class="docutils literal notranslate"><span 
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_camera_tactile"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.enable_camera_tactile</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.prim_path"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.prim_path</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.update_period"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.update_period</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.history_length"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.history_length</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.debug_vis"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.debug_vis</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.enable_force_field"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.enable_force_field</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#isaaclab_contrib.sensors.VisuoTactileSensorCfg.tactile_array_size"><code class="docutils literal notranslate"><span class="pre">VisuoTactileSensorCfg.tactile_array_size</span></code></a></li>
@@ -1555,7 +1544,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 24, 2026.
+  Last updated on Feb 25, 2026.
   <br/>
 </p>
   </div>
