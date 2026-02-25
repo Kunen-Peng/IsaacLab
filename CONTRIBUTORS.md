@@ -178,6 +178,7 @@ Guidelines for modifications:
 * Zijian Li
 * Ziqi Fan
 * Zoe McCarthy
+* Piotr Barejko
 
 ## Acknowledgements
 
