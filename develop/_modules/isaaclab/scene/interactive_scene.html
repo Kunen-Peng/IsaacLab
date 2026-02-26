@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -629,11 +629,13 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeformableObject</span><span class="p">,</span> <span class="n">SurfaceGripper</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wp</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeformableObject</span><span class="p">,</span> <span class="n">DeformableObjectCfg</span><span class="p">,</span> <span class="n">SurfaceGripper</span><span class="p">,</span> <span class="n">SurfaceGripperCfg</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sdf</span>
 
@@ -1276,6 +1278,8 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_entities_from_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add scene entities from the config.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab_physx.assets</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeformableObjectCfg</span><span class="p">,</span> <span class="n">SurfaceGripperCfg</span>  <span class="c1"># noqa: PLC0415</span>
+
         <span class="c1"># store paths that are in global collision filter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_global_prim_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="c1"># Process non-sensor entities before sensors so that asset prims exist in the template</span>
@@ -1470,7 +1474,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>

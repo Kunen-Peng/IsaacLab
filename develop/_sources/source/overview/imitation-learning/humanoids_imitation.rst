@@ -82,7 +82,6 @@ Collect five demonstrations by running the following command:
    --task Isaac-PickPlace-GR1T2-Abs-v0 \
    --visualizer kit \
    --device cpu \
-   --enable_pinocchio \
    --teleop_device handtracking \
    --num_demos 5 \
    --dataset_file ./datasets/dataset_gr1.hdf5
@@ -105,7 +104,6 @@ You can replay the collected demonstrations by running the following command:
    --task Isaac-PickPlace-GR1T2-Abs-v0 \
    --visualizer kit \
    --device cpu \
-   --enable_pinocchio \
    --dataset_file ./datasets/dataset_gr1.hdf5
 
 .. note::
@@ -135,7 +133,6 @@ Annotate the demonstrations by running the following command:
    --task Isaac-PickPlace-GR1T2-Abs-Mimic-v0 \
    --visualizer kit \
    --device cpu \
-   --enable_pinocchio \
    --input_file ./datasets/dataset_gr1.hdf5 \
    --output_file ./datasets/dataset_annotated_gr1.hdf5
 
@@ -165,7 +162,7 @@ Generate the dataset
 ^^^^^^^^^^^^^^^^^^^^
 
 If you skipped the prior collection and annotation step, download the pre-recorded annotated dataset ``dataset_annotated_gr1.hdf5`` from
-here: `[Annotated GR1 Dataset] <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_gr1.hdf5>`_.
+here: `[Annotated GR1 Dataset] <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_gr1.hdf5>`_.
 Place the file under ``IsaacLab/datasets`` and run the following command to generate a new dataset with 1000 demonstrations.
 
 .. code:: bash
@@ -174,7 +171,6 @@ Place the file under ``IsaacLab/datasets`` and run the following command to gene
    --device cpu \
    --headless \
    --num_envs 20 \
-   --enable_pinocchio \
    --generation_num_trials 1000 \
    --input_file ./datasets/dataset_annotated_gr1.hdf5 \
    --output_file ./datasets/generated_dataset_gr1.hdf5
@@ -210,7 +206,6 @@ Visualize the results of the trained policy by running the following command, us
    --task Isaac-PickPlace-GR1T2-Abs-v0 \
    --visualizer kit \
    --device cpu \
-   --enable_pinocchio \
    --num_rollouts 50 \
    --horizon 400 \
    --norm_factor_min <NORM_FACTOR_MIN> \
@@ -255,7 +250,7 @@ Demo 2: Visuomotor Policy for a Humanoid Robot
 Download the Dataset
 ^^^^^^^^^^^^^^^^^^^^
 
-Download the pre-generated dataset from `here <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/generated_dataset_gr1_nut_pouring.hdf5>`__ and place it under ``IsaacLab/datasets/generated_dataset_gr1_nut_pouring.hdf5``
+Download the pre-generated dataset from `here <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/generated_dataset_gr1_nut_pouring.hdf5>`__ and place it under ``IsaacLab/datasets/generated_dataset_gr1_nut_pouring.hdf5``
 (**Note: The dataset size is approximately 15GB**). The dataset contains 1000 demonstrations of a humanoid robot performing a pouring/placing task that was
 generated using Isaac Lab Mimic for the ``Isaac-NutPour-GR1T2-Pink-IK-Abs-Mimic-v0`` task.
 
@@ -281,7 +276,6 @@ generated using Isaac Lab Mimic for the ``Isaac-NutPour-GR1T2-Pink-IK-Abs-Mimic-
       --task Isaac-NutPour-GR1T2-Pink-IK-Abs-v0 \
       --visualizer kit \
       --device cpu \
-      --enable_pinocchio \
       --teleop_device handtracking \
       --num_demos 5 \
       --dataset_file ./datasets/dataset_gr1_nut_pouring.hdf5
@@ -295,7 +289,6 @@ generated using Isaac Lab Mimic for the ``Isaac-NutPour-GR1T2-Pink-IK-Abs-Mimic-
       --visualizer kit \
       --enable_cameras \
       --device cpu \
-      --enable_pinocchio \
       --input_file ./datasets/dataset_gr1_nut_pouring.hdf5 \
       --output_file ./datasets/dataset_annotated_gr1_nut_pouring.hdf5
 
@@ -314,7 +307,6 @@ generated using Isaac Lab Mimic for the ``Isaac-NutPour-GR1T2-Pink-IK-Abs-Mimic-
       --enable_cameras \
       --device cpu \
       --headless \
-      --enable_pinocchio \
       --generation_num_trials 1000 \
       --num_envs 5 \
       --input_file ./datasets/dataset_annotated_gr1_nut_pouring.hdf5 \
@@ -359,7 +351,6 @@ Visualize the results of the trained policy by running the following command, us
    --visualizer kit \
    --device cpu \
    --enable_cameras \
-   --enable_pinocchio \
    --num_rollouts 50 \
    --horizon 350 \
    --norm_factor_min <NORM_FACTOR_MIN> \
@@ -444,7 +435,7 @@ Follow the same data collection, annotation, and generation process as demonstra
       --task Isaac-PickPlace-Locomanipulation-G1-Abs-v0 \
       --teleop_device handtracking \
       --dataset_file ./datasets/dataset_g1_locomanip.hdf5 \
-      --num_demos 5 --enable_pinocchio
+      --num_demos 5
 
    .. note::
 
@@ -457,7 +448,7 @@ Follow the same data collection, annotation, and generation process as demonstra
       ./isaaclab.sh -p scripts/tools/replay_demos.py \
       --device cpu \
       --task Isaac-PickPlace-Locomanipulation-G1-Abs-v0 \
-      --dataset_file ./datasets/dataset_g1_locomanip.hdf5 --enable_pinocchio
+      --dataset_file ./datasets/dataset_g1_locomanip.hdf5
 
    To annotate the demonstrations:
 
@@ -467,17 +458,17 @@ Follow the same data collection, annotation, and generation process as demonstra
       --device cpu \
       --task Isaac-Locomanipulation-G1-Abs-Mimic-v0 \
       --input_file ./datasets/dataset_g1_locomanip.hdf5 \
-      --output_file ./datasets/dataset_annotated_g1_locomanip.hdf5 --enable_pinocchio
+      --output_file ./datasets/dataset_annotated_g1_locomanip.hdf5
 
 
 If you skipped the prior collection and annotation step, download the pre-recorded annotated dataset ``dataset_annotated_g1_locomanip.hdf5`` from
-here: `[Annotated G1 Dataset] <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_g1_locomanip.hdf5>`_.
+here: `[Annotated G1 Dataset] <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_g1_locomanip.hdf5>`_.
 Place the file under ``IsaacLab/datasets`` and run the following command to generate a new dataset with 1000 demonstrations.
 
 .. code:: bash
 
    ./isaaclab.sh -p scripts/imitation_learning/isaaclab_mimic/generate_dataset.py \
-   --device cpu --headless --num_envs 20 --generation_num_trials 1000 --enable_pinocchio \
+   --device cpu --headless --num_envs 20 --generation_num_trials 1000 \
    --input_file ./datasets/dataset_annotated_g1_locomanip.hdf5 --output_file ./datasets/generated_dataset_g1_locomanip.hdf5
 
 
@@ -502,7 +493,6 @@ Visualize the trained policy performance:
 
    ./isaaclab.sh -p scripts/imitation_learning/robomimic/play.py \
    --device cpu \
-   --enable_pinocchio \
    --task Isaac-PickPlace-Locomanipulation-G1-Abs-v0 \
    --num_rollouts 50 \
    --horizon 400 \
@@ -563,7 +553,6 @@ To generate the locomanipulation dataset, use the following command:
        --num_runs 1 \
        --lift_step 60 \
        --navigate_step 130 \
-       --enable_pinocchio \
        --output_file ./datasets/generated_dataset_g1_locomanipulation_sdg.hdf5 \
        --enable_cameras
 

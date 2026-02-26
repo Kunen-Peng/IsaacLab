@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -642,35 +642,18 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MISSING</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">omni.physx.scripts.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">physx_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gf</span><span class="p">,</span> <span class="n">Sdf</span><span class="p">,</span> <span class="n">Usd</span><span class="p">,</span> <span class="n">UsdGeom</span><span class="p">,</span> <span class="n">UsdPhysics</span><span class="p">,</span> <span class="n">Vt</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">isaaclab.sim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim_utils</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.sim.spawners</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpawnerCfg</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">isaaclab.utils.configclass</span><span class="w"> </span><span class="kn">import</span> <span class="n">configclass</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.visualization_markers_cfg</span><span class="w"> </span><span class="kn">import</span> <span class="n">VisualizationMarkersCfg</span>
 
 <span class="c1"># import logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="VisualizationMarkersCfg"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.markers.html#isaaclab.markers.VisualizationMarkersCfg">[docs]</a><span class="nd">@configclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">VisualizationMarkersCfg</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to configure a :class:`VisualizationMarkers`.&quot;&quot;&quot;</span>
-
-    <span class="n">prim_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">MISSING</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The prim path where the :class:`UsdGeom.PointInstancer` will be created.&quot;&quot;&quot;</span>
-
-    <span class="n">markers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SpawnerCfg</span><span class="p">]</span> <span class="o">=</span> <span class="n">MISSING</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The dictionary of marker configurations.</span>
-
-<span class="sd">    The key is the name of the marker, and the value is the configuration of the marker.</span>
-<span class="sd">    The key is used to identify the marker in the class.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="VisualizationMarkers"><a class="viewcode-back" href="../../../source/api/lab/isaaclab.markers.html#isaaclab.markers.VisualizationMarkers">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">VisualizationMarkers</span><span class="p">:</span>
@@ -992,6 +975,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            prim: The prim to check.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">omni.physx.scripts.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">physx_utils</span>
+
         <span class="c1"># check if prim is valid</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">prim</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prim at path &#39;</span><span class="si">{</span><span class="n">prim</span><span class="o">.</span><span class="n">GetPrimAtPath</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; is not valid.&quot;</span><span class="p">)</span>
@@ -1073,7 +1058,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>

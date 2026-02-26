@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -774,7 +774,6 @@ Therefore, avoid moving the right hand while the left hand picks up the object a
 --task<span class="w"> </span>Isaac-PickPlace-GR1T2-Abs-v0<span class="w"> </span><span class="se">\</span>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --teleop_device<span class="w"> </span>handtracking<span class="w"> </span><span class="se">\</span>
 --num_demos<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
 --dataset_file<span class="w"> </span>./datasets/dataset_gr1.hdf5
@@ -795,7 +794,6 @@ on the Apple Vision Pro or via voice control by saying “reset”. See <a class
 --task<span class="w"> </span>Isaac-PickPlace-GR1T2-Abs-v0<span class="w"> </span><span class="se">\</span>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --dataset_file<span class="w"> </span>./datasets/dataset_gr1.hdf5
 </pre></div>
 </div>
@@ -819,7 +817,6 @@ move towards the target object. An example of a correct annotation is shown belo
 --task<span class="w"> </span>Isaac-PickPlace-GR1T2-Abs-Mimic-v0<span class="w"> </span><span class="se">\</span>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_gr1.hdf5<span class="w"> </span><span class="se">\</span>
 --output_file<span class="w"> </span>./datasets/dataset_annotated_gr1.hdf5
 </pre></div>
@@ -848,13 +845,12 @@ move towards the target object. An example of a correct annotation is shown belo
 <section id="generate-the-dataset">
 <span id="id1"></span><h3>Generate the dataset<a class="headerlink" href="#generate-the-dataset" title="Permalink to this heading">#</a></h3>
 <p>If you skipped the prior collection and annotation step, download the pre-recorded annotated dataset <code class="docutils literal notranslate"><span class="pre">dataset_annotated_gr1.hdf5</span></code> from
-here: <a class="reference external" href="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_gr1.hdf5">[Annotated GR1 Dataset]</a>.
+here: <a class="reference external" href="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_gr1.hdf5">[Annotated GR1 Dataset]</a>.
 Place the file under <code class="docutils literal notranslate"><span class="pre">IsaacLab/datasets</span></code> and run the following command to generate a new dataset with 1000 demonstrations.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/imitation_learning/isaaclab_mimic/generate_dataset.py<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --headless<span class="w"> </span><span class="se">\</span>
 --num_envs<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --generation_num_trials<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_annotated_gr1.hdf5<span class="w"> </span><span class="se">\</span>
 --output_file<span class="w"> </span>./datasets/generated_dataset_gr1.hdf5
@@ -886,7 +882,6 @@ Record the normalization parameters for later use in the visualization step.</p>
 --task<span class="w"> </span>Isaac-PickPlace-GR1T2-Abs-v0<span class="w"> </span><span class="se">\</span>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --num_rollouts<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="se">\</span>
 --horizon<span class="w"> </span><span class="m">400</span><span class="w"> </span><span class="se">\</span>
 --norm_factor_min<span class="w"> </span>&lt;NORM_FACTOR_MIN&gt;<span class="w"> </span><span class="se">\</span>
@@ -928,7 +923,7 @@ Performance can vary significantly between epochs, and the best-performing check
 </figure>
 <section id="download-the-dataset">
 <h3>Download the Dataset<a class="headerlink" href="#download-the-dataset" title="Permalink to this heading">#</a></h3>
-<p>Download the pre-generated dataset from <a class="reference external" href="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/generated_dataset_gr1_nut_pouring.hdf5">here</a> and place it under <code class="docutils literal notranslate"><span class="pre">IsaacLab/datasets/generated_dataset_gr1_nut_pouring.hdf5</span></code>
+<p>Download the pre-generated dataset from <a class="reference external" href="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/generated_dataset_gr1_nut_pouring.hdf5">here</a> and place it under <code class="docutils literal notranslate"><span class="pre">IsaacLab/datasets/generated_dataset_gr1_nut_pouring.hdf5</span></code>
 (<strong>Note: The dataset size is approximately 15GB</strong>). The dataset contains 1000 demonstrations of a humanoid robot performing a pouring/placing task that was
 generated using Isaac Lab Mimic for the <code class="docutils literal notranslate"><span class="pre">Isaac-NutPour-GR1T2-Pink-IK-Abs-Mimic-v0</span></code> task.</p>
 <div class="admonition hint">
@@ -948,7 +943,6 @@ and the yellow bowl to be placed on top of the white scale.</strong></p>
 --task<span class="w"> </span>Isaac-NutPour-GR1T2-Pink-IK-Abs-v0<span class="w"> </span><span class="se">\</span>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --teleop_device<span class="w"> </span>handtracking<span class="w"> </span><span class="se">\</span>
 --num_demos<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
 --dataset_file<span class="w"> </span>./datasets/dataset_gr1_nut_pouring.hdf5
@@ -960,7 +954,6 @@ and the yellow bowl to be placed on top of the white scale.</strong></p>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --enable_cameras<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_gr1_nut_pouring.hdf5<span class="w"> </span><span class="se">\</span>
 --output_file<span class="w"> </span>./datasets/dataset_annotated_gr1_nut_pouring.hdf5
 </pre></div>
@@ -977,7 +970,6 @@ Make sure to annotate the right eef subtasks with different action indices.</p>
 --enable_cameras<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --headless<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --generation_num_trials<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
 --num_envs<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_annotated_gr1_nut_pouring.hdf5<span class="w"> </span><span class="se">\</span>
@@ -1014,7 +1006,6 @@ Record the normalization parameters for later use in the visualization step.</p>
 --visualizer<span class="w"> </span>kit<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --enable_cameras<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --num_rollouts<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="se">\</span>
 --horizon<span class="w"> </span><span class="m">350</span><span class="w"> </span><span class="se">\</span>
 --norm_factor_min<span class="w"> </span>&lt;NORM_FACTOR_MIN&gt;<span class="w"> </span><span class="se">\</span>
@@ -1086,7 +1077,7 @@ This demonstration shows how to train a G1 robot to perform pick and place tasks
 --task<span class="w"> </span>Isaac-PickPlace-Locomanipulation-G1-Abs-v0<span class="w"> </span><span class="se">\</span>
 --teleop_device<span class="w"> </span>handtracking<span class="w"> </span><span class="se">\</span>
 --dataset_file<span class="w"> </span>./datasets/dataset_g1_locomanip.hdf5<span class="w"> </span><span class="se">\</span>
---num_demos<span class="w"> </span><span class="m">5</span><span class="w"> </span>--enable_pinocchio
+--num_demos<span class="w"> </span><span class="m">5</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1097,7 +1088,7 @@ This demonstration shows how to train a G1 robot to perform pick and place tasks
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/tools/replay_demos.py<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-PickPlace-Locomanipulation-G1-Abs-v0<span class="w"> </span><span class="se">\</span>
---dataset_file<span class="w"> </span>./datasets/dataset_g1_locomanip.hdf5<span class="w"> </span>--enable_pinocchio
+--dataset_file<span class="w"> </span>./datasets/dataset_g1_locomanip.hdf5
 </pre></div>
 </div>
 <p>To annotate the demonstrations:</p>
@@ -1105,15 +1096,15 @@ This demonstration shows how to train a G1 robot to perform pick and place tasks
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-Locomanipulation-G1-Abs-Mimic-v0<span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_g1_locomanip.hdf5<span class="w"> </span><span class="se">\</span>
---output_file<span class="w"> </span>./datasets/dataset_annotated_g1_locomanip.hdf5<span class="w"> </span>--enable_pinocchio
+--output_file<span class="w"> </span>./datasets/dataset_annotated_g1_locomanip.hdf5
 </pre></div>
 </div>
 </div>
 <p>If you skipped the prior collection and annotation step, download the pre-recorded annotated dataset <code class="docutils literal notranslate"><span class="pre">dataset_annotated_g1_locomanip.hdf5</span></code> from
-here: <a class="reference external" href="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_g1_locomanip.hdf5">[Annotated G1 Dataset]</a>.
+here: <a class="reference external" href="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/pick_place_datasets/dataset_annotated_g1_locomanip.hdf5">[Annotated G1 Dataset]</a>.
 Place the file under <code class="docutils literal notranslate"><span class="pre">IsaacLab/datasets</span></code> and run the following command to generate a new dataset with 1000 demonstrations.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/imitation_learning/isaaclab_mimic/generate_dataset.py<span class="w"> </span><span class="se">\</span>
---device<span class="w"> </span>cpu<span class="w"> </span>--headless<span class="w"> </span>--num_envs<span class="w"> </span><span class="m">20</span><span class="w"> </span>--generation_num_trials<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--enable_pinocchio<span class="w"> </span><span class="se">\</span>
+--device<span class="w"> </span>cpu<span class="w"> </span>--headless<span class="w"> </span>--num_envs<span class="w"> </span><span class="m">20</span><span class="w"> </span>--generation_num_trials<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_annotated_g1_locomanip.hdf5<span class="w"> </span>--output_file<span class="w"> </span>./datasets/generated_dataset_g1_locomanip.hdf5
 </pre></div>
 </div>
@@ -1133,7 +1124,6 @@ Place the file under <code class="docutils literal notranslate"><span class="pre
 <p>Visualize the trained policy performance:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./isaaclab.sh<span class="w"> </span>-p<span class="w"> </span>scripts/imitation_learning/robomimic/play.py<span class="w"> </span><span class="se">\</span>
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
---enable_pinocchio<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-PickPlace-Locomanipulation-G1-Abs-v0<span class="w"> </span><span class="se">\</span>
 --num_rollouts<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="se">\</span>
 --horizon<span class="w"> </span><span class="m">400</span><span class="w"> </span><span class="se">\</span>
@@ -1188,7 +1178,6 @@ Different epochs can produce significantly different results, so evaluate multip
 <span class="w">    </span>--num_runs<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--lift_step<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--navigate_step<span class="w"> </span><span class="m">130</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--enable_pinocchio<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--output_file<span class="w"> </span>./datasets/generated_dataset_g1_locomanipulation_sdg.hdf5<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--enable_cameras
 </pre></div>
@@ -1329,7 +1318,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>

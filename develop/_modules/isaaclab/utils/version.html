@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -642,13 +642,21 @@
 
 <span class="sd">    Not cached with ``lru_cache`` because this may be called before ``AppLauncher``</span>
 <span class="sd">    finishes starting Kit, which would permanently lock in a ``False`` result.</span>
-<span class="sd">    The underlying ``import`` is already cached by Python and ``get_app()`` is cheap.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">omni.kit.app</span>
+<span class="sd">    The underlying ``get_app()`` call is cheap once the module is loaded.</span>
 
-        <span class="k">return</span> <span class="n">omni</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get_app</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="sd">    This function deliberately avoids triggering a fresh ``import omni.kit.app``</span>
+<span class="sd">    when called before Kit has started. If ``omni.kit.app`` is not already present</span>
+<span class="sd">    in ``sys.modules``, Kit is not running and we return ``False`` immediately without</span>
+<span class="sd">    performing any import (which would be a forbidden side-effect during cfg-only loading).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;omni.kit.app&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mod</span><span class="o">.</span><span class="n">get_app</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -779,7 +787,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>

@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -749,9 +749,6 @@
 
         <span class="c1"># Integrate env-vars and input keyword args into simulation app config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_resolution</span><span class="p">(</span><span class="n">launcher_args</span><span class="p">)</span>
-
-        <span class="c1"># Internal: Override SimulationApp._start_app method to apply patches after app has started.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__patch_simulation_start_app</span><span class="p">(</span><span class="n">launcher_args</span><span class="p">)</span>
 
         <span class="c1"># Create SimulationApp, passing the resolved self._config to it for initialization</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_app</span><span class="p">()</span>
@@ -1623,101 +1620,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_abort_signal_handle_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle the abort/segmentation/kill signals.&quot;&quot;&quot;</span>
         <span class="c1"># close the app</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_app</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">__patch_simulation_start_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enable_pinocchio&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="k">return</span>
-
-        <span class="k">if</span> <span class="n">launcher_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;disable_pinocchio_patch&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="k">return</span>
-
-        <span class="n">original_start_app</span> <span class="o">=</span> <span class="n">SimulationApp</span><span class="o">.</span><span class="n">_start_app</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">_start_app_patch</span><span class="p">(</span><span class="n">sim_app_instance</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="n">original_start_app</span><span class="p">(</span><span class="n">sim_app_instance</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__patch_pxr_gf_matrix4d</span><span class="p">(</span><span class="n">launcher_args</span><span class="p">)</span>
-
-        <span class="n">SimulationApp</span><span class="o">.</span><span class="n">_start_app</span> <span class="o">=</span> <span class="n">_start_app_patch</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">__patch_pxr_gf_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
-
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pxr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gf</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Due to an issue with Pinocchio and pxr.Gf.Matrix4d, patching the Matrix4d constructor to convert arguments&quot;</span>
-            <span class="s2">&quot; into a list of floats.&quot;</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Store the original Matrix4d constructor</span>
-        <span class="n">original_matrix4d</span> <span class="o">=</span> <span class="n">Gf</span><span class="o">.</span><span class="n">Matrix4d</span><span class="o">.</span><span class="fm">__init__</span>
-
-        <span class="c1"># Define a wrapper function to handle different input types</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">patch_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Case 1: No arguments (identity matrix)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                    <span class="k">return</span>
-
-                <span class="c1"># Case 2: Single argument</span>
-                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">arg</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-                    <span class="c1"># Case 2a: Already a Matrix4d</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">Gf</span><span class="o">.</span><span class="n">Matrix4d</span><span class="p">):</span>
-                        <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
-                        <span class="k">return</span>
-
-                    <span class="c1"># Case 2b: Tuple of tuples (4x4 matrix) OR List of lists (4x4 matrix)</span>
-                    <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span>
-                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">)</span>
-                    <span class="p">):</span>
-                        <span class="n">float_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">arg</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span>
-                        <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">float_list</span><span class="p">)</span>
-                        <span class="k">return</span>
-
-                    <span class="c1"># Case 2c: Flat list of 16 elements</span>
-                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
-                        <span class="n">float_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">]</span>
-                        <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">float_list</span><span class="p">)</span>
-                        <span class="k">return</span>
-
-                    <span class="c1"># Case 2d: Another matrix-like object with elements accessible via indexing</span>
-                    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s2">&quot;__getitem__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
-                        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
-                                <span class="n">float_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">)]</span>
-                                <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">float_list</span><span class="p">)</span>
-                                <span class="k">return</span>
-                            <span class="c1"># Try to extract as 4x4 matrix</span>
-                            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">):</span>
-                                <span class="n">float_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
-                                <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">float_list</span><span class="p">)</span>
-                                <span class="k">return</span>
-
-                <span class="c1"># Case 3: 16 separate arguments (individual matrix elements)</span>
-                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
-                    <span class="n">float_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-                    <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">float_list</span><span class="p">)</span>
-                    <span class="k">return</span>
-
-                <span class="c1"># Default: Use original constructor</span>
-                <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matrix4d wrapper error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">traceback</span><span class="o">.</span><span class="n">print_stack</span><span class="p">()</span>
-                <span class="c1"># Fall back to original constructor as last resort</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">inner_e</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Original Matrix4d constructor also failed: </span><span class="si">{</span><span class="n">inner_e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="c1"># Initialize as identity matrix if all else fails</span>
-                    <span class="n">original_matrix4d</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-        <span class="n">Gf</span><span class="o">.</span><span class="n">Matrix4d</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">patch_matrix4d</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
 
                 </article>
@@ -1765,7 +1668,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>

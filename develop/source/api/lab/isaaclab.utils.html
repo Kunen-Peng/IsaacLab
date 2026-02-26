@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -5396,7 +5396,11 @@ to all the joints of the articulation. We use a slice to make the indexing more 
 Returns False in kitless mode (e.g. Newton physics backend without Kit).</p>
 <p>Not cached with <code class="docutils literal notranslate"><span class="pre">lru_cache</span></code> because this may be called before <code class="docutils literal notranslate"><span class="pre">AppLauncher</span></code>
 finishes starting Kit, which would permanently lock in a <code class="docutils literal notranslate"><span class="pre">False</span></code> result.
-The underlying <code class="docutils literal notranslate"><span class="pre">import</span></code> is already cached by Python and <code class="docutils literal notranslate"><span class="pre">get_app()</span></code> is cheap.</p>
+The underlying <code class="docutils literal notranslate"><span class="pre">get_app()</span></code> call is cheap once the module is loaded.</p>
+<p>This function deliberately avoids triggering a fresh <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">omni.kit.app</span></code>
+when called before Kit has started. If <code class="docutils literal notranslate"><span class="pre">omni.kit.app</span></code> is not already present
+in <code class="docutils literal notranslate"><span class="pre">sys.modules</span></code>, Kit is not running and we return <code class="docutils literal notranslate"><span class="pre">False</span></code> immediately without
+performing any import (which would be a forbidden side-effect during cfg-only loading).</p>
 </dd></dl>
 
 <dl class="py function">
@@ -6038,7 +6042,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>

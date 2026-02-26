@@ -64,7 +64,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="3.0.0" />
-    <meta name="docbuild:last-update" content="Feb 25, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 26, 2026"/>
   </head>
   
   
@@ -858,7 +858,7 @@ conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> <
 <section id="download-and-setup">
 <h3>Download and Setup<a class="headerlink" href="#download-and-setup" title="Permalink to this heading">#</a></h3>
 <ol class="arabic simple">
-<li><p>Download the pre-annotated dataset by clicking <a class="reference external" href="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0/Isaac/IsaacLab/Mimic/franka_stack_datasets/annotated_dataset_skillgen.hdf5">here</a>.</p></li>
+<li><p>Download the pre-annotated dataset by clicking <a class="reference external" href="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/Mimic/franka_stack_datasets/annotated_dataset_skillgen.hdf5">here</a>.</p></li>
 <li><p>Prepare the datasets directory and move the downloaded file:</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure you are in the root directory of your Isaac Lab workspace</span>
@@ -892,7 +892,8 @@ mv<span class="w"> </span>/path/to/annotated_dataset_skillgen.hdf5<span class="w
 --task<span class="w"> </span>Isaac-Stack-Cube-Franka-IK-Rel-Skillgen-v0<span class="w"> </span><span class="se">\</span>
 --teleop_device<span class="w"> </span>spacemouse<span class="w"> </span><span class="se">\</span>
 --dataset_file<span class="w"> </span>./datasets/dataset_skillgen.hdf5<span class="w"> </span><span class="se">\</span>
---num_demos<span class="w"> </span><span class="m">10</span>
+--num_demos<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+--visualizer<span class="w"> </span>kit
 </pre></div>
 </div>
 <p><strong>Annotate demonstrations for SkillGen</strong> (writes both term and start boundaries):</p>
@@ -901,7 +902,8 @@ mv<span class="w"> </span>/path/to/annotated_dataset_skillgen.hdf5<span class="w
 --task<span class="w"> </span>Isaac-Stack-Cube-Franka-IK-Rel-Skillgen-v0<span class="w"> </span><span class="se">\</span>
 --input_file<span class="w"> </span>./datasets/dataset_skillgen.hdf5<span class="w"> </span><span class="se">\</span>
 --output_file<span class="w"> </span>./datasets/annotated_dataset_skillgen.hdf5<span class="w"> </span><span class="se">\</span>
---annotate_subtask_start_signals
+--annotate_subtask_start_signals<span class="w"> </span><span class="se">\</span>
+--visualizer<span class="w"> </span>kit
 </pre></div>
 </div>
 </div>
@@ -992,7 +994,7 @@ mv<span class="w"> </span>/path/to/annotated_dataset_skillgen.hdf5<span class="w
 --input_file<span class="w"> </span>./datasets/annotated_dataset_skillgen.hdf5<span class="w"> </span><span class="se">\</span>
 --output_file<span class="w"> </span>./datasets/generated_dataset_small_skillgen_cube_stack.hdf5<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-Stack-Cube-Franka-IK-Rel-Skillgen-v0<span class="w"> </span><span class="se">\</span>
---use_skillgen
+--use_skillgen<span class="w"> </span>--visualizer<span class="w"> </span>kit
 </pre></div>
 </div>
 </section>
@@ -1040,7 +1042,7 @@ mv<span class="w"> </span>/path/to/annotated_dataset_skillgen.hdf5<span class="w
 --input_file<span class="w"> </span>./datasets/annotated_dataset_skillgen.hdf5<span class="w"> </span><span class="se">\</span>
 --output_file<span class="w"> </span>./datasets/generated_dataset_small_skillgen_bin_cube_stack.hdf5<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-Stack-Cube-Bin-Franka-IK-Rel-Mimic-v0<span class="w"> </span><span class="se">\</span>
---use_skillgen
+--use_skillgen<span class="w"> </span>--visualizer<span class="w"> </span>kit
 </pre></div>
 </div>
 </section>
@@ -1116,7 +1118,8 @@ mv<span class="w"> </span>/path/to/annotated_dataset_skillgen.hdf5<span class="w
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-Stack-Cube-Franka-IK-Rel-Skillgen-v0<span class="w"> </span><span class="se">\</span>
 --num_rollouts<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="se">\</span>
---checkpoint<span class="w"> </span>/path/to/model_checkpoint.pth
+--checkpoint<span class="w"> </span>/path/to/model_checkpoint.pth<span class="w"> </span><span class="se">\</span>
+--visualizer<span class="w"> </span>kit
 </pre></div>
 </div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Adaptive bin cube stacking evaluation</span>
@@ -1124,7 +1127,8 @@ mv<span class="w"> </span>/path/to/annotated_dataset_skillgen.hdf5<span class="w
 --device<span class="w"> </span>cpu<span class="w"> </span><span class="se">\</span>
 --task<span class="w"> </span>Isaac-Stack-Cube-Bin-Franka-IK-Rel-Mimic-v0<span class="w"> </span><span class="se">\</span>
 --num_rollouts<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="se">\</span>
---checkpoint<span class="w"> </span>/path/to/model_checkpoint.pth
+--checkpoint<span class="w"> </span>/path/to/model_checkpoint.pth<span class="w"> </span><span class="se">\</span>
+--visualizer<span class="w"> </span>kit
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1381,7 +1385,7 @@ By The Isaac Lab Project Developers.
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 25, 2026.
+  Last updated on Feb 26, 2026.
   <br/>
 </p>
   </div>
